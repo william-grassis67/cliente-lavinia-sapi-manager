@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel Administrativo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <strong>Lavínia Souto</strong>
+              <span>Administração</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Menu principal">
+          <a class="nav-link active" href="./admin.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+          <a class="nav-link" href="./admin.html"><i class="fa-solid fa-users"></i> Usuários</a>
+          <a class="nav-link" href="./admin-cadastro.html"><i class="fa-solid fa-user-plus"></i> Cadastrar Cliente</a>
+          <a class="nav-link" href="./paginainicial.html"><i class="fa-solid fa-gear"></i> Configurações</a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <strong>Bem-vindo!</strong>
+          <span>Gerencie clientes e acompanhe o painel de forma rápida.</span>
+        </div>
+      </aside>
+
+      <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-toggle" id="mobileToggle" type="button" aria-label="Abrir menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div>
+              <p class="eyebrow">Painel Administrativo</p>
+              <h1>Gestão de usuários</h1>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <a class="refresh-btn" href="./admin-cadastro.html">
+              <i class="fa-solid fa-user-plus"></i> Cadastrar
+            </a>
+            <button class="refresh-btn" id="refreshUsers" type="button">
+              <i class="fa-solid fa-rotate-right"></i> Atualizar
+            </button>
+          </div>
+        </header>
+
+        <section class="page-content">
+          <section class="panel-card">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Resumo</p>
+                <h2>Visão geral do painel</h2>
+              </div>
+            </div>
+            <div class="hero-grid">
+              <article class="stat-card">
+                <strong id="totalUsers">0</strong>
+                <span>Usuários cadastrados</span>
+              </article>
+              <article class="stat-card">
+                <strong id="activeUsers">0</strong>
+                <span>Usuários ativos</span>
+              </article>
+              <article class="stat-card stat-card-highlight">
+                <strong id="lastLoginUser">—</strong>
+                <span id="lastLoginValue">Último login registrado</span>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel-card">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Usuários</p>
+                <h2>Lista completa</h2>
+              </div>
+            </div>
+            <div class="table-toolbar">
+              <div class="search-field">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="searchInput" type="search" placeholder="Buscar usuários, email, CPF ou tipo" aria-label="Buscar usuários" />
+              </div>
+              <button class="sort-btn" id="sortAccessBtn" type="button" title="Ordenar por último acesso">
+                <i class="fa-solid fa-clock"></i>
+                Último acesso
+                <span class="sort-indicator" id="sortDirectionLabel">↓</span>
+              </button>
+            </div>
+            <div id="clientes" class="users-list"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-overlay" id="modalUsuario" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="usuarioTitulo">
+        <button class="modal-close" id="fecharUsuario" type="button" aria-label="Fechar detalhes">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <p class="eyebrow">Informações do usuário</p>
+        <h2 id="usuarioTitulo">Detalhes</h2>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <strong>Nome</strong>
+            <div id="usuarioNome"></div>
+          </div>
+          <div class="detail-item">
+            <strong>Email</strong>
+            <div id="usuarioEmail"></div>
+          </div>
+          <div class="detail-item">
+            <strong>CPF</strong>
+            <div id="usuarioCpf"></div>
+          </div>
+          <div class="detail-item">
+            <strong>Tipo</strong>
+            <div id="usuarioTipo"></div>
+          </div>
+          <div class="detail-item">
+            <strong>Endereço</strong>
+            <div id="usuarioEndereco"></div>
+          </div>
+          <div class="detail-item">
+            <strong>Status</strong>
+            <div id="usuarioStatus"></div>
+          </div>
+          <div class="detail-item detail-item-full">
+            <strong><i class="fa-solid fa-clock-rotate-left"></i> Último acesso</strong>
+            <div id="usuarioUltimoLogin"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/admin.js"></script>
+  </body>
+</html>

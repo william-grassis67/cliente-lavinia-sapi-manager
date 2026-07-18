@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: 'mysql:latest'
+    container_name: mysql-demo
+    environment:
+      MYSQL_DATABASE: 'sql10822660'
+      MYSQL_USER: 'sql10822660'
+      MYSQL_PASSWORD: '2VAB9qIwmI'
+      MYSQL_ROOT_PASSWORD: '2VAB9qIwmI'
+    ports:
+      - '3306:3306'
