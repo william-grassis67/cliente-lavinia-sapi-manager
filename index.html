@@ -3,56 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Área do Cliente | Lavínia Souto</title>
+    <title>Lavinia Souto</title>
     <link rel="stylesheet" href="./css/style.css">
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1e293b;
-        }
-        .dashboard-page {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-        .dashboard-card {
-            background: #fff;
-            padding: 32px;
-            border-radius: 16px;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-            width: min(560px, 100%);
-        }
-        .dashboard-card h1 { margin-top: 0; }
-        .info-list { display: grid; gap: 12px; margin: 24px 0; }
-        .info-item { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
-        .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
-        .actions a, .actions button { text-decoration: none; border: 0; padding: 10px 16px; border-radius: 999px; cursor: pointer; }
-        .actions a { background: #0f766e; color: white; }
-        .actions button { background: #ef4444; color: white; }
-    </style>
 </head>
-<body>
-    <main class="dashboard-page">
-        <section class="dashboard-card">
-            <h1>Bem-vindo ao painel</h1>
-            <p>Você está logado e pode acompanhar suas informações abaixo.</p>
-            <div class="info-list">
-                <div class="info-item"><strong>Nome</strong><span id="userName">—</span></div>
-                <div class="info-item"><strong>Email</strong><span id="userEmail">—</span></div>
-                <div class="info-item"><strong>CPF</strong><span id="userCpf">—</span></div>
-                <div class="info-item"><strong>Tipo</strong><span id="userTipo">—</span></div>
-                <div class="info-item"><strong>Último acesso</strong><span id="userLastAccess">—</span></div>
+<body class="page-login">
+    <div class="container">
+        <div class="form">
+            <div class="h2">
+                <h2>Login</h2>
             </div>
-            <div class="actions">
-                <a id="adminLink" href="./admin.html">Acessar painel administrativo</a>
-                <button id="logoutButton" type="button">Sair</button>
+            <div class="input-cpf" id="inputcpf">
+                <label for="">CPF:</label>
+                <input type="text" id="cpf" placeholder="000.000.000-00">
             </div>
-        </section>
-    </main>
-    <script type="module" src="./js/usuario.js"></script>
+            <div class="input-senha">
+                <label for="">SENHA:</label>
+                <input type="password" name="" id="password" placeholder="Digite sua senha">
+            </div>
+            <div class="btn">
+                <button id="btn_enter">Entrar</button>
+            </div>
+        </div>
+    </div>
+    <div class="alerts">
+        <div class="alert-erro" id="errologin">
+            <h3>CPF ou senha incorretos!</h3>
+        </div>
+        <div class="alert-true" id="corretologin">
+            <h3>Sucesso!</h3>
+        </div>
+        <div class="alert-servidor" id="erroservidor">
+            <h3>Erro no servidor!</h3>
+        </div>
+    </div>
+    <script type="module" src="./js/app.js"></script>
 </body>
 </html>

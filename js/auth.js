@@ -1,7 +1,7 @@
 const STORAGE_USER = "usuario";
 const STORAGE_TOKEN = "authToken";
-const LOGIN_PAGE = "./login.html";
-const INDEX_PAGE = "./index.html";
+const LOGIN_PAGE = "./index.html";
+const INDEX_PAGE = "./paginainicial.html";
 const ADMIN_PAGE = "./admin.html";
 
 function normalizeTipo(tipo) {

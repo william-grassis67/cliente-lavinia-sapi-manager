@@ -9,32 +9,28 @@
     <link rel="stylesheet" href="./admin.css" />
   </head>
   <body>
-    <div class="app-shell" id="appShell">
+    <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <div class="brand">
             <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <div class="brand-text">
+            <div>
               <strong>Lavínia Souto</strong>
               <span>Administração</span>
             </div>
           </div>
-          <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" type="button" aria-label="Recolher menu">
-            <i class="fa-solid fa-angle-left"></i>
-          </button>
         </div>
 
         <nav class="sidebar-nav" aria-label="Menu principal">
-          <a class="nav-link active" href="#overview"><i class="fa-solid fa-chart-line"></i><span class="nav-label">Início</span></a>
-          <a class="nav-link" href="#usersSection"><i class="fa-solid fa-users"></i><span class="nav-label">Usuários</span></a>
-          <a class="nav-link" href="./admin-cadastro.html"><i class="fa-solid fa-user-plus"></i><span class="nav-label">Cadastrar</span></a>
-          <a class="nav-link" href="#preferencesSection"><i class="fa-solid fa-sliders"></i><span class="nav-label">Preferências</span></a>
-          <a class="nav-link" href="#accountSection"><i class="fa-solid fa-user-circle"></i><span class="nav-label">Conta</span></a>
+          <a class="nav-link active" href="./admin.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+          <a class="nav-link" href="./admin.html"><i class="fa-solid fa-users"></i> Usuários</a>
+          <a class="nav-link" href="./admin-cadastro.html"><i class="fa-solid fa-user-plus"></i> Cadastrar Cliente</a>
+          <a class="nav-link" href="./paginainicial.html"><i class="fa-solid fa-gear"></i> Configurações</a>
         </nav>
 
         <div class="sidebar-footer">
           <strong>Bem-vindo!</strong>
-          <span>Gerencie clientes, acompanhe guias do INSS e mantenha tudo em ordem.</span>
+          <span>Gerencie clientes e acompanhe o painel de forma rápida.</span>
         </div>
       </aside>
 
@@ -48,7 +44,7 @@
             </button>
             <div>
               <p class="eyebrow">Painel Administrativo</p>
-              <h1 id="adminWelcomeTitle">Gestão de usuários</h1>
+              <h1>Gestão de usuários</h1>
             </div>
           </div>
           <div class="topbar-actions">
@@ -61,139 +57,31 @@
           </div>
         </header>
 
-        <section class="page-content" id="overview">
-          <section class="panel-card hero-card">
-            <div class="hero-copy">
-              <p class="eyebrow">Visão geral</p>
-              <h2 id="adminHeroTitle">Bem-vindo, administrador</h2>
-              <p>Organize os clientes, acompanhe as guias do INSS e defina as pendências de cada processo diretamente pelo painel.</p>
-            </div>
-            <div class="hero-badge">
-              <span class="hero-badge-pill">Administração</span>
-              <span class="hero-badge-pill muted" id="adminUserType">ADMIN</span>
-            </div>
-          </section>
-
-          <section class="panel-card metrics-panel">
-            <div class="metric-card">
-              <div class="metric-icon"><i class="fa-solid fa-user-group"></i></div>
+        <section class="page-content">
+          <section class="panel-card">
+            <div class="panel-header">
               <div>
+                <p class="eyebrow">Resumo</p>
+                <h2>Visão geral do painel</h2>
+              </div>
+            </div>
+            <div class="hero-grid">
+              <article class="stat-card">
                 <strong id="totalUsers">0</strong>
-                <span>Clientes cadastrados</span>
-              </div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-icon"><i class="fa-solid fa-circle-check"></i></div>
-              <div>
+                <span>Usuários cadastrados</span>
+              </article>
+              <article class="stat-card">
                 <strong id="activeUsers">0</strong>
-                <span>Guias pagas</span>
-              </div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-icon"><i class="fa-solid fa-clock"></i></div>
-              <div>
+                <span>Usuários ativos</span>
+              </article>
+              <article class="stat-card stat-card-highlight">
                 <strong id="lastLoginUser">—</strong>
-                <span id="lastLoginValue">Última atualização</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel-card" id="preferencesSection">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Configurações</p>
-                <h2>Preferências</h2>
-              </div>
-            </div>
-            <div class="settings-list">
-              <div class="setting-item">
-                <label for="themeSelect">Tema visual</label>
-                <select id="themeSelect">
-                  <option value="light">Claro</option>
-                  <option value="dark">Escuro</option>
-                  <option value="blue">Azul</option>
-                </select>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel-card" id="accountSection">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Conta</p>
-                <h2>Dados do administrador</h2>
-              </div>
-            </div>
-            <div class="account-grid">
-              <div class="account-item">
-                <strong>Nome</strong>
-                <span id="accountName">—</span>
-              </div>
-              <div class="account-item">
-                <strong>Email</strong>
-                <span id="accountEmail">—</span>
-              </div>
-              <div class="account-item">
-                <strong>CPF</strong>
-                <span id="accountCpf">—</span>
-              </div>
-              <div class="account-item">
-                <strong>Tipo</strong>
-                <span id="accountType">—</span>
-              </div>
+                <span id="lastLoginValue">Último login registrado</span>
+              </article>
             </div>
           </section>
 
           <section class="panel-card">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Guias do INSS</p>
-                <h2>Status dos processos</h2>
-              </div>
-            </div>
-            <div class="guide-grid">
-              <article class="guide-card">
-                <div class="guide-card-head">
-                  <h3>Receita Federal</h3>
-                  <button class="status-toggle" data-guide="recitaFederal" type="button">Foi pago</button>
-                </div>
-                <label class="guide-label" for="recitaFederalNote">O que falta fazer</label>
-                <textarea class="guide-notes" id="recitaFederalNote" data-guide="recitaFederal" rows="3" placeholder="Defina o que falta para concluir a guia."></textarea>
-              </article>
-              <article class="guide-card">
-                <div class="guide-card-head">
-                  <h3>REAP</h3>
-                  <button class="status-toggle" data-guide="reap" type="button">Foi pago</button>
-                </div>
-                <label class="guide-label" for="reapNote">O que falta fazer</label>
-                <textarea class="guide-notes" id="reapNote" data-guide="reap" rows="3" placeholder="Defina o que falta para concluir a guia."></textarea>
-              </article>
-              <article class="guide-card">
-                <div class="guide-card-head">
-                  <h3>Guia do INSS</h3>
-                  <button class="status-toggle" data-guide="guiaInss" type="button">Foi pago</button>
-                </div>
-                <label class="guide-label" for="guiaInssNote">O que falta fazer</label>
-                <textarea class="guide-notes" id="guiaInssNote" data-guide="guiaInss" rows="3" placeholder="Defina o que falta para concluir a guia."></textarea>
-              </article>
-            </div>
-          </section>
-
-          <section class="panel-card tasks-panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Pendências</p>
-                <h2>Pendências do cliente</h2>
-              </div>
-            </div>
-            <ul class="task-list">
-              <li class="task-item"><span>Enviar documento complementar</span><span class="task-pill pending">Pendente</span></li>
-              <li class="task-item"><span>Assinar contrato</span><span class="task-pill pending">Pendente</span></li>
-              <li class="task-item"><span>Pagar guia</span><span class="task-pill done">Concluído</span></li>
-            </ul>
-          </section>
-
-          <section class="panel-card" id="usersSection">
             <div class="panel-header">
               <div>
                 <p class="eyebrow">Usuários</p>
@@ -257,6 +145,6 @@
       </div>
     </div>
 
-    <script type="module" src="./js/admin.js"></script>
+    <script src="./js/admin.js"></script>
   </body>
 </html>
