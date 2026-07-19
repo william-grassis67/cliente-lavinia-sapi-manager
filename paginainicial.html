@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAPI | Início</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body class="app-page">
+    <div class="app-shell" id="appShell">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="brand-text">
+              <strong>Lavínia Souto</strong>
+              <span>Área do cliente</span>
+            </div>
+          </div>
+          <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" type="button" aria-label="Recolher menu">
+            <i class="fa-solid fa-angle-left"></i>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Menu do cliente">
+          <a class="nav-link active" href="#overview"><i class="fa-solid fa-house"></i><span class="nav-label">Início</span></a>
+          <a class="nav-link" href="#preferencesSection"><i class="fa-solid fa-sliders"></i><span class="nav-label">Configurações</span></a>
+          <a class="nav-link" href="#preferencesSection"><i class="fa-solid fa-sliders"></i><span class="nav-label">Preferências</span></a>
+          <a class="nav-link" href="#accountSection"><i class="fa-solid fa-user-circle"></i><span class="nav-label">Minha Conta</span></a>
+          <a class="nav-link" id="adminLink" href="./admin.html"><i class="fa-solid fa-shield-halved"></i><span class="nav-label">Painel Admin</span></a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <strong>Seu ambiente</strong>
+          <span>Centralize preferências, dados da conta e o acompanhamento do processo.</span>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-toggle" id="sidebarToggleMobile" type="button" aria-label="Abrir menu">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div>
+              <p class="eyebrow">Painel do cliente</p>
+              <h1 id="welcomeTitle">Bem-vindo, Maria Silva</h1>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-btn" id="themeToggleButton" type="button"><i class="fa-solid fa-sun"></i> Claro</button>
+            <button class="primary-btn" id="logoutBtn" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+          </div>
+        </header>
+
+        <section class="page-content" id="overview">
+          <section class="panel-card hero-card">
+            <div class="hero-copy">
+              <p class="eyebrow">Painel pessoal</p>
+              <h2>Seu espaço preparado para acompanhar cada etapa com tranquilidade.</h2>
+              <p>Visualize o andamento das guias, acompanhe pendências e ajuste suas preferências em um ambiente moderno e organizado.</p>
+            </div>
+            <div class="hero-badge">
+              <span class="hero-badge-pill">Conta ativa</span>
+              <span class="hero-badge-pill muted" id="profileType">CLIENTE</span>
+            </div>
+          </section>
+
+          <section class="panel-card profile-panel">
+            <div class="profile-card-large">
+              <div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div>
+              <div class="profile-summary">
+                <h3 id="profileName">Maria Silva</h3>
+                <p id="profileEmail">maria.silva@email.com</p>
+                <div class="profile-meta">
+                  <span class="profile-pill" id="profileTag">CLIENTE</span>
+                  <span class="profile-pill outline">Acesso seguro</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card metrics-panel">
+            <div class="metric-card">
+              <div class="metric-icon"><i class="fa-solid fa-file-invoice"></i></div>
+              <div>
+                <strong>3</strong>
+                <span>Guias em análise</span>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div>
+                <strong>1</strong>
+                <span>Etapa concluída</span>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon"><i class="fa-solid fa-clock"></i></div>
+              <div>
+                <strong>2</strong>
+                <span>Pendências abertas</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card" id="guidesSection">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Processos</p>
+                <h2>Guias do INSS</h2>
+              </div>
+            </div>
+            <div class="card-grid">
+              <article class="guide-card">
+                <div class="guide-card-top">
+                  <div>
+                    <h3>Guias do INSS</h3>
+                    <p>Status da guia</p>
+                  </div>
+                  <button class="status-chip is-paid" data-status-toggle="inss" type="button">Pago</button>
+                </div>
+                <span class="guide-meta">Atualização preparada para integração futura</span>
+              </article>
+              <article class="guide-card">
+                <div class="guide-card-top">
+                  <div>
+                    <h3>Receita Federal</h3>
+                    <p>Status da guia</p>
+                  </div>
+                  <button class="status-chip" data-status-toggle="receita" type="button">Pendente</button>
+                </div>
+                <span class="guide-meta">Aguardando confirmação da administração</span>
+              </article>
+              <article class="guide-card">
+                <div class="guide-card-top">
+                  <div>
+                    <h3>REAP</h3>
+                    <p>Status da guia</p>
+                  </div>
+                  <button class="status-chip is-paid" data-status-toggle="reap" type="button">Pago</button>
+                </div>
+                <span class="guide-meta">Pronto para a próxima fase</span>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel-card tasks-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Checklist</p>
+                <h2>Pendências do processo</h2>
+              </div>
+            </div>
+            <ul class="task-list">
+              <li class="task-item"><span>Documento complementar</span><span class="task-pill pending">Pendente</span></li>
+              <li class="task-item"><span>Assinatura do contrato</span><span class="task-pill pending">Pendente</span></li>
+              <li class="task-item"><span>Envio da guia</span><span class="task-pill done">Concluído</span></li>
+            </ul>
+          </section>
+
+          <section class="panel-card" id="preferencesSection" style="display: none;">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Configurações</p>
+                <h2>Preferências</h2>
+              </div>
+            </div>
+            <div class="settings-list">
+              <div class="setting-item">
+                <label for="themeSelect">Tema visual</label>
+                <select id="themeSelect">
+                  <option value="light">Claro</option>
+                  <option value="dark">Escuro</option>
+                  <option value="blue">Azul</option>
+                </select>
+              </div>
+              <div class="setting-item">
+                <label>Notificações</label>
+                <div class="switch-row">
+                  <span>Receber lembretes de próximos passos</span>
+                  <button class="switch-btn is-active" type="button" aria-label="Alternar notificações">
+                    <span></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-card" id="accountSection" style="display: none;">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Conta</p>
+                <h2>Minha conta</h2>
+              </div>
+            </div>
+            <div class="profile-banner">
+              <div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div>
+              <div>
+                <h3 id="accountName">Maria Silva</h3>
+                <p id="accountEmail">maria.silva@email.com</p>
+              </div>
+            </div>
+            <div class="account-grid">
+              <div class="account-item">
+                <strong>Nome</strong>
+                <span id="accountNameValue">Maria Silva</span>
+              </div>
+              <div class="account-item">
+                <strong>Email</strong>
+                <span id="accountEmailValue">maria.silva@email.com</span>
+              </div>
+              <div class="account-item">
+                <strong>CPF</strong>
+                <span id="accountCpf">123.456.789-00</span>
+              </div>
+              <div class="account-item">
+                <strong>Telefone</strong>
+                <span id="accountPhone">(11) 99999-0000</span>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="js/navegacao.js"></script>
+    <script src="js/tema.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="./js/paginainicial.js"></script>
+  </body>
+</html>

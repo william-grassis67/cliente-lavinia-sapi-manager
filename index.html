@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lavinia Souto</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="page-login">
+    <div class="container">
+        <div class="form">
+            <div class="h2">
+                <h2>Login</h2>
+            </div>
+            <div class="input-cpf" id="inputcpf">
+                <label for="">CPF:</label>
+                <input type="text" id="cpf" placeholder="000.000.000-00">
+            </div>
+            <div class="input-senha">
+                <label for="">SENHA:</label>
+                <input type="password" name="" id="password" placeholder="Digite sua senha">
+            </div>
+            <div class="btn">
+                <button id="btn_enter">Entrar</button>
+            </div>
+        </div>
+    </div>
+    <div class="alerts">
+        <div class="alert-erro" id="errologin">
+            <h3>CPF ou senha incorretos!</h3>
+        </div>
+        <div class="alert-true" id="corretologin">
+            <h3>Sucesso!</h3>
+        </div>
+        <div class="alert-servidor" id="erroservidor">
+            <h3>Erro no servidor!</h3>
+        </div>
+    </div>
+    <script type="module" src="./js/app.js"></script>
+</body>
+</html>
