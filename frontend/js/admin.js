@@ -1,5 +1,5 @@
-const API_CLIENTES = "http://localhost:8080/api/clientes";
-const API_REMOVE = "http://localhost:8080/api/remove";
+const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
+const API_REMOVE = "https://apiadministrativa.onrender.com/api/remove";
 
 const listaClientes = document.getElementById("clientes");
 const modalUsuario = document.getElementById("modalUsuario");

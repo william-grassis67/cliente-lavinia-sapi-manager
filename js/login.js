@@ -1,6 +1,6 @@
 import { normalizeTipo, pegarUsuarioLogado, salvarUsuario } from "./auth.js";
 
-const API_LOGIN_URL = "http://localhost:8080/api/login";
+const API_LOGIN_URL = "https://apiadministrativa.onrender.com/api/login";
 
 function mostrarAlerta(alerta) {
   const alertsContainer = document.querySelector(".alerts");

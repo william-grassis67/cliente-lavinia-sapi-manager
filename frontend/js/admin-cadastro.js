@@ -1,5 +1,5 @@
-const API_REGISTER = "http://localhost:8080/api/register";
-const API_CLIENTES = "http://localhost:8080/api/clientes";
+const API_REGISTER = "https://apiadministrativa.onrender.com/api/register";
+const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
 
 const form = document.getElementById("registerForm");
 const cpfInput = document.getElementById("cpf");
