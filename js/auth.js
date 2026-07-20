@@ -58,6 +58,12 @@ function pegarToken() {
 }
 
 function redirecionarPara(destino) {
+  const atual = window.location.pathname.split("/").pop();
+
+  if (atual === destino.replace("./", "")) {
+    return;
+  }
+
   window.location.assign(destino);
 }
 
