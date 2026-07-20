@@ -248,7 +248,7 @@ async function removerCliente(cpf) {
 }
 
 function popularDadosAdmin() {
-  const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+  const usuario = pegarUsuarioLogado() || JSON.parse(localStorage.getItem("usuario") || "null");
   if (!usuario) return;
 
   const nome = usuario.nome || "Administrador";
@@ -294,7 +294,7 @@ function inicializarAdmin() {
   searchInput?.addEventListener("input", () => renderizarClientes(aplicarFiltroEOrdenacao(clientesCache)));
   sortAccessBtn?.addEventListener("click", () => {
     sortAscending = !sortAscending;
-    sortDirectionLabel.textContent = sortAscending ? "↑" : "↓";
+    if (sortDirectionLabel) sortDirectionLabel.textContent = sortAscending ? "↑" : "↓";
     renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
   });
 
@@ -314,14 +314,12 @@ function inicializarAdmin() {
   });
 
   document.querySelectorAll(".guide-notes").forEach((textarea) => {
+    const savedValue = localStorage.getItem(`guide:${textarea.dataset.guide}`);
+    if (savedValue) textarea.value = savedValue;
+
     textarea.addEventListener("input", () => {
       localStorage.setItem(`guide:${textarea.dataset.guide}`, textarea.value);
     });
-  });
-
-  document.querySelectorAll(".guide-notes").forEach((textarea) => {
-    const savedValue = localStorage.getItem(`guide:${textarea.dataset.guide}`);
-    if (savedValue) textarea.value = savedValue;
   });
 
   themeSelect?.addEventListener("change", (event) => {
@@ -330,29 +328,15 @@ function inicializarAdmin() {
     document.body.dataset.theme = selectedTheme;
   });
 
+  Array.from(document.querySelectorAll(".nav-link")).forEach((link) => {
+    link.addEventListener("click", () => {
+      document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("active"));
+      link.classList.add("active");
+      closeSidebar();
+    });
+  });
+
   carregarClientes();
 }
 
 document.addEventListener("DOMContentLoaded", inicializarAdmin);
-
-mobileToggle?.addEventListener("click", () => toggleSidebar());
-sidebarOverlay?.addEventListener("click", closeSidebar);
-refreshButton?.addEventListener("click", carregarClientes);
-searchInput?.addEventListener("input", () => {
-  renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
-});
-sortAccessBtn?.addEventListener("click", () => {
-  sortAscending = !sortAscending;
-  if (sortDirectionLabel) sortDirectionLabel.textContent = sortAscending ? "↑" : "↓";
-  renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
-});
-
-Array.from(document.querySelectorAll(".nav-link")).forEach((link) => {
-  link.addEventListener("click", () => {
-    document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("active"));
-    link.classList.add("active");
-    closeSidebar();
-  });
-});
-
-carregarClientes();

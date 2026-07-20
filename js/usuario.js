@@ -11,7 +11,7 @@ function formatarData(data) {
 
 export function inicializarUsuarioPage() {
   if (!verificarLogin(false)) {
-    window.location.assign("./login.html");
+    window.location.assign("./index.html");
     return;
   }
 
