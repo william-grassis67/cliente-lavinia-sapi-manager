@@ -1,232 +1,288 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SAPI | Início</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="./css/style.css" />
-  </head>
-  <body class="app-page">
-    <div class="app-shell" id="appShell">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <div class="brand">
-            <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <div class="brand-text">
-              <strong>Lavínia Souto</strong>
-              <span>Área do cliente</span>
-            </div>
-          </div>
-          <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" type="button" aria-label="Recolher menu">
-            <i class="fa-solid fa-angle-left"></i>
-          </button>
-        </div>
 
-        <nav class="sidebar-nav" aria-label="Menu do cliente">
-          <a class="nav-link active" href="#overview"><i class="fa-solid fa-house"></i><span class="nav-label">Início</span></a>
-          <a class="nav-link" href="#preferencesSection"><i class="fa-solid fa-sliders"></i><span class="nav-label">Configurações</span></a>
-          <a class="nav-link" href="#preferencesSection"><i class="fa-solid fa-sliders"></i><span class="nav-label">Preferências</span></a>
-          <a class="nav-link" href="#accountSection"><i class="fa-solid fa-user-circle"></i><span class="nav-label">Minha Conta</span></a>
-          <a class="nav-link" id="adminLink" href="./admin.html"><i class="fa-solid fa-shield-halved"></i><span class="nav-label">Painel Admin</span></a>
-        </nav>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAPI | Portal do Cliente</title>
 
-        <div class="sidebar-footer">
-          <strong>Seu ambiente</strong>
-          <span>Centralize preferências, dados da conta e o acompanhamento do processo.</span>
-        </div>
-      </aside>
+  <link rel="stylesheet" href="./css/style.css">
 
-      <main class="main-panel">
-        <header class="topbar">
-          <div class="topbar-left">
-            <button class="mobile-toggle" id="sidebarToggleMobile" type="button" aria-label="Abrir menu">
-              <i class="fa-solid fa-bars"></i>
-            </button>
-            <div>
-              <p class="eyebrow">Painel do cliente</p>
-              <h1 id="welcomeTitle">Bem-vindo, Maria Silva</h1>
-            </div>
-          </div>
-          <div class="topbar-actions">
-            <button class="ghost-btn" id="themeToggleButton" type="button"><i class="fa-solid fa-sun"></i> Claro</button>
-            <button class="primary-btn" id="logoutBtn" type="button"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
-          </div>
-        </header>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
 
-        <section class="page-content" id="overview">
-          <section class="panel-card hero-card">
-            <div class="hero-copy">
-              <p class="eyebrow">Painel pessoal</p>
-              <h2>Seu espaço preparado para acompanhar cada etapa com tranquilidade.</h2>
-              <p>Visualize o andamento das guias, acompanhe pendências e ajuste suas preferências em um ambiente moderno e organizado.</p>
-            </div>
-            <div class="hero-badge">
-              <span class="hero-badge-pill">Conta ativa</span>
-              <span class="hero-badge-pill muted" id="profileType">CLIENTE</span>
-            </div>
-          </section>
+<body class="dashboard-page">
 
-          <section class="panel-card profile-panel">
-            <div class="profile-card-large">
-              <div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div>
-              <div class="profile-summary">
-                <h3 id="profileName">Maria Silva</h3>
-                <p id="profileEmail">maria.silva@email.com</p>
-                <div class="profile-meta">
-                  <span class="profile-pill" id="profileTag">CLIENTE</span>
-                  <span class="profile-pill outline">Acesso seguro</span>
-                </div>
-              </div>
-            </div>
-          </section>
+  <header class="topbar">
 
-          <section class="panel-card metrics-panel">
-            <div class="metric-card">
-              <div class="metric-icon"><i class="fa-solid fa-file-invoice"></i></div>
-              <div>
-                <strong>3</strong>
-                <span>Guias em análise</span>
-              </div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-icon"><i class="fa-solid fa-circle-check"></i></div>
-              <div>
-                <strong>1</strong>
-                <span>Etapa concluída</span>
-              </div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-icon"><i class="fa-solid fa-clock"></i></div>
-              <div>
-                <strong>2</strong>
-                <span>Pendências abertas</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel-card" id="guidesSection">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Processos</p>
-                <h2>Guias do INSS</h2>
-              </div>
-            </div>
-            <div class="card-grid">
-              <article class="guide-card">
-                <div class="guide-card-top">
-                  <div>
-                    <h3>Guias do INSS</h3>
-                    <p>Status da guia</p>
-                  </div>
-                  <button class="status-chip is-paid" data-status-toggle="inss" type="button">Pago</button>
-                </div>
-                <span class="guide-meta">Atualização preparada para integração futura</span>
-              </article>
-              <article class="guide-card">
-                <div class="guide-card-top">
-                  <div>
-                    <h3>Receita Federal</h3>
-                    <p>Status da guia</p>
-                  </div>
-                  <button class="status-chip" data-status-toggle="receita" type="button">Pendente</button>
-                </div>
-                <span class="guide-meta">Aguardando confirmação da administração</span>
-              </article>
-              <article class="guide-card">
-                <div class="guide-card-top">
-                  <div>
-                    <h3>REAP</h3>
-                    <p>Status da guia</p>
-                  </div>
-                  <button class="status-chip is-paid" data-status-toggle="reap" type="button">Pago</button>
-                </div>
-                <span class="guide-meta">Pronto para a próxima fase</span>
-              </article>
-            </div>
-          </section>
-
-          <section class="panel-card tasks-panel">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Checklist</p>
-                <h2>Pendências do processo</h2>
-              </div>
-            </div>
-            <ul class="task-list">
-              <li class="task-item"><span>Documento complementar</span><span class="task-pill pending">Pendente</span></li>
-              <li class="task-item"><span>Assinatura do contrato</span><span class="task-pill pending">Pendente</span></li>
-              <li class="task-item"><span>Envio da guia</span><span class="task-pill done">Concluído</span></li>
-            </ul>
-          </section>
-
-          <section class="panel-card" id="preferencesSection" style="display: none;">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Configurações</p>
-                <h2>Preferências</h2>
-              </div>
-            </div>
-            <div class="settings-list">
-              <div class="setting-item">
-                <label for="themeSelect">Tema visual</label>
-                <select id="themeSelect">
-                  <option value="light">Claro</option>
-                  <option value="dark">Escuro</option>
-                  <option value="blue">Azul</option>
-                </select>
-              </div>
-              <div class="setting-item">
-                <label>Notificações</label>
-                <div class="switch-row">
-                  <span>Receber lembretes de próximos passos</span>
-                  <button class="switch-btn is-active" type="button" aria-label="Alternar notificações">
-                    <span></span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="panel-card" id="accountSection" style="display: none;">
-            <div class="panel-header">
-              <div>
-                <p class="eyebrow">Conta</p>
-                <h2>Minha conta</h2>
-              </div>
-            </div>
-            <div class="profile-banner">
-              <div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div>
-              <div>
-                <h3 id="accountName">Maria Silva</h3>
-                <p id="accountEmail">maria.silva@email.com</p>
-              </div>
-            </div>
-            <div class="account-grid">
-              <div class="account-item">
-                <strong>Nome</strong>
-                <span id="accountNameValue">Maria Silva</span>
-              </div>
-              <div class="account-item">
-                <strong>Email</strong>
-                <span id="accountEmailValue">maria.silva@email.com</span>
-              </div>
-              <div class="account-item">
-                <strong>CPF</strong>
-                <span id="accountCpf">123.456.789-00</span>
-              </div>
-              <div class="account-item">
-                <strong>Telefone</strong>
-                <span id="accountPhone">(11) 99999-0000</span>
-              </div>
-            </div>
-          </section>
-        </section>
-      </main>
+    <div class="logo">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>SAPI</span>
     </div>
-    <script src="js/navegacao.js"></script>
-    <script src="js/tema.js"></script>
-    <script src="js/menu.js"></script>
-    <script src="./js/paginainicial.js"></script>
-  </body>
+
+    <div class="topbar-actions">
+
+      <button class="notification-btn" id="btn_confirm_notification">
+        <i class="fa-regular fa-bell"></i>
+      </button>
+
+      <div class="user-menu">
+        <i class="fa-solid fa-circle-user"></i>
+        <span id="person_name">William</span>
+      </div>
+
+    </div>
+
+  </header>
+
+  <main class="dashboard">
+
+    <!-- Boas-vindas -->
+    <section class="hero-section">
+
+      <span class="hero-badge">
+        <i class="fa-solid fa-house"></i>
+        Portal do Cliente
+      </span>
+
+      <h1>👋 Olá, <span id="person_name_card">WIlliam</span>!</h1>
+
+      <p>
+        Bem-vindo ao Portal do Cliente.
+      </p>
+
+      <p class="hero-description">
+        Gerencie suas guias, acompanhe pagamentos e mantenha seus
+        dados sempre atualizados.
+      </p>
+
+    </section>
+
+    <!-- Perfil -->
+    <section class="card profile-card">
+
+      <div class="card-title">
+        <i class="fa-solid fa-user"></i>
+        <h2>Meu Perfil</h2>
+      </div>
+
+      <div class="profile-content">
+
+        <div class="avatar">
+          <i class="fa-solid fa-circle-user"></i>
+        </div>
+
+        <div class="profile-info">
+
+          <p id="">
+            <strong>Nome:</strong>
+            <span id="person_name_perfil">William Gabriel</span>
+          </p>
+
+          <p>
+            <strong>Email:</strong>
+            <span id="person_email_perfil"></span>
+          </p>
+
+          <p>
+            <strong>Plano:</strong>
+            <span id="person_tipe_perfil">Cliente</span>
+          </p>
+
+          <p>
+            <strong>Status:</strong>
+            <span class="status active">
+              <i class="fa-solid fa-circle"></i>
+              Ativo
+            </span>
+          </p>
+
+          <button class="primary-btn">
+            <i class="fa-solid fa-pen"></i>
+            Editar Perfil
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Guia -->
+    <section class="card payment-card">
+
+      <div class="card-title">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+        <h2>Guia do INSS</h2>
+      </div>
+
+      <div class="payment-info">
+
+        <p>
+          <strong>Competência:</strong>
+          <span id="date_competencia"></span>
+        </p>
+
+        <p>
+          <strong>Status:</strong>
+
+          <span class="status pending">
+            <i class="fa-solid fa-circle"></i>
+            Pendente
+          </span>
+
+        </p>
+
+      </div>
+
+      <button class="pay-btn" id="pay_btn">
+        <i class="fa-solid fa-credit-card"></i>
+        Pagar Guia
+      </button>
+
+      <div class="popup-pagamento" id="popup_payment">
+
+        <div class="popup-content">
+
+          <div class="input-competencia">
+            <label for="">Conpetencia:</label>
+            <input type="text" id="competencia" placeholder="Competência">
+          </div>
+
+          <div class="input-vencimento">
+            <label for="">Data de Vencimento:</label>
+            <input type="date" id="vencimento">
+          </div>
+
+          <div class="input-valor">
+            <label for="">Valor que foi pago:</label>
+            <input type="number" id="valor" placeholder="Valor">
+          </div>
+
+          <div class="input-mensagemPagamento">
+            <label for="">Mensagem:</label>
+            <textarea id="mensagemPagamento" placeholder="Mensagem"></textarea>
+          </div>
+
+          <div class="btn">
+            <button id="confirma">Confirmar Pagamento</button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Resumo -->
+    <section class="card">
+
+      <div class="card-title">
+        <i class="fa-solid fa-chart-simple"></i>
+        <h2>Resumo</h2>
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat-card">
+
+          <i class="fa-solid fa-file-lines"></i>
+
+          <h3>Guias Emitidas</h3>
+
+          <span>12</span>
+
+        </div>
+
+        <div class="stat-card">
+
+          <i class="fa-solid fa-circle-check"></i>
+
+          <h3>Guias Pagas</h3>
+
+          <span>11</span>
+
+        </div>
+
+        <div class="stat-card">
+
+          <i class="fa-solid fa-clock"></i>
+
+          <h3>Pendentes</h3>
+
+          <span>1</span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Ações rápidas -->
+    <section class="card">
+
+      <div class="card-title">
+        <i class="fa-solid fa-bolt"></i>
+        <h2>Ações Rápidas</h2>
+      </div>
+
+      <div class="actions-grid">
+
+        <button>
+          <i class="fa-solid fa-file-lines"></i>
+          Ver Guias
+        </button>
+
+        <button>
+          <i class="fa-solid fa-user"></i>
+          Meu Perfil
+        </button>
+
+        <button>
+          <i class="fa-solid fa-gear"></i>
+          Configurações
+        </button>
+
+        <button>
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          Histórico
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- Último acesso -->
+    <section class="card last-access">
+
+      <i class="fa-solid fa-clock"></i>
+
+      <div>
+
+        <strong>Último acesso</strong>
+
+        <p>
+          22/07/2026 às 23:15
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+  <script type="module" src="js/paginainicial.js"></script>
+  <script>
+    const hoje = new Date();
+
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const ano = hoje.getFullYear();
+
+    const competencia = `${mes}/${ano}`;
+    const date_competencia = `${mes}/${ano}`;
+
+    document.getElementById("competencia").value = competencia;
+    document.getElementById("date_competencia").innerHTML = date_competencia;
+  </script>
+</body>
+
 </html>

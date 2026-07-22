@@ -1,5 +1,3 @@
-import { pegarToken, pegarUsuarioLogado, verificarAdmin } from "./auth.js";
-
 const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
 const API_REMOVE = "https://apiadministrativa.onrender.com/api/remove";
 
@@ -20,14 +18,6 @@ const refreshButton = document.getElementById("refreshUsers");
 const searchInput = document.getElementById("searchInput");
 const sortAccessBtn = document.getElementById("sortAccessBtn");
 const sortDirectionLabel = document.getElementById("sortDirectionLabel");
-const adminWelcomeTitle = document.getElementById("adminWelcomeTitle");
-const adminHeroTitle = document.getElementById("adminHeroTitle");
-const adminUserType = document.getElementById("adminUserType");
-const accountName = document.getElementById("accountName");
-const accountEmail = document.getElementById("accountEmail");
-const accountCpf = document.getElementById("accountCpf");
-const accountType = document.getElementById("accountType");
-const themeSelect = document.getElementById("themeSelect");
 
 let clientesCache = [];
 let sortAscending = false;
@@ -45,11 +35,11 @@ function closeSidebar() {
 }
 
 function formatarStatus(status) {
-  const normalized = String(status || "PENDENTE").toUpperCase();
-  const isPago = normalized === "PAGO" || normalized === "PAID" || normalized === "TRUE" || normalized === "1";
+  const normalized = String(status || "ACTIVE").toUpperCase();
+  const isActive = normalized === "ACTIVE" || normalized === "ATIVO" || normalized === "TRUE" || normalized === "1";
   return {
-    label: isPago ? "Pago" : "Pendente",
-    className: isPago ? "status-pill" : "status-pill inactive"
+    label: isActive ? "Ativo" : "Inativo",
+    className: isActive ? "status-pill" : "status-pill inactive"
   };
 }
 
@@ -74,14 +64,14 @@ function atualizarResumo(clientes) {
   if (totalElement) totalElement.textContent = clientes.length;
   if (ativosElement) {
     const ativos = clientes.filter((cliente) => {
-      const status = String(cliente.statusPagamento || cliente.status || cliente.tipo || "PENDENTE").toUpperCase();
-      return status === "PAGO" || status === "PAID" || status === "TRUE" || status === "1";
+      const status = String(cliente.status || cliente.tipo || "ACTIVE").toUpperCase();
+      return status === "ACTIVE" || status === "ATIVO" || status === "ADMIN" || status === "TRUE" || status === "1";
     }).length;
     ativosElement.textContent = ativos;
   }
 
   const usuariosComLogin = clientes.filter((cliente) => cliente.ultimoAcesso);
-  const maisRecente = [...usuariosComLogin].sort((a, b) => new Date(b.ultimoAcesso) - new Date(a.ultimoAcesso))[0];
+  const maisRecente = usuariosComLogin.sort((a, b) => new Date(b.ultimoAcesso) - new Date(a.ultimoAcesso))[0];
 
   if (lastLoginUser && lastLoginValue) {
     if (maisRecente) {
@@ -95,7 +85,6 @@ function atualizarResumo(clientes) {
 }
 
 function renderizarClientes(clientes) {
-  if (!listaClientes) return;
   listaClientes.innerHTML = "";
 
   if (!Array.isArray(clientes) || clientes.length === 0) {
@@ -127,7 +116,7 @@ function renderizarClientes(clientes) {
 
   clientes.forEach((cliente) => {
     const row = document.createElement("tr");
-    const status = formatarStatus(cliente.statusPagamento || cliente.status || cliente.tipo);
+    const status = formatarStatus(cliente.status || cliente.tipo);
     const ultimoAcesso = formatarUltimoLogin(cliente.ultimoAcesso);
     const acessou = Boolean(cliente.ultimoAcesso) && !Number.isNaN(new Date(cliente.ultimoAcesso).getTime());
     row.className = acessou ? "" : "highlight-never-access";
@@ -164,9 +153,7 @@ function renderizarClientes(clientes) {
 
 async function carregarClientes() {
   try {
-    const token = pegarToken();
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    const resposta = await fetch(API_CLIENTES, { headers });
+    const resposta = await fetch(API_CLIENTES);
     if (!resposta.ok) throw new Error("Falha ao buscar clientes");
 
     const clientes = await resposta.json();
@@ -175,9 +162,7 @@ async function carregarClientes() {
     renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
   } catch (error) {
     console.error("Erro ao carregar clientes", error);
-    if (listaClientes) {
-      listaClientes.innerHTML = '<div class="empty-state">Não foi possível carregar a lista de usuários.</div>';
-    }
+    listaClientes.innerHTML = '<div class="empty-state">Não foi possível carregar a lista de usuários.</div>';
   }
 }
 
@@ -201,29 +186,15 @@ function aplicarFiltroEOrdenacao(clientes) {
 }
 
 function abrirModalUsuario(cliente) {
-  if (usuarioNome) usuarioNome.textContent = cliente.nome || "Sem nome";
-  if (usuarioEmail) usuarioEmail.textContent = cliente.email || "—";
-  if (usuarioCpf) usuarioCpf.textContent = cliente.cpf || "—";
-  if (usuarioEndereco) usuarioEndereco.textContent = cliente.endereco || "—";
-  if (usuarioTipo) usuarioTipo.textContent = cliente.tipo || "CLIENTE";
-  const status = formatarStatus(cliente.statusPagamento || cliente.status || cliente.tipo);
-  if (usuarioStatus) {
-    usuarioStatus.innerHTML = `<span class="${status.className}">${status.label}</span>`;
-    if (cliente.dataPagamento) {
-      const detalhePagamento = document.createElement("div");
-      detalhePagamento.className = "payment-detail";
-      detalhePagamento.textContent = `Pagamento em ${formatarUltimoLogin(cliente.dataPagamento)}`;
-      usuarioStatus.appendChild(detalhePagamento);
-    } else {
-      const detalhePagamento = document.createElement("div");
-      detalhePagamento.className = "payment-detail pending";
-      detalhePagamento.textContent = "Pagamento pendente";
-      usuarioStatus.appendChild(detalhePagamento);
-    }
-  }
-  if (usuarioUltimoLogin) {
-    usuarioUltimoLogin.textContent = formatarUltimoLogin(cliente.ultimoAcesso);
-  }
+  usuarioNome.textContent = cliente.nome || "Sem nome";
+  usuarioEmail.textContent = cliente.email || "—";
+  usuarioCpf.textContent = cliente.cpf || "—";
+  usuarioEndereco.textContent = cliente.endereco || "—";
+  usuarioTipo.textContent = cliente.tipo || "CLIENTE";
+  const status = formatarStatus(cliente.status || cliente.tipo);
+  usuarioStatus.textContent = status.label;
+  usuarioStatus.className = status.className;
+  usuarioUltimoLogin.textContent = formatarUltimoLogin(cliente.ultimoAcesso);
   modalUsuario?.classList.add("active");
   document.body.classList.add("modal-open");
 }
@@ -234,11 +205,7 @@ async function removerCliente(cpf) {
   if (!confirmar) return;
 
   try {
-    const token = pegarToken();
-    const resposta = await fetch(`${API_REMOVE}/${cpf}`, {
-      method: "DELETE",
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+    const resposta = await fetch(`${API_REMOVE}/${cpf}`, { method: "DELETE" });
     if (!resposta.ok) throw new Error("Erro ao remover");
     await carregarClientes();
   } catch (error) {
@@ -247,96 +214,38 @@ async function removerCliente(cpf) {
   }
 }
 
-function popularDadosAdmin() {
-  const usuario = pegarUsuarioLogado() || JSON.parse(localStorage.getItem("usuario") || "null");
-  if (!usuario) return;
-
-  const nome = usuario.nome || "Administrador";
-  const tipo = usuario.tipo || "ADMIN";
-
-  if (adminWelcomeTitle) adminWelcomeTitle.textContent = `Olá, ${nome}`;
-  if (adminHeroTitle) adminHeroTitle.textContent = `Bem-vindo, ${nome}`;
-  if (adminUserType) adminUserType.textContent = tipo;
-  if (accountName) accountName.textContent = nome;
-  if (accountEmail) accountEmail.textContent = usuario.email || "—";
-  if (accountCpf) accountCpf.textContent = usuario.cpf || "—";
-  if (accountType) accountType.textContent = tipo;
-
-  const temaSalvo = localStorage.getItem("appTheme") || "light";
-  document.body.dataset.theme = temaSalvo;
-  if (themeSelect) themeSelect.value = temaSalvo;
+if (fecharUsuario) {
+  fecharUsuario.addEventListener("click", () => {
+    modalUsuario?.classList.remove("active");
+    document.body.classList.remove("modal-open");
+  });
 }
 
-function inicializarAdmin() {
-  if (!verificarAdmin()) {
-    return;
+modalUsuario?.addEventListener("click", (event) => {
+  if (event.target === modalUsuario) {
+    modalUsuario.classList.remove("active");
+    document.body.classList.remove("modal-open");
   }
+});
 
-  popularDadosAdmin();
+mobileToggle?.addEventListener("click", () => toggleSidebar());
+sidebarOverlay?.addEventListener("click", closeSidebar);
+refreshButton?.addEventListener("click", carregarClientes);
+searchInput?.addEventListener("input", () => {
+  renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
+});
+sortAccessBtn?.addEventListener("click", () => {
+  sortAscending = !sortAscending;
+  if (sortDirectionLabel) sortDirectionLabel.textContent = sortAscending ? "↑" : "↓";
+  renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
+});
 
-  if (fecharUsuario) {
-    fecharUsuario.addEventListener("click", () => {
-      modalUsuario?.classList.remove("active");
-      document.body.classList.remove("modal-open");
-    });
-  }
-
-  modalUsuario?.addEventListener("click", (event) => {
-    if (event.target === modalUsuario) {
-      modalUsuario.classList.remove("active");
-      document.body.classList.remove("modal-open");
-    }
+Array.from(document.querySelectorAll(".nav-link")).forEach((link) => {
+  link.addEventListener("click", () => {
+    document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("active"));
+    link.classList.add("active");
+    closeSidebar();
   });
+});
 
-  mobileToggle?.addEventListener("click", () => toggleSidebar());
-  sidebarOverlay?.addEventListener("click", closeSidebar);
-  refreshButton?.addEventListener("click", carregarClientes);
-  searchInput?.addEventListener("input", () => renderizarClientes(aplicarFiltroEOrdenacao(clientesCache)));
-  sortAccessBtn?.addEventListener("click", () => {
-    sortAscending = !sortAscending;
-    if (sortDirectionLabel) sortDirectionLabel.textContent = sortAscending ? "↑" : "↓";
-    renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
-  });
-
-  document.querySelectorAll(".status-toggle").forEach((button) => {
-    button.addEventListener("click", () => {
-      const guide = button.dataset.guide;
-      const isPaid = button.textContent.includes("Pago");
-      button.textContent = isPaid ? "Marcar como pendente" : "Foi pago";
-      button.classList.toggle("is-paid", !isPaid);
-      if (guide) {
-        const note = document.querySelector(`[data-guide="${guide}"]`);
-        if (note && note.tagName === "TEXTAREA") {
-          note.placeholder = isPaid ? "Descreva o que falta para concluir." : "Defina o que falta para concluir a guia.";
-        }
-      }
-    });
-  });
-
-  document.querySelectorAll(".guide-notes").forEach((textarea) => {
-    const savedValue = localStorage.getItem(`guide:${textarea.dataset.guide}`);
-    if (savedValue) textarea.value = savedValue;
-
-    textarea.addEventListener("input", () => {
-      localStorage.setItem(`guide:${textarea.dataset.guide}`, textarea.value);
-    });
-  });
-
-  themeSelect?.addEventListener("change", (event) => {
-    const selectedTheme = event.target.value;
-    localStorage.setItem("appTheme", selectedTheme);
-    document.body.dataset.theme = selectedTheme;
-  });
-
-  Array.from(document.querySelectorAll(".nav-link")).forEach((link) => {
-    link.addEventListener("click", () => {
-      document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("active"));
-      link.classList.add("active");
-      closeSidebar();
-    });
-  });
-
-  carregarClientes();
-}
-
-document.addEventListener("DOMContentLoaded", inicializarAdmin);
+carregarClientes();

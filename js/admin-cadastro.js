@@ -1,5 +1,3 @@
-import { pegarToken, verificarAdmin } from "./auth.js";
-
 const API_REGISTER = "https://apiadministrativa.onrender.com/api/register";
 const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
 
@@ -10,6 +8,27 @@ const clientesList = document.getElementById("clientesList");
 const sidebar = document.getElementById("sidebar");
 const sidebarOverlay = document.getElementById("sidebarOverlay");
 const mobileToggle = document.getElementById("mobileToggle");
+
+function getAuthUser() {
+  try {
+    return JSON.parse(localStorage.getItem("usuario") || "null");
+  } catch (error) {
+    return null;
+  }
+}
+
+function redirectTo(page) {
+  const currentPath = window.location.pathname;
+  const basePath = currentPath.replace(/[^/]+$/, "");
+  window.location.href = `${basePath}${page}`;
+}
+
+function enforceAccess() {
+  const authUser = getAuthUser();
+  if (!authUser || authUser.tipo !== "ADMIN") {
+    redirectTo("paginainicial.html");
+  }
+}
 
 function formatCpf(value) {
   const onlyNumbers = value.replace(/\D/g, "").slice(0, 11);
@@ -43,10 +62,7 @@ function closeSidebar() {
 
 async function loadClients() {
   try {
-    const token = pegarToken();
-    const response = await fetch(API_CLIENTES, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+    const response = await fetch(API_CLIENTES);
     if (!response.ok) throw new Error("Erro ao carregar clientes");
     const clientes = await response.json();
 
@@ -98,13 +114,9 @@ async function handleSubmit(event) {
   }
 
   try {
-    const token = pegarToken();
     const response = await fetch(API_REGISTER, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
@@ -119,22 +131,15 @@ async function handleSubmit(event) {
   }
 }
 
-function inicializarCadastro() {
-  if (!verificarAdmin()) {
-    return;
-  }
-
-  if (cpfInput) {
-    cpfInput.addEventListener("input", (event) => {
-      event.target.value = formatCpf(event.target.value);
-    });
-  }
-
-  form?.addEventListener("submit", handleSubmit);
-  mobileToggle?.addEventListener("click", () => toggleSidebar());
-  sidebarOverlay?.addEventListener("click", closeSidebar);
-
-  loadClients();
+if (cpfInput) {
+  cpfInput.addEventListener("input", (event) => {
+    event.target.value = formatCpf(event.target.value);
+  });
 }
 
-document.addEventListener("DOMContentLoaded", inicializarCadastro);
+form?.addEventListener("submit", handleSubmit);
+mobileToggle?.addEventListener("click", () => toggleSidebar());
+sidebarOverlay?.addEventListener("click", closeSidebar);
+
+enforceAccess();
+loadClients();
