@@ -97,11 +97,6 @@
             </span>
           </p>
 
-          <button class="primary-btn">
-            <i class="fa-solid fa-pen"></i>
-            Editar Perfil
-          </button>
-
         </div>
 
       </div>
@@ -144,29 +139,41 @@
 
         <div class="popup-content">
 
-          <div class="input-competencia">
-            <label for="">Conpetencia:</label>
-            <input type="text" id="competencia" placeholder="Competência">
+          <button class="btn-fechar" id="fecharPagamento">
+            Voltar
+          </button>
+
+          <h2>Confirmar Pagamento</h2>
+
+
+          <div class="campo">
+            <label for="competencia">Competência</label>
+            <input type="text" id="competencia" placeholder="Ex: 07/2026">
           </div>
 
-          <div class="input-vencimento">
-            <label for="">Data de Vencimento:</label>
+
+          <div class="campo">
+            <label for="vencimento">Data de Vencimento</label>
             <input type="date" id="vencimento">
           </div>
 
-          <div class="input-valor">
-            <label for="">Valor que foi pago:</label>
-            <input type="number" id="valor" placeholder="Valor">
+
+          <div class="campo">
+            <label for="valor">Valor pago</label>
+            <input type="number" id="valor" placeholder="Digite o valor">
           </div>
 
-          <div class="input-mensagemPagamento">
-            <label for="">Mensagem:</label>
-            <textarea id="mensagemPagamento" placeholder="Mensagem"></textarea>
+
+          <div class="campo">
+            <label for="mensagemPagamento">Observação</label>
+            <textarea id="mensagemPagamento" placeholder="Digite uma observação">
+            </textarea>
           </div>
 
-          <div class="btn">
-            <button id="confirma">Confirmar Pagamento</button>
-          </div>
+
+          <button id="confirma">
+            Confirmar Pagamento
+          </button>
 
         </div>
 
@@ -175,49 +182,224 @@
     </section>
 
     <!-- Resumo -->
-    <section class="card">
+<!-- Resumo -->
+<section class="card resumo-card">
 
-      <div class="card-title">
-        <i class="fa-solid fa-chart-simple"></i>
-        <h2>Resumo</h2>
-      </div>
+  <div class="card-title">
 
-      <div class="stats-grid">
+    <i class="fa-solid fa-chart-pie"></i>
 
-        <div class="stat-card">
+    <div>
+      <h2>Resumo das Minhas Guias</h2>
+      <p>
+        Acompanhe suas guias do INSS
+      </p>
+    </div>
 
-          <i class="fa-solid fa-file-lines"></i>
+  </div>
 
-          <h3>Guias Emitidas</h3>
 
-          <span>12</span>
+  <div class="stats-grid">
 
-        </div>
 
-        <div class="stat-card">
+    <!-- Total de guias -->
 
-          <i class="fa-solid fa-circle-check"></i>
+    <article class="stat-card total">
 
-          <h3>Guias Pagas</h3>
+      <div class="stat-icon">
 
-          <span>11</span>
-
-        </div>
-
-        <div class="stat-card">
-
-          <i class="fa-solid fa-clock"></i>
-
-          <h3>Pendentes</h3>
-
-          <span>1</span>
-
-        </div>
+        <i class="fa-solid fa-file-invoice"></i>
 
       </div>
 
-    </section>
 
+      <div class="stat-content">
+
+        <h3>
+          Total de Guias
+        </h3>
+
+
+        <strong id="guias_emitidas_show">
+          0
+        </strong>
+
+
+        <span>
+          Guias cadastradas
+        </span>
+
+
+      </div>
+
+
+    </article>
+
+
+
+
+
+    <!-- Pagas -->
+
+    <article class="stat-card success">
+
+
+      <div class="stat-icon">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+      </div>
+
+
+      <div class="stat-content">
+
+        <h3>
+          Guias Pagas
+        </h3>
+
+
+        <strong id="guias_pagas_show">
+          0
+        </strong>
+
+
+        <span>
+          Pagamentos realizados
+        </span>
+
+
+      </div>
+
+
+
+      <button 
+        class="btn-ver-mais"
+        id="verGuiasPagas"
+        type="button">
+
+        <i class="fa-solid fa-eye"></i>
+
+        Ver histórico
+
+      </button>
+
+
+    </article>
+
+
+
+
+
+    <!-- Pendentes -->
+
+    <article class="stat-card warning">
+
+
+      <div class="stat-icon">
+
+        <i class="fa-solid fa-clock"></i>
+
+      </div>
+
+
+      <div class="stat-content">
+
+        <h3>
+          Pendentes
+        </h3>
+
+
+        <strong id="guias_pendentes_show">
+          0
+        </strong>
+
+
+        <span>
+          Aguardando pagamento
+        </span>
+
+
+      </div>
+
+
+    </article>
+
+
+
+  </div>
+
+
+</section>
+
+
+
+    <!-- Modal histórico de pagamentos -->
+
+    <div class="popup-pagamento" id="popupGuiasPagas">
+
+
+      <div class="popup-content">
+
+
+        <button class="btn-fechar" id="fecharGuiasPagas" type="button">
+
+          Voltar
+
+        </button>
+
+
+
+        <div class="card-title">
+
+          <i class="fa-solid fa-clock-rotate-left"></i>
+
+          <h2>
+            Histórico de Pagamentos
+          </h2>
+
+        </div>
+
+
+
+        <div id="listaGuiasPagas" class="lista-guias">
+
+
+          <!-- Exemplo gerado pelo JavaScript -->
+
+          <!--
+            <div class="guia-item">
+
+                <h3>
+                    Competência: 07/2026
+                </h3>
+
+
+                <p>
+                    Valor: R$ 150,00
+                </p>
+
+
+                <p>
+                    Pago em:
+                    24/07/2026 às 14:30
+                </p>
+
+
+                <span>
+                    Pago ✅
+                </span>
+
+            </div>
+            -->
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
     <!-- Ações rápidas -->
     <section class="card">
 
@@ -262,7 +444,7 @@
         <strong>Último acesso</strong>
 
         <p>
-          22/07/2026 às 23:15
+          <span id="userDateLastTime">22/07/2026 às 23:15</span>
         </p>
 
       </div>

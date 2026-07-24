@@ -628,3 +628,953 @@ h1 {
     align-items: flex-start;
   }
 }
+
+.resumo-card {
+
+    padding:35px;
+
+}
+
+
+
+.card-title p {
+
+    margin:5px 0 0;
+
+    color:#64748b;
+
+    font-size:18px;
+
+}
+
+
+
+.stats-grid {
+
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(3,1fr);
+
+    gap:25px;
+
+    margin-top:30px;
+
+
+}
+
+
+
+.stat-card {
+
+
+    background:white;
+
+    border-radius:25px;
+
+    padding:25px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+
+    border:2px solid #e5e7eb;
+
+}
+
+
+
+.stat-icon {
+
+
+    width:65px;
+
+    height:65px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:30px;
+
+    background:#eff6ff;
+
+    color:#2563eb;
+
+
+}
+
+
+
+.stat-content h3 {
+
+
+    font-size:22px;
+
+    margin:0;
+
+}
+
+
+
+.stat-content strong {
+
+
+    display:block;
+
+    font-size:45px;
+
+    margin:10px 0;
+
+
+}
+
+
+
+.stat-content span {
+
+
+    font-size:18px;
+
+    color:#64748b;
+
+
+}
+
+
+
+/* Pagas */
+
+.stat-card.success {
+
+
+    border-color:#bbf7d0;
+
+}
+
+
+
+.stat-card.success .stat-icon {
+
+
+    background:#dcfce7;
+
+    color:#16a34a;
+
+
+}
+
+
+
+/* Pendentes */
+
+.stat-card.warning {
+
+
+    border-color:#fde68a;
+
+
+}
+
+
+
+.stat-card.warning .stat-icon {
+
+
+    background:#fef3c7;
+
+    color:#d97706;
+
+
+}
+
+
+
+.btn-ver-mais {
+
+
+    margin-top:15px;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:15px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+}
+
+
+
+.btn-ver-mais i {
+
+
+    margin-right:8px;
+
+}
+
+.btn-ver-mais {
+
+    width:100%;
+
+    margin-top:20px;
+
+    padding:18px 25px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:20px;
+
+    font-weight:600;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:12px;
+
+    cursor:pointer;
+
+    box-shadow:
+    0 6px 15px rgba(37,99,235,0.25);
+
+    transition:0.3s;
+
+}
+
+
+
+.btn-ver-mais:hover {
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+
+
+.btn-ver-mais:active {
+
+    transform:scale(0.97);
+
+}
+
+
+
+.btn-ver-mais i {
+
+    font-size:22px;
+
+}
+/* ===========================
+   RESUMO DO CLIENTE
+=========================== */
+
+.resumo-card {
+
+    padding: 35px;
+
+}
+
+
+.card-title p {
+
+    margin-top: 6px;
+
+    color: var(--muted);
+
+    font-size: 18px;
+
+}
+
+
+
+/* Cards de resumo */
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 25px;
+
+    margin-top: 30px;
+
+}
+
+
+
+.stat-card {
+
+    background: var(--surface);
+
+    border-radius: 24px;
+
+    padding: 28px;
+
+    border: 2px solid var(--border);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+
+    box-shadow: 
+    0 10px 25px rgba(15,23,42,0.06);
+
+    transition: .25s ease;
+
+}
+
+
+
+.stat-card:hover {
+
+    transform: translateY(-4px);
+
+    box-shadow:
+    0 18px 35px rgba(15,23,42,0.12);
+
+}
+
+
+
+/* Ícones */
+
+.stat-icon {
+
+    width: 70px;
+
+    height: 70px;
+
+    border-radius: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 32px;
+
+    background:#eef4ff;
+
+    color: var(--primary);
+
+}
+
+
+
+/* Texto */
+
+.stat-content h3 {
+
+    font-size: 22px;
+
+    margin: 0;
+
+}
+
+
+
+.stat-content strong {
+
+    display:block;
+
+    font-size:48px;
+
+    line-height:1;
+
+    margin:12px 0;
+
+    color:var(--text);
+
+}
+
+
+
+.stat-content span {
+
+    color:var(--muted);
+
+    font-size:18px;
+
+}
+
+
+
+/* Guia paga */
+
+.stat-card.success {
+
+    border-color:#86efac;
+
+}
+
+
+
+.stat-card.success .stat-icon {
+
+    background:#dcfce7;
+
+    color:#16a34a;
+
+}
+
+
+
+/* Guia pendente */
+
+.stat-card.warning {
+
+    border-color:#fcd34d;
+
+}
+
+
+
+.stat-card.warning .stat-icon {
+
+    background:#fef3c7;
+
+    color:#d97706;
+
+}
+
+
+
+/* Botão histórico */
+
+.btn-ver-mais {
+
+    width:100%;
+
+    margin-top:20px;
+
+    padding:18px 25px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:
+    linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-2)
+    );
+
+    color:white;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:12px;
+
+    cursor:pointer;
+
+    box-shadow:
+    0 10px 25px rgba(15,76,129,.25);
+
+    transition:.25s ease;
+
+}
+
+
+
+.btn-ver-mais:hover {
+
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 15px 35px rgba(15,76,129,.35);
+
+}
+
+
+
+.btn-ver-mais:active {
+
+    transform:scale(.97);
+
+}
+
+
+
+.btn-ver-mais i {
+
+    font-size:22px;
+
+}
+
+
+
+/* Responsivo */
+
+@media(max-width:900px) {
+
+
+    .stats-grid {
+
+        grid-template-columns:1fr;
+
+    }
+
+
+}
+
+
+@media(max-width:600px) {
+
+
+    .resumo-card {
+
+        padding:20px;
+
+    }
+
+
+    .stat-card {
+
+        padding:22px;
+
+    }
+
+
+    .stat-content strong {
+
+        font-size:40px;
+
+    }
+
+
+}
+/* Fundo do popup */
+.popup-pagamento {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: rgba(0,0,0,0.45);
+
+    display: none;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 9999;
+
+}
+
+
+/* Quando abrir */
+.popup-pagamento.active {
+
+    display: flex;
+
+}
+
+
+
+/* Caixa principal em tela cheia */
+.popup-content {
+
+
+    width: 100%;
+
+    height: 100%;
+
+    background: var(--surface);
+
+
+    padding: 40px;
+
+
+    overflow-y: auto;
+
+
+    box-sizing: border-box;
+
+
+}
+
+
+
+/* Título */
+
+.popup-content h2 {
+
+    font-size: 36px;
+
+    color: var(--azul-marinho);
+
+    margin-bottom: 35px;
+
+}
+
+
+
+/* Botão voltar */
+
+.btn-fechar {
+
+    width: 220px;
+
+    height: 60px;
+
+
+    background: var(--cinza-executivo);
+
+    color: white;
+
+
+    border: none;
+
+    border-radius: 12px;
+
+
+    font-size: 24px;
+
+    font-weight: bold;
+
+
+    cursor: pointer;
+
+
+    margin-bottom: 30px;
+
+}
+
+
+
+.btn-fechar:hover {
+
+    opacity: 0.85;
+
+}
+
+
+
+/* Lista das guias */
+
+.lista-guias {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 25px;
+
+}
+
+
+
+/* Cada pagamento */
+
+.guia-item {
+
+
+    background: #ffffff;
+
+
+    border: 2px solid var(--border);
+
+
+    border-radius: 18px;
+
+
+    padding: 30px;
+
+
+
+    box-shadow: var(--shadow);
+
+
+}
+
+
+
+.guia-item h3 {
+
+
+    font-size: 30px;
+
+
+    color: var(--azul-marinho);
+
+
+    margin-bottom: 20px;
+
+
+}
+
+
+
+.guia-item p {
+
+
+    font-size: 24px;
+
+
+    color: var(--text);
+
+
+    margin: 12px 0;
+
+
+}
+
+
+
+.guia-item span {
+
+
+    display: inline-block;
+
+
+    margin-top: 15px;
+
+
+    padding: 12px 25px;
+
+
+    border-radius: 20px;
+
+
+    background: #d1fae5;
+
+
+    color: #065f46;
+
+
+    font-size: 22px;
+
+
+    font-weight: bold;
+
+
+}
+/* Fundo do modal */
+.modal-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+
+    height: 100vh;
+
+    background: rgba(0,0,0,0.45);
+
+    display: none;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 9999;
+
+}
+
+
+/* Quando abrir */
+.modal-overlay.active {
+
+    display: flex;
+
+}
+
+
+
+/* Modal ocupando a tela inteira */
+.guias-fullscreen {
+
+    width: 100vw;
+
+    height: 100vh;
+
+    max-width: none;
+
+    max-height: none;
+
+    border-radius: 0;
+
+    padding: 40px;
+
+    background: var(--surface);
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+
+}
+
+
+
+/* Botão fechar */
+.modal-close {
+
+    position: absolute;
+
+    top: 25px;
+
+    right: 30px;
+
+
+    width: 55px;
+
+    height: 55px;
+
+
+    border-radius: 50%;
+
+
+    border: none;
+
+
+    background: var(--azul-marinho);
+
+
+    color: white;
+
+
+    font-size: 28px;
+
+
+    cursor: pointer;
+
+}
+
+
+
+.modal-close:hover {
+
+    opacity: .8;
+
+}
+
+
+
+/* Título */
+
+.eyebrow {
+
+    color: var(--cinza-executivo);
+
+    font-size: 18px;
+
+    margin-bottom: 10px;
+
+}
+
+
+
+#tituloGuiasUsuario {
+
+    font-size: 36px;
+
+    color: var(--azul-marinho);
+
+    margin-bottom: 35px;
+
+}
+
+
+
+/* Área da tabela */
+
+.table-wrapper {
+
+    width: 100%;
+
+    height: calc(100vh - 180px);
+
+    overflow-y: auto;
+
+}
+
+
+
+/* Tabela maior para idosos */
+
+.users-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 24px;
+
+}
+
+
+
+.users-table th {
+
+    background: var(--azul-marinho);
+
+    color: white;
+
+    padding: 20px;
+
+    text-align: left;
+
+}
+
+
+
+.users-table td {
+
+    padding: 20px;
+
+    border-bottom: 1px solid var(--border);
+
+    color: var(--text);
+
+}
+
+
+
+.users-table tr:hover {
+
+    background: var(--bg);
+
+}

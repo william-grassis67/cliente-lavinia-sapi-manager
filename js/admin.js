@@ -1,7 +1,9 @@
-const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
-const API_REMOVE = "https://apiadministrativa.onrender.com/api/remove";
+import { ModalGuiasAdmin } from "./ModalGuiasAdmin.js";
 
-const listaClientes = document.getElementById("clientes");
+const API_CLIENTES = "http://localhost:8080/api/clientes";
+const API_REMOVE = "http://localhost:8080/api/remove";
+
+const listaClientes = document.getElementById("clientes"); //VAI RECEBER OS CLIENTES REGISTRADOS
 const modalUsuario = document.getElementById("modalUsuario");
 const fecharUsuario = document.getElementById("fecharUsuario");
 const usuarioNome = document.getElementById("usuarioNome");
@@ -18,8 +20,22 @@ const refreshButton = document.getElementById("refreshUsers");
 const searchInput = document.getElementById("searchInput");
 const sortAccessBtn = document.getElementById("sortAccessBtn");
 const sortDirectionLabel = document.getElementById("sortDirectionLabel");
+const modalGuiasAdmin =
+  document.getElementById("modalGuiasAdmin");
 
-let clientesCache = [];
+
+const tabelaGuiasAdmin =
+  document.getElementById("tabelaGuiasAdmin");
+
+
+const fecharGuiasAdmin =
+  document.getElementById("fecharGuiasAdmin");
+
+
+const tituloGuiasUsuario =
+  document.getElementById("tituloGuiasUsuario");
+
+let clientesCache = [];//GUARDA OS CLIENTES EM UM Array
 let sortAscending = false;
 
 function toggleSidebar(force) {
@@ -85,70 +101,340 @@ function atualizarResumo(clientes) {
 }
 
 function renderizarClientes(clientes) {
+
   listaClientes.innerHTML = "";
 
   if (!Array.isArray(clientes) || clientes.length === 0) {
-    listaClientes.innerHTML = '<div class="empty-state">Nenhum usuário encontrado.</div>';
+
+    listaClientes.innerHTML =
+      '<div class="empty-state">Nenhum usuário encontrado.</div>';
+
     return;
+
   }
 
   const table = document.createElement("div");
   table.className = "table-wrapper";
+
   table.innerHTML = `
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>Usuário</th>
-          <th>Email</th>
-          <th>CPF</th>
-          <th>Tipo</th>
-          <th>Último acesso</th>
-          <th>Endereço</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  `;
+        <table class="users-table">
+
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Email</th>
+                    <th>CPF</th>
+                    <th>Tipo</th>
+                    <th>Último acesso</th>
+                    <th>Endereço</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    `;
 
   const body = table.querySelector("tbody");
 
   clientes.forEach((cliente) => {
+
     const row = document.createElement("tr");
+
     const status = formatarStatus(cliente.status || cliente.tipo);
     const ultimoAcesso = formatarUltimoLogin(cliente.ultimoAcesso);
-    const acessou = Boolean(cliente.ultimoAcesso) && !Number.isNaN(new Date(cliente.ultimoAcesso).getTime());
-    row.className = acessou ? "" : "highlight-never-access";
-    row.innerHTML = `
-      <td data-label="Usuário">
-        <div class="user-name">${cliente.nome || "Sem nome"}</div>
-        <div class="user-email">${cliente.email || "Sem email"}</div>
-      </td>
-      <td data-label="Email">${cliente.email || "—"}</td>
-      <td data-label="CPF">${cliente.cpf || "—"}</td>
-      <td data-label="Tipo">${cliente.tipo || "CLIENTE"}</td>
-      <td data-label="Último acesso" title="${ultimoAcesso}">
-        <span class="last-login ${acessou ? "" : "never-accessed"}">
-          <i class="fa-solid fa-clock"></i> ${ultimoAcesso}
-        </span>
-      </td>
-      <td data-label="Endereço">${cliente.endereco || "—"}</td>
-      <td data-label="Status"><span class="${status.className}">${status.label}</span></td>
-      <td data-label="Ações">
-        <div class="actions">
-          <button class="icon-btn view-btn" title="Visualizar"><i class="fa-solid fa-eye"></i></button>
-          <button class="delete-btn" title="Remover"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </td>
-    `;
 
-    row.querySelector(".view-btn").addEventListener("click", () => abrirModalUsuario(cliente));
-    row.querySelector(".delete-btn").addEventListener("click", () => removerCliente(cliente.cpf));
+    const acessou =
+      Boolean(cliente.ultimoAcesso) &&
+      !Number.isNaN(new Date(cliente.ultimoAcesso).getTime());
+
+    row.className = acessou ? "" : "highlight-never-access";
+
+    row.innerHTML = `
+            <td data-label="Usuário">
+                <div class="user-name">${cliente.nome || "Sem nome"}</div>
+                <div class="user-email">${cliente.email || "Sem email"}</div>
+            </td>
+
+            <td data-label="Email">
+                ${cliente.email || "—"}
+            </td>
+
+            <td data-label="CPF">
+                ${cliente.cpf || "—"}
+            </td>
+
+            <td data-label="Tipo">
+                ${cliente.tipo || "CLIENTE"}
+            </td>
+
+            <td data-label="Último acesso" title="${ultimoAcesso}">
+                <span class="last-login ${acessou ? "" : "never-accessed"}">
+                    <i class="fa-solid fa-clock"></i>
+                    ${ultimoAcesso}
+                </span>
+            </td>
+
+            <td data-label="Endereço">
+                ${cliente.endereco || "—"}
+            </td>
+
+            <td data-label="Status">
+                <span class="${status.className}">
+                    ${status.label}
+                </span>
+            </td>
+
+            <td data-label="Ações">
+
+                <div class="actions">
+
+                    <button class="icon-btn view-btn" title="Visualizar">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+
+                    <button class="delete-btn" title="Remover">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+
+                    <button class="send-message-btn" title="Enviar mensagem">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+
+                </div>
+
+            </td>
+        `;
+
+    // Visualizar
+    row.querySelector(".view-btn").addEventListener("click", () => {
+      abrirModalUsuario(cliente);
+    });
+
+    // Remover
+    row.querySelector(".delete-btn").addEventListener("click", () => {
+      removerCliente(cliente.cpf);
+    });
+
+    // WhatsApp
+    row.querySelector(".send-message-btn").addEventListener("click", () => {
+
+      const popup = document.getElementById("send_menssage");
+      const btnEnviar = document.getElementById("btn_send");
+      const btnFechar = document.getElementById("btn_close_send");
+      const campoMensagem = document.getElementById("mensagem");
+
+      popup.classList.add("active");
+
+      // Fechar popup
+      if (btnFechar) {
+        btnFechar.onclick = () => {
+          popup.classList.remove("active");
+          campoMensagem.value = "";
+        };
+      }
+
+      // Enviar
+      btnEnviar.onclick = () => {
+
+        const mensagem = campoMensagem.value.trim();
+
+        if (mensagem === "") {
+          alert("Digite uma mensagem.");
+          return;
+        }
+
+        let numero = String(cliente.numeroTelefone || "");
+
+        numero = numero.replace(/\D/g, "");
+
+        if (numero.length === 0) {
+          alert("Este cliente não possui telefone.");
+          return;
+        }
+
+        if (!numero.startsWith("55")) {
+          numero = "55" + numero;
+        }
+
+        const url =
+          `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
+        window.open(url, "_blank");
+
+        popup.classList.remove("active");
+        campoMensagem.value = "";
+
+      };
+
+    });
+
     body.appendChild(row);
+
   });
 
   listaClientes.appendChild(table);
+
+}
+function abrirModalUsuario(cliente) {
+
+  document.getElementById("usuarioNome").textContent = cliente.nome || "—";
+  document.getElementById("usuarioEmail").textContent = cliente.email || "—";
+  document.getElementById("usuarioCpf").textContent = cliente.cpf || "—";
+  document.getElementById("usuarioTipo").textContent = cliente.tipo || "CLIENTE";
+  document.getElementById("usuarioEndereco").textContent = cliente.endereco || "—";
+
+  const status = formatarStatus(cliente.status || cliente.tipo);
+
+  document.getElementById("usuarioStatus").textContent = status.label;
+  document.getElementById("usuarioUltimoLogin").textContent =
+    formatarUltimoLogin(cliente.ultimoAcesso);
+
+  const modal = document.getElementById("modalUsuario");
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+
+  const btnVerify = document.getElementById("btn_verify");
+
+  // Remove eventos antigos
+  btnVerify.replaceWith(btnVerify.cloneNode(true));
+
+  const novoBotao = document.getElementById("btn_verify");
+
+  novoBotao.addEventListener("click", async () => {
+
+
+    try {
+
+
+      const response = await fetch(
+
+        `http://localhost:8080/api/payments/guias/${cliente.id}`
+
+      );
+
+
+
+      if (!response.ok) {
+
+        throw new Error();
+
+      }
+
+
+
+      const guias =
+        await response.json();
+
+
+
+      tituloGuiasUsuario.textContent =
+        `Guias de ${cliente.nome}`;
+
+
+
+      tabelaGuiasAdmin.innerHTML = "";
+
+
+
+      guias.forEach(guia => {
+
+
+        tabelaGuiasAdmin.innerHTML += `
+
+
+            <tr>
+
+
+                <td>
+
+                ${guia.competencia ?? "-"}
+
+                </td>
+
+
+
+                <td>
+
+                R$ ${Number(
+          guia.valor || 0
+        ).toFixed(2)
+          }
+
+                </td>
+
+
+
+                <td>
+
+                ${guia.vencimento
+            ?
+            new Date(
+              guia.vencimento
+            )
+              .toLocaleDateString(
+                "pt-BR"
+              )
+            :
+            "-"
+          }
+
+                </td>
+
+
+
+                <td>
+
+
+                <span class="status-pill">
+
+                    Pago
+
+                </span>
+
+
+                </td>
+
+
+            </tr>
+
+
+            `;
+
+
+      });
+
+
+
+      modalGuiasAdmin.classList.add(
+        "active"
+      );
+
+
+      document.body.classList.add(
+        "modal-open"
+      );
+
+
+
+    } catch (error) {
+
+
+      console.error(error);
+
+      alert(
+        "Erro ao carregar guias"
+      );
+
+
+    }
+
+
+  });
+
 }
 
 async function carregarClientes() {
@@ -183,20 +469,6 @@ function aplicarFiltroEOrdenacao(clientes) {
     const bVal = Number.isNaN(dataB) ? -8640000000000000 : dataB;
     return sortAscending ? aVal - bVal : bVal - aVal;
   });
-}
-
-function abrirModalUsuario(cliente) {
-  usuarioNome.textContent = cliente.nome || "Sem nome";
-  usuarioEmail.textContent = cliente.email || "—";
-  usuarioCpf.textContent = cliente.cpf || "—";
-  usuarioEndereco.textContent = cliente.endereco || "—";
-  usuarioTipo.textContent = cliente.tipo || "CLIENTE";
-  const status = formatarStatus(cliente.status || cliente.tipo);
-  usuarioStatus.textContent = status.label;
-  usuarioStatus.className = status.className;
-  usuarioUltimoLogin.textContent = formatarUltimoLogin(cliente.ultimoAcesso);
-  modalUsuario?.classList.add("active");
-  document.body.classList.add("modal-open");
 }
 
 async function removerCliente(cpf) {
@@ -249,3 +521,5 @@ Array.from(document.querySelectorAll(".nav-link")).forEach((link) => {
 });
 
 carregarClientes();
+ModalGuiasAdmin();
+//abrirModalUsuario();
