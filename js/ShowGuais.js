@@ -53,7 +53,7 @@ async function ShowGuias(usuarioId) {
 
         const response = await fetch(
 
-            `http://localhost:8080/api/payments/guias/${usuarioId}`,
+            `https://apiadministrativa.onrender.com/api/payments/guias/${usuarioId}`,
 
             {
 
