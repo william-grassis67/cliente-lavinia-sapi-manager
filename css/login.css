@@ -737,3 +737,428 @@ h2 {
         padding: 36px 24px;
     }
 }
+/* =========================
+   RESET
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+
+:root {
+
+    --primary: #0b1f3a;
+    --secondary: #163d6b;
+    --accent: #2563eb;
+
+    --background: #eef2f7;
+    --card: #ffffff;
+
+    --text: #111827;
+    --muted: #6b7280;
+
+    --border: #dbe2ea;
+
+}
+
+
+/* =========================
+   BODY LOGIN
+========================= */
+
+body.page-login {
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:
+    linear-gradient(
+        135deg,
+        #e9eef6,
+        #f8fafc
+    );
+
+}
+
+
+/* =========================
+   CONTAINER
+========================= */
+
+.page-login .container {
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:center;
+
+    padding:20px;
+
+}
+
+
+/* =========================
+   CARD LOGIN
+========================= */
+
+.page-login .form {
+
+    width:420px;
+
+    background:var(--card);
+
+    border-radius:18px;
+
+    padding:42px;
+
+    border:1px solid var(--border);
+
+    box-shadow:
+    0 20px 50px rgba(15,23,42,.12);
+
+    animation:entrada .5s ease;
+
+}
+
+
+@keyframes entrada {
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(25px);
+
+    }
+
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+
+/* =========================
+   TITULO
+========================= */
+
+
+.page-login .h2 {
+
+    text-align:center;
+
+    margin-bottom:35px;
+
+}
+
+
+.page-login h2 {
+
+    color:var(--primary);
+
+    font-size:30px;
+
+    font-weight:700;
+
+    letter-spacing:-.5px;
+
+}
+
+
+.page-login h2::after {
+
+    content:"";
+
+    display:block;
+
+    width:45px;
+
+    height:4px;
+
+    background:var(--accent);
+
+    margin:12px auto;
+
+    border-radius:10px;
+
+}
+
+
+
+
+/* =========================
+ INPUTS
+========================= */
+
+
+.input-cpf,
+.input-senha {
+
+    margin-bottom:22px;
+
+}
+
+
+label {
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#374151;
+
+}
+
+
+
+input {
+
+    width:100%;
+
+    height:52px;
+
+    padding:0 16px;
+
+
+    border-radius:12px;
+
+
+    border:1px solid var(--border);
+
+
+    background:#f9fafb;
+
+
+    font-size:15px;
+
+
+    color:var(--text);
+
+
+    outline:none;
+
+
+    transition:.25s;
+
+}
+
+
+
+input::placeholder {
+
+    color:#9ca3af;
+
+}
+
+
+
+input:hover {
+
+    border-color:#b8c4d4;
+
+}
+
+
+
+input:focus {
+
+    background:white;
+
+    border-color:var(--accent);
+
+    box-shadow:
+
+    0 0 0 4px rgba(37,99,235,.12);
+
+}
+
+
+
+
+/* =========================
+ BOTÃO
+========================= */
+
+
+.btn {
+
+    margin-top:30px;
+
+}
+
+
+
+.btn button {
+
+    width:100%;
+
+    height:52px;
+
+
+    border:none;
+
+
+    border-radius:12px;
+
+
+    background:
+
+    linear-gradient(
+        135deg,
+        var(--primary),
+        var(--secondary)
+    );
+
+
+    color:white;
+
+
+    font-size:16px;
+
+
+    font-weight:600;
+
+
+    cursor:pointer;
+
+
+    transition:.25s;
+
+
+}
+
+
+
+.btn button:hover {
+
+
+    transform:translateY(-2px);
+
+
+    box-shadow:
+
+    0 12px 25px rgba(11,31,58,.25);
+
+
+}
+
+
+
+.btn button:active {
+
+    transform:scale(.98);
+
+}
+
+
+
+/* =========================
+ ALERTAS
+========================= */
+
+
+.alerts {
+
+    position:fixed;
+
+    top:25px;
+
+    right:25px;
+
+}
+
+
+
+.alert-erro,
+.alert-true,
+.alert-servidor {
+
+
+    padding:15px 20px;
+
+    border-radius:12px;
+
+    background:white;
+
+    box-shadow:
+
+    0 15px 35px rgba(0,0,0,.12);
+
+
+}
+
+
+.alert-erro {
+
+    border-left:5px solid #dc2626;
+
+}
+
+
+.alert-true {
+
+    border-left:5px solid #16a34a;
+
+}
+
+
+.alert-servidor {
+
+    border-left:5px solid #f59e0b;
+
+}
+
+
+
+
+/* =========================
+ MOBILE
+========================= */
+
+
+@media(max-width:480px){
+
+
+.page-login .form {
+
+
+    padding:30px 25px;
+
+
+    width:100%;
+
+
+}
+
+
+.page-login h2 {
+
+
+    font-size:26px;
+
+
+}
+
+
+
+}
