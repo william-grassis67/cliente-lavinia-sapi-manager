@@ -1,47 +1,66 @@
 const API_LOGIN_URL = "https://apiadministrativa.onrender.com/api/login";
 
+
 function redirectTo(pageName) {
+
     const currentPath = window.location.pathname;
     const basePath = currentPath.replace(/[^/]+$/, "");
+
     window.location.href = `${basePath}${pageName}`;
 }
 
 
+
 function formatCpf(value) {
-    const onlyNumbers = value.replace(/\D/g, "").slice(0, 11);
+
+    const onlyNumbers = value
+        .replace(/\D/g, "")
+        .slice(0, 11);
+
 
     if (onlyNumbers.length <= 3) {
         return onlyNumbers;
     }
 
+
     if (onlyNumbers.length <= 6) {
         return `${onlyNumbers.slice(0, 3)}.${onlyNumbers.slice(3)}`;
     }
+
 
     if (onlyNumbers.length <= 9) {
         return `${onlyNumbers.slice(0, 3)}.${onlyNumbers.slice(3, 6)}.${onlyNumbers.slice(6)}`;
     }
 
+
     return `${onlyNumbers.slice(0, 3)}.${onlyNumbers.slice(3, 6)}.${onlyNumbers.slice(6, 9)}-${onlyNumbers.slice(9)}`;
+
 }
 
 
 
-function login() {
 
-    const alertsContainer = document.querySelector(".alerts");
-    const erroservidor = document.getElementById("erroservidor");
-    const errologin = document.getElementById("errologin");
-    const truelogin = document.getElementById("corretologin");
+async function login() {
+
 
     const inputCpf = document.getElementById("cpf");
     const inputSenha = document.getElementById("password");
     const btnEnter = document.getElementById("btn_enter");
 
 
-    if (!btnEnter || !inputCpf || !inputSenha) {
+    const alertsContainer = document.querySelector(".alerts");
+
+    const erroservidor = document.getElementById("erroservidor");
+    const errologin = document.getElementById("errologin");
+    const truelogin = document.getElementById("corretologin");
+
+
+
+    if (!inputCpf || !inputSenha || !btnEnter) {
+        console.error("Elementos do login não encontrados");
         return;
     }
+
 
 
     function hideAlerts(){
@@ -50,25 +69,34 @@ function login() {
             alertsContainer.style.display = "none";
         }
 
-        [erroservidor, errologin, truelogin].forEach(alert=>{
+
+        [erroservidor, errologin, truelogin]
+        .forEach(alert => {
+
             if(alert){
-                alert.style.display="none";
+                alert.style.display = "none";
             }
+
         });
+
     }
+
 
 
     function showAlert(alert){
 
         hideAlerts();
 
+
         if(alertsContainer){
-            alertsContainer.style.display="flex";
+            alertsContainer.style.display = "flex";
         }
 
+
         if(alert){
-            alert.style.display="block";
+            alert.style.display = "block";
         }
+
     }
 
 
@@ -76,7 +104,8 @@ function login() {
     function setLoading(status){
 
         btnEnter.disabled = status;
-        btnEnter.textContent = status 
+
+        btnEnter.textContent = status
             ? "Entrando..."
             : "Entrar";
 
@@ -84,7 +113,8 @@ function login() {
 
 
 
-    inputCpf.addEventListener("input",(event)=>{
+
+    inputCpf.addEventListener("input", (event)=>{
 
         event.target.value = formatCpf(event.target.value);
 
@@ -92,11 +122,22 @@ function login() {
 
 
 
+
+
     btnEnter.addEventListener("click", async ()=>{
 
 
-        const cpf = inputCpf.value.replace(/\D/g,"");
+        const cpf = inputCpf.value
+            .replace(/\D/g,"")
+            .trim();
+
+
         const senha = inputSenha.value.trim();
+
+
+
+        console.log("CPF enviado:", cpf);
+        console.log("Senha enviada:", senha);
 
 
 
@@ -109,6 +150,7 @@ function login() {
 
 
 
+
         setLoading(true);
         hideAlerts();
 
@@ -117,7 +159,7 @@ function login() {
         try{
 
 
-            const response = await fetch(API_LOGIN_URL,{
+            const response = await fetch(API_LOGIN_URL, {
 
                 method:"POST",
 
@@ -128,8 +170,8 @@ function login() {
 
                 body: JSON.stringify({
 
-                    cpf: cpf,
-                    senha: senha
+                    cpf,
+                    senha
 
                 })
 
@@ -141,19 +183,21 @@ function login() {
 
 
 
-            console.log("Resposta login:", data);
+            console.log("Status:", response.status);
+            console.log("Resposta API:", data);
 
 
 
             if(!response.ok){
 
-                throw new Error("Login inválido");
+                showAlert(errologin);
+                return;
 
             }
 
 
 
-            // Salva usuário logado
+
             localStorage.setItem(
                 "usuario",
                 JSON.stringify(data)
@@ -165,29 +209,39 @@ function login() {
 
 
 
-            // Verifica tipo do usuário
+            setTimeout(()=>{
 
-            if(data.tipo === "ADMIN"){
 
-                redirectTo("admin.html");
+                if(data.tipo === "ADMIN"){
 
-            }else{
+                    redirectTo("admin.html");
 
-                redirectTo("paginainicial.html");
 
-            }
+                }else{
+
+                    redirectTo("paginainicial.html");
+
+                }
+
+
+            },500);
+
 
 
 
         }catch(error){
 
-            console.error(error);
+
+            console.error("Erro de conexão:", error);
 
             showAlert(erroservidor);
 
+
         }finally{
 
+
             setLoading(false);
+
 
         }
 
@@ -202,6 +256,7 @@ function login() {
 
 function protectAdminPage(){
 
+
     const usuario = JSON.parse(
         localStorage.getItem("usuario")
     );
@@ -212,6 +267,7 @@ function protectAdminPage(){
         redirectTo("index.html");
 
     }
+
 
 }
 
