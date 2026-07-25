@@ -102,25 +102,33 @@ function atualizarResumo(clientes) {
 
 function renderizarClientes(clientes) {
 
-  listaClientes.innerHTML = "";
+    listaClientes.innerHTML = "";
 
-  if (!Array.isArray(clientes) || clientes.length === 0) {
 
-    listaClientes.innerHTML =
-      '<div class="empty-state">Nenhum usuário encontrado.</div>';
+    if (!Array.isArray(clientes) || clientes.length === 0) {
 
-    return;
+        listaClientes.innerHTML =
+            '<div class="empty-state">Nenhum usuário encontrado.</div>';
 
-  }
+        return;
 
-  const table = document.createElement("div");
-  table.className = "table-wrapper";
+    }
 
-  table.innerHTML = `
+
+
+    const table = document.createElement("div");
+
+    table.className = "table-wrapper";
+
+
+    table.innerHTML = `
+
         <table class="users-table">
 
             <thead>
+
                 <tr>
+
                     <th>Usuário</th>
                     <th>Email</th>
                     <th>CPF</th>
@@ -129,153 +137,458 @@ function renderizarClientes(clientes) {
                     <th>Endereço</th>
                     <th>Status</th>
                     <th>Ações</th>
+
                 </tr>
+
             </thead>
+
 
             <tbody></tbody>
 
+
         </table>
+
     `;
 
-  const body = table.querySelector("tbody");
 
-  clientes.forEach((cliente) => {
 
-    const row = document.createElement("tr");
+    const body = table.querySelector("tbody");
 
-    const status = formatarStatus(cliente.status || cliente.tipo);
-    const ultimoAcesso = formatarUltimoLogin(cliente.ultimoAcesso);
 
-    const acessou =
-      Boolean(cliente.ultimoAcesso) &&
-      !Number.isNaN(new Date(cliente.ultimoAcesso).getTime());
 
-    row.className = acessou ? "" : "highlight-never-access";
 
-    row.innerHTML = `
+
+    clientes.forEach(cliente => {
+
+
+        const row = document.createElement("tr");
+
+
+
+        const status =
+            formatarStatus(
+                cliente.status || cliente.tipo
+            );
+
+
+
+        const ultimoAcesso =
+            formatarUltimoLogin(
+                cliente.ultimoAcesso
+            );
+
+
+
+        const acessou =
+            Boolean(cliente.ultimoAcesso) &&
+            !Number.isNaN(
+                new Date(cliente.ultimoAcesso).getTime()
+            );
+
+
+
+        row.className =
+            acessou
+            ? ""
+            : "highlight-never-access";
+
+
+
+
+
+        row.innerHTML = `
+
+
             <td data-label="Usuário">
-                <div class="user-name">${cliente.nome || "Sem nome"}</div>
-                <div class="user-email">${cliente.email || "Sem email"}</div>
+
+                <div class="user-name">
+                    ${cliente.nome || "Sem nome"}
+                </div>
+
+                <div class="user-email">
+                    ${cliente.email || "Sem email"}
+                </div>
+
             </td>
+
+
 
             <td data-label="Email">
                 ${cliente.email || "—"}
             </td>
 
+
+
             <td data-label="CPF">
                 ${cliente.cpf || "—"}
             </td>
+
+
 
             <td data-label="Tipo">
                 ${cliente.tipo || "CLIENTE"}
             </td>
 
+
+
             <td data-label="Último acesso" title="${ultimoAcesso}">
+
                 <span class="last-login ${acessou ? "" : "never-accessed"}">
+
                     <i class="fa-solid fa-clock"></i>
+
                     ${ultimoAcesso}
+
                 </span>
+
             </td>
+
+
+
 
             <td data-label="Endereço">
                 ${cliente.endereco || "—"}
             </td>
 
+
+
             <td data-label="Status">
+
                 <span class="${status.className}">
+
                     ${status.label}
+
                 </span>
+
             </td>
+
+
+
 
             <td data-label="Ações">
 
+
                 <div class="actions">
 
-                    <button class="icon-btn view-btn" title="Visualizar">
+
+                    <button 
+                        class="icon-btn view-btn"
+                        title="Visualizar">
+
                         <i class="fa-solid fa-eye"></i>
+
                     </button>
 
-                    <button class="delete-btn" title="Remover">
+
+
+                    <button 
+                        class="delete-btn"
+                        title="Remover">
+
                         <i class="fa-solid fa-trash"></i>
+
                     </button>
 
-                    <button class="send-message-btn" title="Enviar mensagem">
+
+
+                    <button 
+                        class="send-message-btn"
+                        title="Enviar mensagem">
+
                         <i class="fa-brands fa-whatsapp"></i>
+
                     </button>
+
 
                 </div>
 
+
             </td>
+
+
         `;
 
-    // Visualizar
-    row.querySelector(".view-btn").addEventListener("click", () => {
-      abrirModalUsuario(cliente);
-    });
 
-    // Remover
-    row.querySelector(".delete-btn").addEventListener("click", () => {
-      removerCliente(cliente.cpf);
-    });
 
-    // WhatsApp
-    row.querySelector(".send-message-btn").addEventListener("click", () => {
 
-      const popup = document.getElementById("send_menssage");
-      const btnEnviar = document.getElementById("btn_send");
-      const btnFechar = document.getElementById("btn_close_send");
-      const campoMensagem = document.getElementById("mensagem");
 
-      popup.classList.add("active");
+        // =========================
+        // VISUALIZAR USUÁRIO
+        // =========================
 
-      // Fechar popup
-      if (btnFechar) {
-        btnFechar.onclick = () => {
-          popup.classList.remove("active");
-          campoMensagem.value = "";
-        };
-      }
+        const btnView =
+            row.querySelector(".view-btn");
 
-      // Enviar
-      btnEnviar.onclick = () => {
 
-        const mensagem = campoMensagem.value.trim();
+        if (btnView) {
 
-        if (mensagem === "") {
-          alert("Digite uma mensagem.");
-          return;
+            btnView.addEventListener(
+                "click",
+                () => {
+
+                    abrirModalUsuario(cliente);
+
+                }
+            );
+
         }
 
-        let numero = String(cliente.numeroTelefone || "");
 
-        numero = numero.replace(/\D/g, "");
 
-        if (numero.length === 0) {
-          alert("Este cliente não possui telefone.");
-          return;
+
+
+
+
+        // =========================
+        // REMOVER USUÁRIO
+        // =========================
+
+        const btnDelete =
+            row.querySelector(".delete-btn");
+
+
+        if (btnDelete) {
+
+
+            btnDelete.addEventListener(
+                "click",
+                () => {
+
+                    removerCliente(
+                        cliente.cpf
+                    );
+
+                }
+            );
+
+
         }
 
-        if (!numero.startsWith("55")) {
-          numero = "55" + numero;
+
+
+
+
+
+
+        // =========================
+        // WHATSAPP
+        // =========================
+
+        const btnWhats =
+            row.querySelector(
+                ".send-message-btn"
+            );
+
+
+
+        if (btnWhats) {
+
+
+            btnWhats.addEventListener(
+                "click",
+                () => {
+
+
+                    const popup =
+                        document.getElementById(
+                            "send_menssage"
+                        );
+
+
+                    const btnEnviar =
+                        document.getElementById(
+                            "btn_send"
+                        );
+
+
+                    const btnFechar =
+                        document.getElementById(
+                            "btn_close_send"
+                        );
+
+
+                    const campoMensagem =
+                        document.getElementById(
+                            "mensagem"
+                        );
+
+
+
+
+
+                    if (
+                        !popup ||
+                        !btnEnviar ||
+                        !campoMensagem
+                    ) {
+
+
+                        console.error(
+                            "Modal WhatsApp não encontrado"
+                        );
+
+
+                        return;
+
+                    }
+
+
+
+
+
+                    popup.classList.add(
+                        "active"
+                    );
+
+
+
+
+
+                    btnFechar.onclick = () => {
+
+
+                        popup.classList.remove(
+                            "active"
+                        );
+
+
+                        campoMensagem.value = "";
+
+
+                    };
+
+
+
+
+
+
+
+
+                    btnEnviar.onclick = () => {
+
+
+                        const mensagem =
+                            campoMensagem.value.trim();
+
+
+
+
+                        if (!mensagem) {
+
+
+                            alert(
+                                "Digite uma mensagem."
+                            );
+
+
+                            return;
+
+                        }
+
+
+
+
+
+
+                        let numero =
+                            cliente.numeroTelefone ||
+                            cliente.telefone ||
+                            cliente.celular ||
+                            "";
+
+
+
+                        numero =
+                            String(numero)
+                            .replace(/\D/g, "");
+
+
+
+
+
+
+                        if (!numero) {
+
+
+                            alert(
+                                "Este cliente não possui telefone."
+                            );
+
+
+                            return;
+
+                        }
+
+
+
+
+
+
+                        if (!numero.startsWith("55")) {
+
+
+                            numero =
+                                "55" + numero;
+
+
+                        }
+
+
+
+
+
+
+                        const url =
+                            `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
+
+
+
+
+                        window.open(
+                            url,
+                            "_blank"
+                        );
+
+
+
+
+                        popup.classList.remove(
+                            "active"
+                        );
+
+
+
+                        campoMensagem.value = "";
+
+
+
+                    };
+
+
+
+                }
+            );
+
+
         }
 
-        const url =
-          `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
 
-        window.open(url, "_blank");
 
-        popup.classList.remove("active");
-        campoMensagem.value = "";
 
-      };
+
+        body.appendChild(row);
+
+
 
     });
 
-    body.appendChild(row);
 
-  });
 
-  listaClientes.appendChild(table);
+
+
+    listaClientes.appendChild(table);
+
 
 }
 function abrirModalUsuario(cliente) {

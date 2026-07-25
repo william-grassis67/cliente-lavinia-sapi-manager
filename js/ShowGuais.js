@@ -1,3 +1,6 @@
+const API_BASE_URL = "https://apiadministrativa.onrender.com";
+
+
 async function ShowGuias(usuarioId) {
 
 
@@ -36,36 +39,34 @@ async function ShowGuias(usuarioId) {
 
 
 
-    if(!usuarioId){
+    if (!usuarioId) {
 
         console.error(
             "ID do usuário não informado"
         );
 
         return;
-
     }
 
 
 
-    try{
+    try {
 
 
         const response = await fetch(
 
-            `https://apiadministrativa.onrender.com/api/payments/guias/${usuarioId}`,
+            `${API_BASE_URL}/api/payments/guias/${usuarioId}`,
 
             {
 
-                method:"GET",
+                method: "GET",
 
-                headers:{
+                headers: {
 
                     "Authorization":
-                    `Bearer ${token}`,
-
-                    "Content-Type":
-                    "application/json"
+                        token
+                        ? `Bearer ${token}`
+                        : ""
 
                 }
 
@@ -75,7 +76,7 @@ async function ShowGuias(usuarioId) {
 
 
 
-        if(!response.ok){
+        if (!response.ok) {
 
 
             console.error(
@@ -83,7 +84,10 @@ async function ShowGuias(usuarioId) {
                 response.status
             );
 
-            return;
+
+            throw new Error(
+                `Erro HTTP ${response.status}`
+            );
 
         }
 
@@ -101,84 +105,67 @@ async function ShowGuias(usuarioId) {
 
 
 
-        /*
-            TEMPORÁRIO:
-            Todas as guias retornadas
-            são consideradas pagas.
-
-            Quando backend enviar pago=true,
-            trocar para filtro.
-        */
-
-
-        const guiasPagas = guias;
+        const guiasPagas =
+            Array.isArray(guias)
+            ? guias
+            : [];
 
 
 
-        // Quantidade no card
 
-
-        if(guiasPagasShow){
-
+        if (guiasPagasShow) {
 
             guiasPagasShow.textContent =
                 guiasPagas.length;
-
 
         }
 
 
 
 
-        // Montar histórico
 
-
-        if(listaGuiasPagas){
+        if (listaGuiasPagas) {
 
 
             listaGuiasPagas.innerHTML = "";
 
 
 
-            if(guiasPagas.length === 0){
+            if (guiasPagas.length === 0) {
 
 
                 listaGuiasPagas.innerHTML = `
 
+                    <section class="empty-guias">
 
-                <section class="empty-guias">
+                        <i class="fa-solid fa-file-circle-xmark"></i>
 
+                        <h2>
+                            Nenhuma guia encontrada
+                        </h2>
 
-                    <i class="fa-solid fa-file-circle-xmark"></i>
+                        <p>
+                            Você ainda não possui pagamentos.
+                        </p>
 
-
-                    <h2>
-                        Nenhuma guia encontrada
-                    </h2>
-
-
-                    <p>
-                        Você ainda não possui pagamentos.
-                    </p>
-
-
-                </section>
-
+                    </section>
 
                 `;
 
 
-            }else{
+            } else {
 
 
-                guiasPagas.forEach(
-                    guia => {
+
+                guiasPagas.forEach(guia => {
+
 
 
                     const card =
                         document.createElement(
                             "article"
                         );
+
 
 
                     card.className =
@@ -210,15 +197,11 @@ async function ShowGuias(usuarioId) {
 
 
 
-
                         <span class="status-pago">
-
 
                             <i class="fa-solid fa-circle-check"></i>
 
-
                             Pago
-
 
                         </span>
 
@@ -242,17 +225,25 @@ async function ShowGuias(usuarioId) {
 
 
                             <p>
+
                                 R$
                                 ${
                                     guia.valor
                                     ?
                                     Number(
                                         guia.valor
-                                    ).toFixed(2)
+                                    ).toLocaleString(
+                                        "pt-BR",
+                                        {
+                                            minimumFractionDigits:2
+                                        }
+                                    )
                                     :
                                     "0,00"
                                 }
+
                             </p>
+
 
                         </div>
 
@@ -295,7 +286,6 @@ async function ShowGuias(usuarioId) {
 
                         <div>
 
-
                             <i class="fa-solid fa-circle-check"></i>
 
 
@@ -324,7 +314,9 @@ async function ShowGuias(usuarioId) {
                     );
 
 
+
                 });
+
 
 
             }
@@ -336,16 +328,14 @@ async function ShowGuias(usuarioId) {
 
 
 
-        // Abrir tela
 
-
-        if(
+        if (
             btnVerGuias &&
             popupGuias
-        ){
+        ) {
 
 
-            btnVerGuias.onclick = ()=>{
+            btnVerGuias.onclick = () => {
 
 
                 popupGuias.classList.add(
@@ -356,7 +346,6 @@ async function ShowGuias(usuarioId) {
                 document.body.style.overflow =
                     "hidden";
 
-
             };
 
 
@@ -365,16 +354,14 @@ async function ShowGuias(usuarioId) {
 
 
 
-        // Fechar tela
 
-
-        if(
+        if (
             fecharGuias &&
             popupGuias
-        ){
+        ) {
 
 
-            fecharGuias.onclick = ()=>{
+            fecharGuias.onclick = () => {
 
 
                 popupGuias.classList.remove(
@@ -385,7 +372,6 @@ async function ShowGuias(usuarioId) {
                 document.body.style.overflow =
                     "auto";
 
-
             };
 
 
@@ -393,13 +379,16 @@ async function ShowGuias(usuarioId) {
 
 
 
-    }catch(error){
+
+
+    } catch(error) {
 
 
         console.error(
             "Erro ao carregar guias:",
             error
         );
+
 
 
         if(guiasPagasShow){
@@ -417,17 +406,23 @@ async function ShowGuias(usuarioId) {
             listaGuiasPagas.innerHTML = `
 
 
-            <section class="empty-guias">
-
-                <i class="fa-solid fa-triangle-exclamation"></i>
+                <section class="empty-guias">
 
 
-                <h2>
-                    Erro ao carregar guias
-                </h2>
+                    <i class="fa-solid fa-triangle-exclamation"></i>
 
 
-            </section>
+                    <h2>
+                        Erro ao carregar guias
+                    </h2>
+
+
+                    <p>
+                        Não foi possível conectar ao servidor.
+                    </p>
+
+
+                </section>
 
 
             `;
@@ -443,4 +438,6 @@ async function ShowGuias(usuarioId) {
 
 
 
-export { ShowGuias };
+export {
+    ShowGuias
+};
