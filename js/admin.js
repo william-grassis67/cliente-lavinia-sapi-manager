@@ -1,5 +1,5 @@
 import { ModalGuiasAdmin } from "./ModalGuiasAdmin.js";
-
+import { enviarMensagemCliente } from "./enviarMensagemCliente.js";
 const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
 const API_REMOVE = "https://apiadministrativa.onrender.com/api/remove";
 
@@ -99,31 +99,40 @@ function atualizarResumo(clientes) {
     }
   }
 }
-
 function renderizarClientes(clientes) {
 
-    listaClientes.innerHTML = "";
 
-
-    if (!Array.isArray(clientes) || clientes.length === 0) {
-
-        listaClientes.innerHTML =
-            '<div class="empty-state">Nenhum usuário encontrado.</div>';
-
-        return;
-
-    }
+  listaClientes.innerHTML = "";
 
 
 
-    const table = document.createElement("div");
-
-    table.className = "table-wrapper";
+  if (!Array.isArray(clientes) || clientes.length === 0) {
 
 
-    table.innerHTML = `
+    listaClientes.innerHTML =
+      '<div class="empty-state">Nenhum usuário encontrado.</div>';
+
+
+    return;
+
+  }
+
+
+
+
+
+  const table = document.createElement("div");
+
+
+  table.className =
+    "table-wrapper";
+
+
+
+  table.innerHTML = `
 
         <table class="users-table">
+
 
             <thead>
 
@@ -143,7 +152,9 @@ function renderizarClientes(clientes) {
             </thead>
 
 
+
             <tbody></tbody>
+
 
 
         </table>
@@ -152,107 +163,146 @@ function renderizarClientes(clientes) {
 
 
 
-    const body = table.querySelector("tbody");
+  const body =
+    table.querySelector("tbody");
 
 
 
 
 
-    clientes.forEach(cliente => {
 
-
-        const row = document.createElement("tr");
-
-
-
-        const status =
-            formatarStatus(
-                cliente.status || cliente.tipo
-            );
+  clientes.forEach(cliente => {
 
 
 
-        const ultimoAcesso =
-            formatarUltimoLogin(
-                cliente.ultimoAcesso
-            );
+    const row =
+      document.createElement("tr");
 
 
 
-        const acessou =
-            Boolean(cliente.ultimoAcesso) &&
-            !Number.isNaN(
-                new Date(cliente.ultimoAcesso).getTime()
-            );
+    const status =
+      formatarStatus(
+        cliente.status || cliente.tipo
+      );
 
 
 
-        row.className =
-            acessou
-            ? ""
-            : "highlight-never-access";
+    const ultimoAcesso =
+      formatarUltimoLogin(
+        cliente.ultimoAcesso
+      );
+
+
+
+    const acessou =
+      Boolean(cliente.ultimoAcesso) &&
+      !Number.isNaN(
+        new Date(cliente.ultimoAcesso).getTime()
+      );
+
+
+
+    row.className =
+      acessou
+        ? ""
+        : "highlight-never-access";
 
 
 
 
 
-        row.innerHTML = `
+
+    row.innerHTML = `
 
 
             <td data-label="Usuário">
 
                 <div class="user-name">
+
                     ${cliente.nome || "Sem nome"}
+
                 </div>
+
 
                 <div class="user-email">
+
                     ${cliente.email || "Sem email"}
+
                 </div>
 
+
             </td>
+
+
 
 
 
             <td data-label="Email">
+
                 ${cliente.email || "—"}
+
             </td>
+
+
 
 
 
             <td data-label="CPF">
+
                 ${cliente.cpf || "—"}
+
             </td>
+
+
 
 
 
             <td data-label="Tipo">
+
                 ${cliente.tipo || "CLIENTE"}
+
             </td>
 
 
 
-            <td data-label="Último acesso" title="${ultimoAcesso}">
+
+
+            <td data-label="Último acesso"
+                title="${ultimoAcesso}">
+
 
                 <span class="last-login ${acessou ? "" : "never-accessed"}">
 
+
                     <i class="fa-solid fa-clock"></i>
+
 
                     ${ultimoAcesso}
 
+
                 </span>
 
+
             </td>
+
+
 
 
 
 
             <td data-label="Endereço">
+
                 ${cliente.endereco || "—"}
+
             </td>
 
 
 
+
+
+
             <td data-label="Status">
+
 
                 <span class="${status.className}">
 
@@ -260,7 +310,10 @@ function renderizarClientes(clientes) {
 
                 </span>
 
+
             </td>
+
+
 
 
 
@@ -271,13 +324,18 @@ function renderizarClientes(clientes) {
                 <div class="actions">
 
 
+
                     <button 
                         class="icon-btn view-btn"
                         title="Visualizar">
 
+
                         <i class="fa-solid fa-eye"></i>
 
+
                     </button>
+
+
 
 
 
@@ -285,9 +343,13 @@ function renderizarClientes(clientes) {
                         class="delete-btn"
                         title="Remover">
 
+
                         <i class="fa-solid fa-trash"></i>
 
+
                     </button>
+
+
 
 
 
@@ -295,9 +357,13 @@ function renderizarClientes(clientes) {
                         class="send-message-btn"
                         title="Enviar mensagem">
 
+
                         <i class="fa-brands fa-whatsapp"></i>
 
+
                     </button>
+
+
 
 
                 </div>
@@ -312,282 +378,120 @@ function renderizarClientes(clientes) {
 
 
 
-        // =========================
-        // VISUALIZAR USUÁRIO
-        // =========================
 
-        const btnView =
-            row.querySelector(".view-btn");
 
 
-        if (btnView) {
+    // =====================
+    // VISUALIZAR
+    // =====================
 
-            btnView.addEventListener(
-                "click",
-                () => {
+    const btnView =
+      row.querySelector(".view-btn");
 
-                    abrirModalUsuario(cliente);
 
-                }
-            );
 
-        }
+    if (btnView) {
 
 
+      btnView.onclick = () => {
 
 
+        abrirModalUsuario(
+          cliente
+        );
 
 
+      };
 
-        // =========================
-        // REMOVER USUÁRIO
-        // =========================
 
-        const btnDelete =
-            row.querySelector(".delete-btn");
+    }
 
 
-        if (btnDelete) {
 
 
-            btnDelete.addEventListener(
-                "click",
-                () => {
 
-                    removerCliente(
-                        cliente.cpf
-                    );
 
-                }
-            );
 
 
-        }
+    // =====================
+    // REMOVER
+    // =====================
 
 
+    const btnDelete =
+      row.querySelector(".delete-btn");
 
 
 
+    if (btnDelete) {
 
 
-        // =========================
-        // WHATSAPP
-        // =========================
+      btnDelete.onclick = () => {
 
-        const btnWhats =
-            row.querySelector(
-                ".send-message-btn"
-            );
 
+        removerCliente(
+          cliente.cpf
+        );
 
 
-        if (btnWhats) {
+      };
 
 
-            btnWhats.addEventListener(
-                "click",
-                () => {
+    }
 
 
-                    const popup =
-                        document.getElementById(
-                            "send_menssage"
-                        );
 
 
-                    const btnEnviar =
-                        document.getElementById(
-                            "btn_send"
-                        );
 
 
-                    const btnFechar =
-                        document.getElementById(
-                            "btn_close_send"
-                        );
 
 
-                    const campoMensagem =
-                        document.getElementById(
-                            "mensagem"
-                        );
+    // =====================
+    // WHATSAPP
+    // =====================
 
 
+    const btnWhats =
+      row.querySelector(
+        ".send-message-btn"
+      );
 
 
 
-                    if (
-                        !popup ||
-                        !btnEnviar ||
-                        !campoMensagem
-                    ) {
+    if (btnWhats) {
 
 
-                        console.error(
-                            "Modal WhatsApp não encontrado"
-                        );
+      btnWhats.onclick = () => {
 
 
-                        return;
+        enviarMensagemCliente(
+          cliente
+        );
 
-                    }
 
+      };
 
 
+    }
 
 
-                    popup.classList.add(
-                        "active"
-                    );
 
 
 
 
+    body.appendChild(row);
 
-                    btnFechar.onclick = () => {
 
 
-                        popup.classList.remove(
-                            "active"
-                        );
+  });
 
 
-                        campoMensagem.value = "";
 
 
-                    };
 
 
 
-
-
-
-
-
-                    btnEnviar.onclick = () => {
-
-
-                        const mensagem =
-                            campoMensagem.value.trim();
-
-
-
-
-                        if (!mensagem) {
-
-
-                            alert(
-                                "Digite uma mensagem."
-                            );
-
-
-                            return;
-
-                        }
-
-
-
-
-
-
-                        let numero =
-                            cliente.numeroTelefone ||
-                            cliente.telefone ||
-                            cliente.celular ||
-                            "";
-
-
-
-                        numero =
-                            String(numero)
-                            .replace(/\D/g, "");
-
-
-
-
-
-
-                        if (!numero) {
-
-
-                            alert(
-                                "Este cliente não possui telefone."
-                            );
-
-
-                            return;
-
-                        }
-
-
-
-
-
-
-                        if (!numero.startsWith("55")) {
-
-
-                            numero =
-                                "55" + numero;
-
-
-                        }
-
-
-
-
-
-
-                        const url =
-                            `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
-
-
-
-
-
-                        window.open(
-                            url,
-                            "_blank"
-                        );
-
-
-
-
-                        popup.classList.remove(
-                            "active"
-                        );
-
-
-
-                        campoMensagem.value = "";
-
-
-
-                    };
-
-
-
-                }
-            );
-
-
-        }
-
-
-
-
-
-        body.appendChild(row);
-
-
-
-    });
-
-
-
-
-
-    listaClientes.appendChild(table);
+  listaClientes.appendChild(table);
 
 
 }
