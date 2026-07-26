@@ -1,58 +1,123 @@
+/**
+ * Módulo Principal do Painel Administrativo
+ * Arquivo: admin.js
+ *
+ * Estrutura do arquivo:
+ *  1. Autenticação / guarda de rota
+ *  2. Configuração da API
+ *  3. Referências ao DOM
+ *  4. Estado da aplicação
+ *  5. Utilitários (formatação, escape, debounce)
+ *  6. Sidebar mobile
+ *  7. Dashboard / resumo
+ *  8. Renderização da tabela de clientes
+ *  9. Modal de detalhes do usuário
+ * 10. Integração com módulo de Guias (ModalGuiasAdmin.js)
+ * 11. Integração com módulo de WhatsApp (enviarMensagemCliente.js)
+ * 12. Busca, filtro e ordenação
+ * 13. Comunicação com a API (listar / remover clientes)
+ * 14. Eventos e inicialização
+ */
+
+import { abrirModalMensagemCliente } from "./enviarMensagemCliente.js";
 import { ModalGuiasAdmin } from "./ModalGuiasAdmin.js";
-import { enviarMensagemCliente } from "./enviarMensagemCliente.js";
-const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
-const API_REMOVE = "https://apiadministrativa.onrender.com/api/remove";
 
-const listaClientes = document.getElementById("clientes"); //VAI RECEBER OS CLIENTES REGISTRADOS
-const modalUsuario = document.getElementById("modalUsuario");
-const fecharUsuario = document.getElementById("fecharUsuario");
-const usuarioNome = document.getElementById("usuarioNome");
-const usuarioEmail = document.getElementById("usuarioEmail");
-const usuarioCpf = document.getElementById("usuarioCpf");
-const usuarioEndereco = document.getElementById("usuarioEndereco");
-const usuarioTipo = document.getElementById("usuarioTipo");
-const usuarioStatus = document.getElementById("usuarioStatus");
-const usuarioUltimoLogin = document.getElementById("usuarioUltimoLogin");
-const sidebar = document.getElementById("sidebar");
-const sidebarOverlay = document.getElementById("sidebarOverlay");
-const mobileToggle = document.getElementById("mobileToggle");
-const refreshButton = document.getElementById("refreshUsers");
-const searchInput = document.getElementById("searchInput");
-const sortAccessBtn = document.getElementById("sortAccessBtn");
-const sortDirectionLabel = document.getElementById("sortDirectionLabel");
-const modalGuiasAdmin =
-  document.getElementById("modalGuiasAdmin");
-
-
-const tabelaGuiasAdmin =
-  document.getElementById("tabelaGuiasAdmin");
-
-
-const fecharGuiasAdmin =
-  document.getElementById("fecharGuiasAdmin");
-
-
-const tituloGuiasUsuario =
-  document.getElementById("tituloGuiasUsuario");
-
-let clientesCache = [];//GUARDA OS CLIENTES EM UM Array
-let sortAscending = false;
-
-function toggleSidebar(force) {
-  if (!sidebar) return;
-  const shouldOpen = typeof force === "boolean" ? force : !sidebar.classList.contains("open");
-  sidebar.classList.toggle("open", shouldOpen);
-  sidebarOverlay?.classList.toggle("active", shouldOpen);
-  document.body.classList.toggle("modal-open", shouldOpen);
+// ===========================================================
+// 1. AUTENTICAÇÃO E GUARDA DE ROTA
+// ===========================================================
+function obterUsuarioSessao() {
+  try {
+    return JSON.parse(localStorage.getItem("usuario"));
+  } catch {
+    return null;
+  }
 }
 
-function closeSidebar() {
-  toggleSidebar(false);
+function verificarAutenticacao() {
+  const usuarioSessao = obterUsuarioSessao();
+  if (!usuarioSessao || !usuarioSessao.token) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
+
+if (!verificarAutenticacao()) {
+  throw new Error("Acesso negado. Redirecionando para login...");
+}
+
+// ===========================================================
+// 2. CONFIGURAÇÃO DA API
+// ===========================================================
+const API_BASE_URL = "https://apiadministrativa.onrender.com";
+const API_CLIENTES = `${API_BASE_URL}/api/clientes`;
+const API_REMOVE = `${API_BASE_URL}/api/remove`;
+
+// ===========================================================
+// 3. REFERÊNCIAS AO DOM
+// ===========================================================
+const dom = {
+  listaClientes: document.getElementById("clientes"),
+
+  modalUsuario: document.getElementById("modalUsuario"),
+  fecharUsuario: document.getElementById("fecharUsuario"),
+  usuarioNome: document.getElementById("usuarioNome"),
+  usuarioEmail: document.getElementById("usuarioEmail"),
+  usuarioCpf: document.getElementById("usuarioCpf"),
+  usuarioEndereco: document.getElementById("usuarioEndereco"),
+  usuarioTipo: document.getElementById("usuarioTipo"),
+  usuarioStatus: document.getElementById("usuarioStatus"),
+  usuarioUltimoLogin: document.getElementById("usuarioUltimoLogin"),
+  btnVerify: document.getElementById("btn_verify"),
+
+  sidebar: document.getElementById("sidebar"),
+  sidebarOverlay: document.getElementById("sidebarOverlay"),
+  mobileToggle: document.getElementById("mobileToggle"),
+  refreshButton: document.getElementById("refreshUsers"),
+  searchInput: document.getElementById("searchInput"),
+  sortAccessBtn: document.getElementById("sortAccessBtn"),
+  sortDirectionLabel: document.getElementById("sortDirectionLabel"),
+
+  totalUsers: document.getElementById("totalUsers"),
+  activeUsers: document.getElementById("activeUsers"),
+  lastLoginUser: document.getElementById("lastLoginUser"),
+  lastLoginValue: document.getElementById("lastLoginValue")
+};
+
+// ===========================================================
+// 4. ESTADO DA APLICAÇÃO
+// ===========================================================
+const estado = {
+  clientes: [],
+  sortAscending: false,
+  clienteEmDetalhe: null
+};
+
+// ===========================================================
+// 5. UTILITÁRIOS
+// ===========================================================
+function debounce(fn, delayMs = 250) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delayMs);
+  };
+}
+
+/**
+ * Garante que o valor vindo da API é uma string segura para exibição.
+ * (o escape de HTML só é necessário quando usamos innerHTML; aqui
+ * normalizamos o valor para uso com textContent).
+ */
+function textoOuTraco(valor, textoPadrao = "—") {
+  if (valor === null || valor === undefined || valor === "") return textoPadrao;
+  return String(valor);
 }
 
 function formatarStatus(status) {
-  const normalized = String(status || "ACTIVE").toUpperCase();
-  const isActive = normalized === "ACTIVE" || normalized === "ATIVO" || normalized === "TRUE" || normalized === "1";
+  const normalizado = String(status || "ACTIVE").toUpperCase();
+  const valoresAtivos = new Set(["ACTIVE", "ATIVO", "TRUE", "1"]);
+  const isActive = valoresAtivos.has(normalizado);
   return {
     label: isActive ? "Ativo" : "Inativo",
     className: isActive ? "status-pill" : "status-pill inactive"
@@ -61,7 +126,6 @@ function formatarStatus(status) {
 
 function formatarUltimoLogin(data) {
   if (!data) return "Nunca acessou";
-
   const d = new Date(data);
   if (Number.isNaN(d.getTime())) return "Nunca acessou";
 
@@ -71,672 +135,420 @@ function formatarUltimoLogin(data) {
   })}`;
 }
 
+/**
+ * Valida se o objeto retornado pela API tem o formato mínimo esperado
+ * de um cliente. Evita quebrar a tela caso a API retorne dados inconsistentes.
+ */
+function ehClienteValido(cliente) {
+  return Boolean(cliente) && typeof cliente === "object";
+}
+
+/**
+ * Helper para criar elementos DOM com atributos e texto de forma segura,
+ * evitando innerHTML para conteúdo vindo da API.
+ */
+function criarElemento(tag, { className, texto, atributos = {} } = {}) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (texto !== undefined) el.textContent = texto;
+  Object.entries(atributos).forEach(([chave, valor]) => el.setAttribute(chave, valor));
+  return el;
+}
+
+// ===========================================================
+// 6. SIDEBAR MOBILE
+// ===========================================================
+function toggleSidebar(force) {
+  if (!dom.sidebar) return;
+  const shouldOpen = typeof force === "boolean" ? force : !dom.sidebar.classList.contains("open");
+  dom.sidebar.classList.toggle("open", shouldOpen);
+  dom.sidebarOverlay?.classList.toggle("active", shouldOpen);
+  document.body.classList.toggle("modal-open", shouldOpen);
+}
+
+function closeSidebar() {
+  toggleSidebar(false);
+}
+
+// ===========================================================
+// 7. DASHBOARD / RESUMO
+// ===========================================================
+function contarUsuariosAtivos(clientes) {
+  return clientes.filter((cliente) => {
+    const status = String(cliente.status || cliente.tipo || "ACTIVE").toUpperCase();
+    return ["ACTIVE", "ATIVO", "ADMIN", "TRUE", "1"].includes(status);
+  }).length;
+}
+
+function encontrarUltimoAcesso(clientes) {
+  return clientes
+    .filter((cliente) => cliente.ultimoAcesso)
+    .sort((a, b) => new Date(b.ultimoAcesso) - new Date(a.ultimoAcesso))[0];
+}
+
 function atualizarResumo(clientes) {
-  const totalElement = document.getElementById("totalUsers");
-  const ativosElement = document.getElementById("activeUsers");
-  const lastLoginUser = document.getElementById("lastLoginUser");
-  const lastLoginValue = document.getElementById("lastLoginValue");
+  if (dom.totalUsers) dom.totalUsers.textContent = clientes.length;
 
-  if (totalElement) totalElement.textContent = clientes.length;
-  if (ativosElement) {
-    const ativos = clientes.filter((cliente) => {
-      const status = String(cliente.status || cliente.tipo || "ACTIVE").toUpperCase();
-      return status === "ACTIVE" || status === "ATIVO" || status === "ADMIN" || status === "TRUE" || status === "1";
-    }).length;
-    ativosElement.textContent = ativos;
+  if (dom.activeUsers) {
+    dom.activeUsers.textContent = contarUsuariosAtivos(clientes);
   }
 
-  const usuariosComLogin = clientes.filter((cliente) => cliente.ultimoAcesso);
-  const maisRecente = usuariosComLogin.sort((a, b) => new Date(b.ultimoAcesso) - new Date(a.ultimoAcesso))[0];
+  if (dom.lastLoginUser && dom.lastLoginValue) {
+    const maisRecente = encontrarUltimoAcesso(clientes);
 
-  if (lastLoginUser && lastLoginValue) {
     if (maisRecente) {
-      lastLoginUser.textContent = maisRecente.nome || "Usuário";
-      lastLoginValue.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> ${formatarUltimoLogin(maisRecente.ultimoAcesso)}`;
+      dom.lastLoginUser.textContent = maisRecente.nome || "Usuário";
+
+      dom.lastLoginValue.replaceChildren(
+        criarElemento("i", { className: "fa-solid fa-clock-rotate-left" }),
+        document.createTextNode(` ${formatarUltimoLogin(maisRecente.ultimoAcesso)}`)
+      );
     } else {
-      lastLoginUser.textContent = "Nenhum acesso";
-      lastLoginValue.textContent = "Último login registrado";
+      dom.lastLoginUser.textContent = "Nenhum acesso";
+      dom.lastLoginValue.textContent = "Último login registrado";
     }
   }
 }
-function renderizarClientes(clientes) {
 
-
-  listaClientes.innerHTML = "";
-
-
-
-  if (!Array.isArray(clientes) || clientes.length === 0) {
-
-
-    listaClientes.innerHTML =
-      '<div class="empty-state">Nenhum usuário encontrado.</div>';
-
-
-    return;
-
-  }
-
-
-
-
-
-  const table = document.createElement("div");
-
-
-  table.className =
-    "table-wrapper";
-
-
-
-  table.innerHTML = `
-
-        <table class="users-table">
-
-
-            <thead>
-
-                <tr>
-
-                    <th>Usuário</th>
-                    <th>Email</th>
-                    <th>CPF</th>
-                    <th>Tipo</th>
-                    <th>Último acesso</th>
-                    <th>Endereço</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-
-                </tr>
-
-            </thead>
-
-
-
-            <tbody></tbody>
-
-
-
-        </table>
-
-    `;
-
-
-
-  const body =
-    table.querySelector("tbody");
-
-
-
-
-
-
-  clientes.forEach(cliente => {
-
-
-
-    const row =
-      document.createElement("tr");
-
-
-
-    const status =
-      formatarStatus(
-        cliente.status || cliente.tipo
-      );
-
-
-
-    const ultimoAcesso =
-      formatarUltimoLogin(
-        cliente.ultimoAcesso
-      );
-
-
-
-    const acessou =
-      Boolean(cliente.ultimoAcesso) &&
-      !Number.isNaN(
-        new Date(cliente.ultimoAcesso).getTime()
-      );
-
-
-
-    row.className =
-      acessou
-        ? ""
-        : "highlight-never-access";
-
-
-
-
-
-
-    row.innerHTML = `
-
-
-            <td data-label="Usuário">
-
-                <div class="user-name">
-
-                    ${cliente.nome || "Sem nome"}
-
-                </div>
-
-
-                <div class="user-email">
-
-                    ${cliente.email || "Sem email"}
-
-                </div>
-
-
-            </td>
-
-
-
-
-
-            <td data-label="Email">
-
-                ${cliente.email || "—"}
-
-            </td>
-
-
-
-
-
-            <td data-label="CPF">
-
-                ${cliente.cpf || "—"}
-
-            </td>
-
-
-
-
-
-            <td data-label="Tipo">
-
-                ${cliente.tipo || "CLIENTE"}
-
-            </td>
-
-
-
-
-
-            <td data-label="Último acesso"
-                title="${ultimoAcesso}">
-
-
-                <span class="last-login ${acessou ? "" : "never-accessed"}">
-
-
-                    <i class="fa-solid fa-clock"></i>
-
-
-                    ${ultimoAcesso}
-
-
-                </span>
-
-
-            </td>
-
-
-
-
-
-
-            <td data-label="Endereço">
-
-                ${cliente.endereco || "—"}
-
-            </td>
-
-
-
-
-
-
-            <td data-label="Status">
-
-
-                <span class="${status.className}">
-
-                    ${status.label}
-
-                </span>
-
-
-            </td>
-
-
-
-
-
-
-            <td data-label="Ações">
-
-
-                <div class="actions">
-
-
-
-                    <button 
-                        class="icon-btn view-btn"
-                        title="Visualizar">
-
-
-                        <i class="fa-solid fa-eye"></i>
-
-
-                    </button>
-
-
-
-
-
-                    <button 
-                        class="delete-btn"
-                        title="Remover">
-
-
-                        <i class="fa-solid fa-trash"></i>
-
-
-                    </button>
-
-
-
-
-
-                    <button 
-                        class="send-message-btn"
-                        title="Enviar mensagem">
-
-
-                        <i class="fa-brands fa-whatsapp"></i>
-
-
-                    </button>
-
-
-
-
-                </div>
-
-
-            </td>
-
-
-        `;
-
-
-
-
-
-
-
-
-    // =====================
-    // VISUALIZAR
-    // =====================
-
-    const btnView =
-      row.querySelector(".view-btn");
-
-
-
-    if (btnView) {
-
-
-      btnView.onclick = () => {
-
-
-        abrirModalUsuario(
-          cliente
-        );
-
-
-      };
-
-
-    }
-
-
-
-
-
-
-
-
-    // =====================
-    // REMOVER
-    // =====================
-
-
-    const btnDelete =
-      row.querySelector(".delete-btn");
-
-
-
-    if (btnDelete) {
-
-
-      btnDelete.onclick = () => {
-
-
-        removerCliente(
-          cliente.cpf
-        );
-
-
-      };
-
-
-    }
-
-
-
-
-
-
-
-
-    // =====================
-    // WHATSAPP
-    // =====================
-
-
-    const btnWhats =
-      row.querySelector(
-        ".send-message-btn"
-      );
-
-
-
-    if (btnWhats) {
-
-
-      btnWhats.onclick = () => {
-
-
-        enviarMensagemCliente(
-          cliente
-        );
-
-
-      };
-
-
-    }
-
-
-
-
-
-
-    body.appendChild(row);
-
-
-
+// ===========================================================
+// 8. RENDERIZAÇÃO DA TABELA DE CLIENTES
+// ===========================================================
+function renderizarLoading() {
+  if (!dom.listaClientes) return;
+  dom.listaClientes.innerHTML = "";
+  const container = criarElemento("div", { className: "empty-state", atributos: { "aria-busy": "true" } });
+  container.append(
+    criarElemento("i", { className: "fa-solid fa-spinner fa-spin" }),
+    criarElemento("p", { texto: "Carregando usuários..." })
+  );
+  dom.listaClientes.appendChild(container);
+}
+
+function renderizarErro(mensagem, onRetry) {
+  if (!dom.listaClientes) return;
+  dom.listaClientes.innerHTML = "";
+
+  const container = criarElemento("div", { className: "empty-state empty-state-error" });
+  const botaoRetry = criarElemento("button", { className: "primary-btn", atributos: { type: "button", id: "retryLoadBtn" } });
+  botaoRetry.append(
+    criarElemento("i", { className: "fa-solid fa-rotate-right" }),
+    document.createTextNode(" Tentar novamente")
+  );
+
+  container.append(
+    criarElemento("i", { className: "fa-solid fa-triangle-exclamation" }),
+    criarElemento("p", { texto: mensagem || "Não foi possível carregar a lista de usuários." }),
+    botaoRetry
+  );
+
+  dom.listaClientes.appendChild(container);
+  botaoRetry.addEventListener("click", onRetry);
+}
+
+function renderizarVazio(temFiltro) {
+  if (!dom.listaClientes) return;
+  dom.listaClientes.innerHTML = "";
+  const container = criarElemento("div", { className: "empty-state" });
+  container.append(
+    criarElemento("i", { className: "fa-solid fa-users-slash" }),
+    criarElemento("p", {
+      texto: temFiltro ? "Nenhum usuário encontrado para essa busca." : "Nenhum usuário cadastrado ainda."
+    })
+  );
+  dom.listaClientes.appendChild(container);
+}
+
+function criarCabecalhoTabela() {
+  const thead = document.createElement("thead");
+  const tr = document.createElement("tr");
+  ["Usuário", "Email", "CPF", "Tipo", "Último acesso", "Endereço", "Status", "Ações"].forEach((titulo) => {
+    tr.appendChild(criarElemento("th", { texto: titulo }));
   });
-
-
-
-
-
-
-
-  listaClientes.appendChild(table);
-
-
+  thead.appendChild(tr);
+  return thead;
 }
-function abrirModalUsuario(cliente) {
 
-  document.getElementById("usuarioNome").textContent = cliente.nome || "—";
-  document.getElementById("usuarioEmail").textContent = cliente.email || "—";
-  document.getElementById("usuarioCpf").textContent = cliente.cpf || "—";
-  document.getElementById("usuarioTipo").textContent = cliente.tipo || "CLIENTE";
-  document.getElementById("usuarioEndereco").textContent = cliente.endereco || "—";
+function criarCelulaUsuario(cliente) {
+  const td = criarElemento("td", { atributos: { "data-label": "Usuário" } });
+  td.append(
+    criarElemento("div", { className: "user-name", texto: textoOuTraco(cliente.nome, "Sem nome") }),
+    criarElemento("div", { className: "user-email", texto: textoOuTraco(cliente.email, "Sem email") })
+  );
+  return td;
+}
 
+function criarCelulaUltimoAcesso(cliente) {
+  const ultimoAcesso = formatarUltimoLogin(cliente.ultimoAcesso);
+  const acessou = Boolean(cliente.ultimoAcesso) && !Number.isNaN(new Date(cliente.ultimoAcesso).getTime());
+
+  const td = criarElemento("td", { atributos: { "data-label": "Último acesso", title: ultimoAcesso } });
+  const span = criarElemento("span", { className: `last-login ${acessou ? "" : "never-accessed"}`.trim() });
+  span.append(
+    criarElemento("i", { className: "fa-solid fa-clock" }),
+    document.createTextNode(` ${ultimoAcesso}`)
+  );
+  td.appendChild(span);
+  return td;
+}
+
+function criarCelulaAcoes(cliente) {
+  const td = criarElemento("td", { atributos: { "data-label": "Ações" } });
+  const container = criarElemento("div", { className: "actions" });
+
+  const nomeCliente = textoOuTraco(cliente.nome, "");
+
+  const btnVer = criarElemento("button", {
+    className: "icon-btn view-btn",
+    atributos: { title: "Visualizar", "aria-label": `Visualizar ${nomeCliente}` }
+  });
+  btnVer.appendChild(criarElemento("i", { className: "fa-solid fa-eye" }));
+  btnVer.addEventListener("click", () => abrirModalUsuario(cliente));
+
+  const btnRemover = criarElemento("button", {
+    className: "delete-btn",
+    atributos: { title: "Remover", "aria-label": `Remover ${nomeCliente}` }
+  });
+  btnRemover.appendChild(criarElemento("i", { className: "fa-solid fa-trash" }));
+  btnRemover.addEventListener("click", () => removerCliente(cliente));
+
+  const btnWhatsapp = criarElemento("button", {
+    className: "send-message-btn",
+    atributos: { title: "Enviar mensagem", "aria-label": `Enviar mensagem para ${nomeCliente}` }
+  });
+  btnWhatsapp.appendChild(criarElemento("i", { className: "fa-brands fa-whatsapp" }));
+  // Envia o objeto completo do cliente para o módulo de WhatsApp
+  btnWhatsapp.addEventListener("click", () => abrirModalMensagemCliente(cliente));
+
+  container.append(btnVer, btnRemover, btnWhatsapp);
+  td.appendChild(container);
+  return td;
+}
+
+function criarLinhaCliente(cliente) {
+  const acessou = Boolean(cliente.ultimoAcesso) && !Number.isNaN(new Date(cliente.ultimoAcesso).getTime());
   const status = formatarStatus(cliente.status || cliente.tipo);
 
-  document.getElementById("usuarioStatus").textContent = status.label;
-  document.getElementById("usuarioUltimoLogin").textContent =
-    formatarUltimoLogin(cliente.ultimoAcesso);
-
-  const modal = document.getElementById("modalUsuario");
-
-  modal.classList.add("active");
-  modal.setAttribute("aria-hidden", "false");
-
-  const btnVerify = document.getElementById("btn_verify");
-
-  // Remove eventos antigos
-  btnVerify.replaceWith(btnVerify.cloneNode(true));
-
-  const novoBotao = document.getElementById("btn_verify");
-
-  novoBotao.addEventListener("click", async () => {
-
-
-    try {
-
-
-      const response = await fetch(
-
-        `http://localhost:8080/api/payments/guias/${cliente.id}`
-
-      );
-
-
-
-      if (!response.ok) {
-
-        throw new Error();
-
-      }
-
-
-
-      const guias =
-        await response.json();
-
-
-
-      tituloGuiasUsuario.textContent =
-        `Guias de ${cliente.nome}`;
-
-
-
-      tabelaGuiasAdmin.innerHTML = "";
-
-
-
-      guias.forEach(guia => {
-
-
-        tabelaGuiasAdmin.innerHTML += `
-
-
-            <tr>
-
-
-                <td>
-
-                ${guia.competencia ?? "-"}
-
-                </td>
-
-
-
-                <td>
-
-                R$ ${Number(
-          guia.valor || 0
-        ).toFixed(2)
-          }
-
-                </td>
-
-
-
-                <td>
-
-                ${guia.vencimento
-            ?
-            new Date(
-              guia.vencimento
-            )
-              .toLocaleDateString(
-                "pt-BR"
-              )
-            :
-            "-"
-          }
-
-                </td>
-
-
-
-                <td>
-
-
-                <span class="status-pill">
-
-                    Pago
-
-                </span>
-
-
-                </td>
-
-
-            </tr>
-
-
-            `;
-
-
-      });
-
-
-
-      modalGuiasAdmin.classList.add(
-        "active"
-      );
-
-
-      document.body.classList.add(
-        "modal-open"
-      );
-
-
-
-    } catch (error) {
-
-
-      console.error(error);
-
-      alert(
-        "Erro ao carregar guias"
-      );
-
-
-    }
-
-
-  });
-
+  const tr = document.createElement("tr");
+  tr.className = acessou ? "" : "highlight-never-access";
+
+  const tdEmail = criarElemento("td", { texto: textoOuTraco(cliente.email), atributos: { "data-label": "Email" } });
+  const tdCpf = criarElemento("td", { texto: textoOuTraco(cliente.cpf), atributos: { "data-label": "CPF" } });
+  const tdTipo = criarElemento("td", { texto: textoOuTraco(cliente.tipo, "CLIENTE"), atributos: { "data-label": "Tipo" } });
+  const tdEndereco = criarElemento("td", { texto: textoOuTraco(cliente.endereco), atributos: { "data-label": "Endereço" } });
+
+  const tdStatus = criarElemento("td", { atributos: { "data-label": "Status" } });
+  tdStatus.appendChild(criarElemento("span", { className: status.className, texto: status.label }));
+
+  tr.append(
+    criarCelulaUsuario(cliente),
+    tdEmail,
+    tdCpf,
+    tdTipo,
+    criarCelulaUltimoAcesso(cliente),
+    tdEndereco,
+    tdStatus,
+    criarCelulaAcoes(cliente)
+  );
+
+  return tr;
 }
 
-async function carregarClientes() {
-  try {
-    const resposta = await fetch(API_CLIENTES);
-    if (!resposta.ok) throw new Error("Falha ao buscar clientes");
+function renderizarClientes(clientes) {
+  if (!dom.listaClientes) return;
 
-    const clientes = await resposta.json();
-    clientesCache = Array.isArray(clientes) ? clientes : [];
-    atualizarResumo(clientesCache);
-    renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
-  } catch (error) {
-    console.error("Erro ao carregar clientes", error);
-    listaClientes.innerHTML = '<div class="empty-state">Não foi possível carregar a lista de usuários.</div>';
+  if (!Array.isArray(clientes) || clientes.length === 0) {
+    renderizarVazio(Boolean(dom.searchInput?.value.trim()));
+    return;
   }
+
+  const wrapper = criarElemento("div", { className: "table-wrapper" });
+  const table = criarElemento("table", { className: "users-table" });
+  const tbody = document.createElement("tbody");
+
+  table.appendChild(criarCabecalhoTabela());
+
+  const fragment = document.createDocumentFragment();
+  clientes.filter(ehClienteValido).forEach((cliente) => {
+    fragment.appendChild(criarLinhaCliente(cliente));
+  });
+  tbody.appendChild(fragment);
+
+  table.appendChild(tbody);
+  wrapper.appendChild(table);
+
+  dom.listaClientes.innerHTML = "";
+  dom.listaClientes.appendChild(wrapper);
+}
+
+// ===========================================================
+// 9. MODAL DE DETALHES DO USUÁRIO
+// ===========================================================
+function abrirModalUsuario(cliente) {
+  estado.clienteEmDetalhe = cliente;
+
+  if (dom.usuarioNome) dom.usuarioNome.textContent = textoOuTraco(cliente.nome);
+  if (dom.usuarioEmail) dom.usuarioEmail.textContent = textoOuTraco(cliente.email);
+  if (dom.usuarioCpf) dom.usuarioCpf.textContent = textoOuTraco(cliente.cpf);
+  if (dom.usuarioTipo) dom.usuarioTipo.textContent = textoOuTraco(cliente.tipo, "CLIENTE");
+  if (dom.usuarioEndereco) dom.usuarioEndereco.textContent = textoOuTraco(cliente.endereco);
+
+  const status = formatarStatus(cliente.status || cliente.tipo);
+  if (dom.usuarioStatus) dom.usuarioStatus.textContent = status.label;
+  if (dom.usuarioUltimoLogin) dom.usuarioUltimoLogin.textContent = formatarUltimoLogin(cliente.ultimoAcesso);
+
+  if (dom.modalUsuario) {
+    dom.modalUsuario.classList.add("active");
+    dom.modalUsuario.setAttribute("aria-hidden", "false");
+  }
+  document.body.classList.add("modal-open");
+}
+
+function fecharModalUsuario() {
+  if (dom.modalUsuario) {
+    dom.modalUsuario.classList.remove("active");
+    dom.modalUsuario.setAttribute("aria-hidden", "true");
+  }
+  document.body.classList.remove("modal-open");
+  estado.clienteEmDetalhe = null;
+}
+
+// ===========================================================
+// 10. INTEGRAÇÃO COM MÓDULO DE GUIAS (ModalGuiasAdmin.js)
+// ===========================================================
+// O módulo cuida da própria renderização/estado do modal de guias;
+// aqui apenas disparamos o carregamento passando o cliente selecionado.
+const modalGuias = ModalGuiasAdmin();
+
+dom.btnVerify?.addEventListener("click", () => {
+  if (!estado.clienteEmDetalhe) return;
+  modalGuias.carregarGuias(estado.clienteEmDetalhe);
+});
+
+// ===========================================================
+// 11. BUSCA, FILTRO E ORDENAÇÃO DE CLIENTES
+// ===========================================================
+function clienteContemTermo(cliente, termo) {
+  const campos = [cliente.nome, cliente.email, cliente.cpf, cliente.tipo];
+  return campos.some((campo) => String(campo || "").toLowerCase().includes(termo));
 }
 
 function aplicarFiltroEOrdenacao(clientes) {
-  const termo = searchInput?.value.trim().toLowerCase() || "";
-  const filtrados = clientes.filter((cliente) => {
-    const nome = String(cliente.nome || "").toLowerCase();
-    const email = String(cliente.email || "").toLowerCase();
-    const cpf = String(cliente.cpf || "").toLowerCase();
-    const tipo = String(cliente.tipo || "").toLowerCase();
-    return nome.includes(termo) || email.includes(termo) || cpf.includes(termo) || tipo.includes(termo);
-  });
+  const termo = dom.searchInput?.value.trim().toLowerCase() || "";
+
+  const filtrados = termo
+    ? clientes.filter((cliente) => clienteContemTermo(cliente, termo))
+    : clientes;
 
   return filtrados.slice().sort((a, b) => {
     const dataA = new Date(a.ultimoAcesso).getTime();
     const dataB = new Date(b.ultimoAcesso).getTime();
-    const aVal = Number.isNaN(dataA) ? -8640000000000000 : dataA;
-    const bVal = Number.isNaN(dataB) ? -8640000000000000 : dataB;
-    return sortAscending ? aVal - bVal : bVal - aVal;
+    const aVal = Number.isNaN(dataA) ? -Infinity : dataA;
+    const bVal = Number.isNaN(dataB) ? -Infinity : dataB;
+    return estado.sortAscending ? aVal - bVal : bVal - aVal;
   });
 }
 
-async function removerCliente(cpf) {
-  if (!cpf) return;
-  const confirmar = confirm("Deseja remover este usuário?");
+function renderizarListaAtual() {
+  renderizarClientes(aplicarFiltroEOrdenacao(estado.clientes));
+}
+
+// ===========================================================
+// 12. COMUNICAÇÃO COM A API
+// ===========================================================
+export async function carregarClientes() {
+  renderizarLoading();
+  try {
+    const resposta = await fetch(API_CLIENTES);
+    if (!resposta.ok) {
+      throw new Error(`Erro ${resposta.status} ao buscar clientes`);
+    }
+
+    const dados = await resposta.json();
+    if (!Array.isArray(dados)) {
+      throw new Error("Resposta inesperada da API de clientes.");
+    }
+
+    estado.clientes = dados.filter(ehClienteValido);
+    atualizarResumo(estado.clientes);
+    renderizarListaAtual();
+  } catch (error) {
+    console.error("Erro ao carregar clientes:", error);
+    renderizarErro(error.message, carregarClientes);
+  }
+}
+
+async function removerCliente(cliente) {
+  const cpf = cliente?.cpf;
+  if (!cpf) {
+    console.error("Tentativa de remoção sem CPF válido.");
+    return;
+  }
+
+  const confirmar = confirm(`Deseja remover ${cliente.nome || "este usuário"}? Essa ação não pode ser desfeita.`);
   if (!confirmar) return;
 
   try {
-    const resposta = await fetch(`${API_REMOVE}/${cpf}`, { method: "DELETE" });
-    if (!resposta.ok) throw new Error("Erro ao remover");
+    const resposta = await fetch(`${API_REMOVE}/${encodeURIComponent(cpf)}`, { method: "DELETE" });
+    if (!resposta.ok) {
+      throw new Error(`Erro ${resposta.status} ao remover usuário`);
+    }
+
     await carregarClientes();
   } catch (error) {
-    console.error(error);
-    alert("Não foi possível remover o usuário.");
+    console.error("Erro ao remover cliente:", error);
+    alert("Não foi possível remover o usuário. Tente novamente.");
   }
 }
 
-if (fecharUsuario) {
-  fecharUsuario.addEventListener("click", () => {
-    modalUsuario?.classList.remove("active");
-    document.body.classList.remove("modal-open");
+// ===========================================================
+// 13. EVENTOS E INICIALIZAÇÃO
+// ===========================================================
+function configurarEventosModalUsuario() {
+  dom.fecharUsuario?.addEventListener("click", fecharModalUsuario);
+
+  dom.modalUsuario?.addEventListener("click", (event) => {
+    if (event.target === dom.modalUsuario) fecharModalUsuario();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && dom.modalUsuario?.classList.contains("active")) {
+      fecharModalUsuario();
+    }
   });
 }
 
-modalUsuario?.addEventListener("click", (event) => {
-  if (event.target === modalUsuario) {
-    modalUsuario.classList.remove("active");
-    document.body.classList.remove("modal-open");
-  }
-});
+function configurarEventosSidebar() {
+  dom.mobileToggle?.addEventListener("click", () => toggleSidebar());
+  dom.sidebarOverlay?.addEventListener("click", closeSidebar);
 
-mobileToggle?.addEventListener("click", () => toggleSidebar());
-sidebarOverlay?.addEventListener("click", closeSidebar);
-refreshButton?.addEventListener("click", carregarClientes);
-searchInput?.addEventListener("input", () => {
-  renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
-});
-sortAccessBtn?.addEventListener("click", () => {
-  sortAscending = !sortAscending;
-  if (sortDirectionLabel) sortDirectionLabel.textContent = sortAscending ? "↑" : "↓";
-  renderizarClientes(aplicarFiltroEOrdenacao(clientesCache));
-});
-
-Array.from(document.querySelectorAll(".nav-link")).forEach((link) => {
-  link.addEventListener("click", () => {
-    document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("active"));
-    link.classList.add("active");
-    closeSidebar();
+  document.querySelectorAll(".nav-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      document.querySelectorAll(".nav-link").forEach((item) => item.classList.remove("active"));
+      link.classList.add("active");
+      closeSidebar();
+    });
   });
-});
+}
 
-carregarClientes();
-ModalGuiasAdmin();
-//abrirModalUsuario();
+function configurarEventosListaClientes() {
+  dom.refreshButton?.addEventListener("click", carregarClientes);
+
+  dom.searchInput?.addEventListener("input", debounce(renderizarListaAtual, 200));
+
+  dom.sortAccessBtn?.addEventListener("click", () => {
+    estado.sortAscending = !estado.sortAscending;
+    if (dom.sortDirectionLabel) {
+      dom.sortDirectionLabel.textContent = estado.sortAscending ? "↑" : "↓";
+    }
+    renderizarListaAtual();
+  });
+}
+
+function inicializar() {
+  configurarEventosModalUsuario();
+  configurarEventosSidebar();
+  configurarEventosListaClientes();
+  carregarClientes();
+}
+
+inicializar();

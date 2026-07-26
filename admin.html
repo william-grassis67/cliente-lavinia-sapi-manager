@@ -250,15 +250,27 @@
 
     </section>
 
-    <section>
-      <div class="enviar-menssagem" id="send_menssage">
-        <textarea name="" id="mensagem"></textarea>
-        <button id="btn_send">Enviar</button>
-      </div>
-    </section>
+  </div>
 
+  <!--
+    Modal de envio de mensagem via WhatsApp.
+    IDs abaixo precisam bater exatamente com o que enviarMensagemCliente.js espera:
+    modal_mensagem, nome_cliente_modal, mensagem_cliente, btn_send_message, btn_close_send.
+  -->
+  <div id="modal_mensagem" style="display: none;" aria-hidden="true">
+    <div class="enviar-menssagem" id="send_menssage">
+      <button class="modal-close" id="btn_close_send" type="button" aria-label="Fechar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <p class="eyebrow">Enviar mensagem via WhatsApp</p>
+      <h2 id="nome_cliente_modal">Cliente</h2>
+      <textarea id="mensagem_cliente" rows="5" placeholder="Digite sua mensagem..."></textarea>
+      <button class="primary-btn" id="btn_send_message" type="button">
+        <i class="fa-brands fa-whatsapp"></i> Enviar
+      </button>
+    </div>
+  </div>
 
-</div>
   <script type="module" src="./js/admin.js"></script>
 </body>
 
