@@ -13,6 +13,9 @@
 
 <body class="dashboard-page">
 
+  <!-- Notificações (toasts) -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
   <header class="topbar">
 
     <div class="logo">
@@ -22,14 +25,23 @@
 
     <div class="topbar-actions">
 
-      <button class="notification-btn" id="btn_confirm_notification">
+      <button class="notification-btn" id="btn_confirm_notification" type="button" aria-label="Notificações">
         <i class="fa-regular fa-bell"></i>
+      </button>
+
+      <button class="admin-link" id="adminLink" type="button" style="display:none">
+        <i class="fa-solid fa-user-shield"></i>
+        Painel Admin
       </button>
 
       <div class="user-menu">
         <i class="fa-solid fa-circle-user"></i>
         <span id="person_name">William</span>
       </div>
+
+      <button class="logout-btn" id="logoutBtn" type="button" aria-label="Sair da conta" title="Sair">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
 
     </div>
 
@@ -45,7 +57,7 @@
         Portal do Cliente
       </span>
 
-      <h1>👋 Olá, <span id="person_name_card">WIlliam</span>!</h1>
+      <h1>👋 Olá, <span id="person_name_card">William</span>!</h1>
 
       <p>
         Bem-vindo ao Portal do Cliente.
@@ -58,311 +70,242 @@
 
     </section>
 
-    <!-- Perfil -->
-    <section class="card profile-card">
+    <div class="dashboard-columns">
 
-      <div class="card-title">
-        <i class="fa-solid fa-user"></i>
-        <h2>Meu Perfil</h2>
-      </div>
+      <!-- Perfil -->
+      <section class="card profile-card">
 
-      <div class="profile-content">
-
-        <div class="avatar">
-          <i class="fa-solid fa-circle-user"></i>
+        <div class="card-title">
+          <i class="fa-solid fa-user"></i>
+          <h2>Meu Perfil</h2>
         </div>
 
-        <div class="profile-info">
+        <div class="profile-content">
 
-          <p id="">
-            <strong>Nome:</strong>
-            <span id="person_name_perfil">William Gabriel</span>
-          </p>
+          <div class="avatar" id="profileAvatar">
+            <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
+            <span class="avatar-initials" id="avatarInitials"></span>
+          </div>
+
+          <div class="profile-info">
+
+            <p>
+              <strong>Nome:</strong>
+              <span id="person_name_perfil">William Gabriel</span>
+            </p>
+
+            <p>
+              <strong>Email:</strong>
+              <span id="person_email_perfil"></span>
+            </p>
+
+            <p>
+              <strong>Plano:</strong>
+              <span id="person_tipe_perfil">Cliente</span>
+            </p>
+
+            <p>
+              <strong>Status:</strong>
+              <span class="status active">
+                <i class="fa-solid fa-circle"></i>
+                Ativo
+              </span>
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Guia -->
+      <section class="card payment-card">
+
+        <div class="card-title">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <h2>Guia do INSS</h2>
+        </div>
+
+        <div class="payment-info">
 
           <p>
-            <strong>Email:</strong>
-            <span id="person_email_perfil"></span>
-          </p>
-
-          <p>
-            <strong>Plano:</strong>
-            <span id="person_tipe_perfil">Cliente</span>
+            <strong>Competência:</strong>
+            <span id="date_competencia"></span>
           </p>
 
           <p>
             <strong>Status:</strong>
-            <span class="status active">
+
+            <span class="status pending">
               <i class="fa-solid fa-circle"></i>
-              Ativo
+              Pendente
             </span>
+
           </p>
 
         </div>
 
-      </div>
+        <button class="pay-btn" id="pay_btn" type="button">
+          <i class="fa-solid fa-credit-card"></i>
+          Pagar Guia
+        </button>
 
-    </section>
+        <div class="popup-pagamento" id="popup_payment">
 
-    <!-- Guia -->
-    <section class="card payment-card">
+          <div class="popup-content">
+
+            <button class="btn-fechar" id="fecharPagamento" type="button">
+              Voltar
+            </button>
+
+            <h2>Confirmar Pagamento</h2>
+
+
+            <div class="campo">
+              <label for="competencia">Competência</label>
+              <input type="text" id="competencia" placeholder="Ex: 07/2026">
+            </div>
+
+
+            <div class="campo">
+              <label for="vencimento">Data de Vencimento</label>
+              <input type="date" id="vencimento">
+            </div>
+
+
+            <div class="campo">
+              <label for="valor">Valor pago</label>
+              <input type="number" id="valor" min="0" step="0.01" placeholder="Digite o valor">
+            </div>
+
+
+            <div class="campo">
+              <label for="mensagemPagamento">Observação</label>
+              <textarea id="mensagemPagamento" placeholder="Digite uma observação"></textarea>
+            </div>
+
+
+            <button id="confirma" type="button">
+              Confirmar Pagamento
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Resumo -->
+    <section class="card resumo-card">
 
       <div class="card-title">
-        <i class="fa-solid fa-file-invoice-dollar"></i>
-        <h2>Guia do INSS</h2>
-      </div>
 
-      <div class="payment-info">
+        <i class="fa-solid fa-chart-pie"></i>
 
-        <p>
-          <strong>Competência:</strong>
-          <span id="date_competencia"></span>
-        </p>
-
-        <p>
-          <strong>Status:</strong>
-
-          <span class="status pending">
-            <i class="fa-solid fa-circle"></i>
-            Pendente
-          </span>
-
-        </p>
-
-      </div>
-
-      <button class="pay-btn" id="pay_btn">
-        <i class="fa-solid fa-credit-card"></i>
-        Pagar Guia
-      </button>
-
-      <div class="popup-pagamento" id="popup_payment">
-
-        <div class="popup-content">
-
-          <button class="btn-fechar" id="fecharPagamento">
-            Voltar
-          </button>
-
-          <h2>Confirmar Pagamento</h2>
-
-
-          <div class="campo">
-            <label for="competencia">Competência</label>
-            <input type="text" id="competencia" placeholder="Ex: 07/2026">
-          </div>
-
-
-          <div class="campo">
-            <label for="vencimento">Data de Vencimento</label>
-            <input type="date" id="vencimento">
-          </div>
-
-
-          <div class="campo">
-            <label for="valor">Valor pago</label>
-            <input type="number" id="valor" placeholder="Digite o valor">
-          </div>
-
-
-          <div class="campo">
-            <label for="mensagemPagamento">Observação</label>
-            <textarea id="mensagemPagamento" placeholder="Digite uma observação">
-            </textarea>
-          </div>
-
-
-          <button id="confirma">
-            Confirmar Pagamento
-          </button>
-
+        <div>
+          <h2>Resumo das Minhas Guias</h2>
+          <p>
+            Acompanhe suas guias do INSS
+          </p>
         </div>
 
       </div>
 
+
+      <div class="stats-grid">
+
+
+        <!-- Total de guias -->
+
+        <article class="stat-card total">
+
+          <div class="stat-icon">
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+
+          <div class="stat-content">
+
+            <h3>Total de Guias</h3>
+
+            <strong id="guias_emitidas_show">0</strong>
+
+            <span>Guias cadastradas</span>
+
+          </div>
+
+        </article>
+
+
+        <!-- Pagas -->
+
+        <article class="stat-card success">
+
+          <div class="stat-icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+
+          <div class="stat-content">
+
+            <h3>Guias Pagas</h3>
+
+            <strong id="guias_pagas_show">0</strong>
+
+            <span>Pagamentos realizados</span>
+
+          </div>
+
+          <button class="btn-ver-mais" id="verGuiasPagas" type="button">
+            <i class="fa-solid fa-eye"></i>
+            Ver histórico
+          </button>
+
+        </article>
+
+
+        <!-- Pendentes -->
+
+        <article class="stat-card warning">
+
+          <div class="stat-icon">
+            <i class="fa-solid fa-clock"></i>
+          </div>
+
+          <div class="stat-content">
+
+            <h3>Pendentes</h3>
+
+            <strong id="guias_pendentes_show">0</strong>
+
+            <span>Aguardando pagamento</span>
+
+          </div>
+
+        </article>
+
+
+      </div>
+
+
     </section>
-
-    <!-- Resumo -->
-<!-- Resumo -->
-<section class="card resumo-card">
-
-  <div class="card-title">
-
-    <i class="fa-solid fa-chart-pie"></i>
-
-    <div>
-      <h2>Resumo das Minhas Guias</h2>
-      <p>
-        Acompanhe suas guias do INSS
-      </p>
-    </div>
-
-  </div>
-
-
-  <div class="stats-grid">
-
-
-    <!-- Total de guias -->
-
-    <article class="stat-card total">
-
-      <div class="stat-icon">
-
-        <i class="fa-solid fa-file-invoice"></i>
-
-      </div>
-
-
-      <div class="stat-content">
-
-        <h3>
-          Total de Guias
-        </h3>
-
-
-        <strong id="guias_emitidas_show">
-          0
-        </strong>
-
-
-        <span>
-          Guias cadastradas
-        </span>
-
-
-      </div>
-
-
-    </article>
-
-
-
-
-
-    <!-- Pagas -->
-
-    <article class="stat-card success">
-
-
-      <div class="stat-icon">
-
-        <i class="fa-solid fa-circle-check"></i>
-
-      </div>
-
-
-      <div class="stat-content">
-
-        <h3>
-          Guias Pagas
-        </h3>
-
-
-        <strong id="guias_pagas_show">
-          0
-        </strong>
-
-
-        <span>
-          Pagamentos realizados
-        </span>
-
-
-      </div>
-
-
-
-      <button 
-        class="btn-ver-mais"
-        id="verGuiasPagas"
-        type="button">
-
-        <i class="fa-solid fa-eye"></i>
-
-        Ver histórico
-
-      </button>
-
-
-    </article>
-
-
-
-
-
-    <!-- Pendentes -->
-
-    <article class="stat-card warning">
-
-
-      <div class="stat-icon">
-
-        <i class="fa-solid fa-clock"></i>
-
-      </div>
-
-
-      <div class="stat-content">
-
-        <h3>
-          Pendentes
-        </h3>
-
-
-        <strong id="guias_pendentes_show">
-          0
-        </strong>
-
-
-        <span>
-          Aguardando pagamento
-        </span>
-
-
-      </div>
-
-
-    </article>
-
-
-
-  </div>
-
-
-</section>
-
-
 
     <!-- Modal histórico de pagamentos -->
 
     <div class="popup-pagamento" id="popupGuiasPagas">
 
-
       <div class="popup-content">
 
-
         <button class="btn-fechar" id="fecharGuiasPagas" type="button">
-
           Voltar
-
         </button>
 
-
-
         <div class="card-title">
-
           <i class="fa-solid fa-clock-rotate-left"></i>
-
-          <h2>
-            Histórico de Pagamentos
-          </h2>
-
+          <h2>Histórico de Pagamentos</h2>
         </div>
 
-
-
         <div id="listaGuiasPagas" class="lista-guias">
-
 
           <!-- Exemplo gerado pelo JavaScript -->
 
@@ -392,14 +335,12 @@
             </div>
             -->
 
-
         </div>
-
 
       </div>
 
-
     </div>
+
     <!-- Ações rápidas -->
     <section class="card">
 
@@ -410,22 +351,22 @@
 
       <div class="actions-grid">
 
-        <button>
+        <button type="button">
           <i class="fa-solid fa-file-lines"></i>
           Ver Guias
         </button>
 
-        <button>
+        <button type="button">
           <i class="fa-solid fa-user"></i>
           Meu Perfil
         </button>
 
-        <button>
+        <button type="button">
           <i class="fa-solid fa-gear"></i>
           Configurações
         </button>
 
-        <button>
+        <button type="button">
           <i class="fa-solid fa-clock-rotate-left"></i>
           Histórico
         </button>
@@ -437,7 +378,7 @@
     <!-- Último acesso -->
     <section class="card last-access">
 
-      <i class="fa-solid fa-clock"></i>
+      <i class="fa-solid fa-clock" aria-hidden="true"></i>
 
       <div>
 
@@ -452,19 +393,8 @@
     </section>
 
   </main>
+
   <script type="module" src="js/paginainicial.js"></script>
-  <script>
-    const hoje = new Date();
-
-    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-    const ano = hoje.getFullYear();
-
-    const competencia = `${mes}/${ano}`;
-    const date_competencia = `${mes}/${ano}`;
-
-    document.getElementById("competencia").value = competencia;
-    document.getElementById("date_competencia").innerHTML = date_competencia;
-  </script>
 </body>
 
 </html>
