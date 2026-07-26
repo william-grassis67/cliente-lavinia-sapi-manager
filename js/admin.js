@@ -36,7 +36,7 @@ function obterUsuarioSessao() {
 function verificarAutenticacao() {
   const usuarioSessao = obterUsuarioSessao();
   if (!usuarioSessao || !usuarioSessao.token) {
-    window.location.href = "login.html";
+    window.location.href = "index.html";
     return false;
   }
   return true;
