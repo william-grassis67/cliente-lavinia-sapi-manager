@@ -7,91 +7,70 @@
   <title>SAPI | Portal do Cliente</title>
 
   <link rel="stylesheet" href="./css/style.css">
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 
 <body class="dashboard-page">
 
-  <!-- Notificações (toasts) -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
   <header class="topbar">
-
     <div class="logo">
       <i class="fa-solid fa-shield-halved"></i>
       <span>SAPI</span>
     </div>
 
     <div class="topbar-actions">
-
       <button class="notification-btn" id="btn_confirm_notification" type="button" aria-label="Notificações">
         <i class="fa-regular fa-bell"></i>
       </button>
 
-      <button class="admin-link" id="adminLink" type="button" style="display:none">
-        <i class="fa-solid fa-user-shield"></i>
-        Painel Admin
-      </button>
-
       <div class="user-menu">
         <i class="fa-solid fa-circle-user"></i>
-        <span id="person_name">William</span>
+        <span id="person_name">Carregando...</span>
       </div>
 
       <button class="logout-btn" id="logoutBtn" type="button" aria-label="Sair da conta" title="Sair">
         <i class="fa-solid fa-right-from-bracket"></i>
       </button>
-
     </div>
-
   </header>
 
   <main class="dashboard">
 
-    <!-- Boas-vindas -->
     <section class="hero-section">
-
       <span class="hero-badge">
         <i class="fa-solid fa-house"></i>
         Portal do Cliente
       </span>
 
-      <h1>👋 Olá, <span id="person_name_card">William</span>!</h1>
+      <h1>👋 Olá, <span id="person_name_card">Usuário</span>!</h1>
 
-      <p>
-        Bem-vindo ao Portal do Cliente.
-      </p>
+      <p>Bem-vindo ao Portal do Cliente.</p>
 
       <p class="hero-description">
-        Gerencie suas guias, acompanhe pagamentos e mantenha seus
-        dados sempre atualizados.
+        Acompanhe suas guias, consulte seus processos e verifique o status dos seus pagamentos.
       </p>
-
     </section>
 
     <div class="dashboard-columns">
 
-      <!-- Perfil -->
       <section class="card profile-card">
-
         <div class="card-title">
           <i class="fa-solid fa-user"></i>
           <h2>Meu Perfil</h2>
         </div>
 
         <div class="profile-content">
-
           <div class="avatar" id="profileAvatar">
             <i class="fa-solid fa-circle-user" aria-hidden="true"></i>
             <span class="avatar-initials" id="avatarInitials"></span>
           </div>
 
           <div class="profile-info">
-
             <p>
               <strong>Nome:</strong>
-              <span id="person_name_perfil">William Gabriel</span>
+              <span id="person_name_perfil"></span>
             </p>
 
             <p>
@@ -100,7 +79,7 @@
             </p>
 
             <p>
-              <strong>Plano:</strong>
+              <strong>Tipo:</strong>
               <span id="person_tipe_perfil">Cliente</span>
             </p>
 
@@ -111,38 +90,34 @@
                 Ativo
               </span>
             </p>
-
           </div>
-
         </div>
-
       </section>
 
-      <!-- Guia -->
       <section class="card payment-card">
-
         <div class="card-title">
           <i class="fa-solid fa-file-invoice-dollar"></i>
           <h2>Guia do INSS</h2>
         </div>
 
         <div class="payment-info">
-
           <p>
             <strong>Competência:</strong>
-            <span id="date_competencia"></span>
+            <span id="date_competencia">--/----</span>
+          </p>
+
+          <p>
+            <strong>Valor:</strong>
+            <span id="valor_guia">R$ 0,00</span>
           </p>
 
           <p>
             <strong>Status:</strong>
-
-            <span class="status pending">
+            <span class="status pending" id="status_guia">
               <i class="fa-solid fa-circle"></i>
               Pendente
             </span>
-
           </p>
-
         </div>
 
         <button class="pay-btn" id="pay_btn" type="button">
@@ -151,151 +126,213 @@
         </button>
 
         <div class="popup-pagamento" id="popup_payment">
-
           <div class="popup-content">
-
             <button class="btn-fechar" id="fecharPagamento" type="button">
               Voltar
             </button>
 
             <h2>Confirmar Pagamento</h2>
-
-
-            <div class="campo">
-              <label for="competencia">Competência</label>
-              <input type="text" id="competencia" placeholder="Ex: 07/2026">
-            </div>
-
+            <p class="popup-description">
+              Confirme a liquidação da guia selecionada.
+            </p>
 
             <div class="campo">
-              <label for="vencimento">Data de Vencimento</label>
-              <input type="date" id="vencimento">
+              <label for="mensagemPagamento">Observação (Opcional)</label>
+              <textarea id="mensagemPagamento" placeholder="Digite uma observação sobre o pagamento..."></textarea>
             </div>
-
-
-            <div class="campo">
-              <label for="valor">Valor pago</label>
-              <input type="number" id="valor" min="0" step="0.01" placeholder="Digite o valor">
-            </div>
-
-
-            <div class="campo">
-              <label for="mensagemPagamento">Observação</label>
-              <textarea id="mensagemPagamento" placeholder="Digite uma observação"></textarea>
-            </div>
-
 
             <button id="confirma" type="button">
               Confirmar Pagamento
             </button>
-
           </div>
-
         </div>
-
       </section>
 
     </div>
 
-    <!-- Resumo -->
-    <section class="card resumo-card">
-
+    <section class="card">
       <div class="card-title">
-
-        <i class="fa-solid fa-chart-pie"></i>
-
+        <i class="fa-solid fa-folder-open"></i>
         <div>
-          <h2>Resumo das Minhas Guias</h2>
-          <p>
-            Acompanhe suas guias do INSS
-          </p>
+          <h2>Meus Processos</h2>
+          <p>Acompanhe a situação dos seus processos em tempo real</p>
         </div>
-
       </div>
 
-
-      <div class="stats-grid">
-
-
-        <!-- Total de guias -->
-
+      <div class="stats-grid" style="margin-bottom: var(--gap-lg, 28px);">
         <article class="stat-card total">
-
           <div class="stat-icon">
-            <i class="fa-solid fa-file-invoice"></i>
+            <i class="fa-solid fa-layer-group"></i>
           </div>
-
           <div class="stat-content">
-
-            <h3>Total de Guias</h3>
-
-            <strong id="guias_emitidas_show">0</strong>
-
-            <span>Guias cadastradas</span>
-
+            <h3>Total de Processos</h3>
+            <strong id="processos_total_show">0</strong>
+            <span>Processos vinculados</span>
           </div>
-
         </article>
 
-
-        <!-- Pagas -->
+        <article class="stat-card">
+          <div class="stat-icon">
+            <i class="fa-solid fa-spinner"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Em Andamento</h3>
+            <strong id="processos_andamento_show">0</strong>
+            <span>Em tramitação</span>
+          </div>
+        </article>
 
         <article class="stat-card success">
-
           <div class="stat-icon">
             <i class="fa-solid fa-circle-check"></i>
           </div>
-
           <div class="stat-content">
+            <h3>Finalizados</h3>
+            <strong id="processos_finalizados_show">0</strong>
+            <span>Concluídos</span>
+          </div>
+        </article>
 
-            <h3>Guias Pagas</h3>
+        <article class="stat-card warning">
+          <div class="stat-icon">
+            <i class="fa-solid fa-file-circle-exclamation"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Aguardando Documentos</h3>
+            <strong id="processos_aguardando_docs_show">0</strong>
+            <span>Pendências do cliente</span>
+          </div>
+        </article>
+      </div>
 
-            <strong id="guias_pagas_show">0</strong>
+      <div id="listaProcessos" class="processos-grid">
+        </div>
+    </section>
 
-            <span>Pagamentos realizados</span>
+    <div class="popup-pagamento" id="popupDetalhesProcesso">
+      <div class="popup-content">
+        <button class="btn-fechar" id="fecharDetalhesProcesso" type="button">
+          Voltar
+        </button>
 
+        <div class="card-title">
+          <i class="fa-solid fa-folder-open"></i>
+          <h2>Detalhes do Processo</h2>
+        </div>
+
+        <span class="status-badge" id="detalheStatusBadge"></span>
+
+        <div id="detalheBarraProgresso"></div>
+
+        <div class="guia-info" style="margin-top: 20px;">
+          <div>
+            <i class="fa-solid fa-tag"></i>
+            <strong>Tipo</strong>
+            <p id="detalheTipo"></p>
           </div>
 
+          <div>
+            <i class="fa-solid fa-hashtag"></i>
+            <strong>Número</strong>
+            <p id="detalheNumero"></p>
+          </div>
+
+          <div>
+            <i class="fa-solid fa-money-bill-wave"></i>
+            <strong>Valor</strong>
+            <p id="detalheValor"></p>
+          </div>
+
+          <div>
+            <i class="fa-solid fa-calendar-days"></i>
+            <strong>Criado em</strong>
+            <p id="detalheData"></p>
+          </div>
+
+          <div>
+            <i class="fa-solid fa-note-sticky"></i>
+            <strong>Observação</strong>
+            <p id="detalheObservacao"></p>
+          </div>
+
+          <div>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>Pendências</strong>
+            <p id="detalhePendencias"></p>
+          </div>
+
+          <div>
+            <i class="fa-solid fa-file-circle-exclamation"></i>
+            <strong>Documentos pendentes</strong>
+            <p id="detalheDocumentos"></p>
+          </div>
+
+          <div>
+            <i class="fa-solid fa-credit-card"></i>
+            <strong>Pagamento realizado</strong>
+            <p id="detalhePagamento"></p>
+          </div>
+
+          <div>
+            <i class="fa-solid fa-fingerprint"></i>
+            <strong>Biometria realizada</strong>
+            <p id="detalheBiometria"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="card resumo-card">
+      <div class="card-title">
+        <i class="fa-solid fa-chart-pie"></i>
+        <div>
+          <h2>Resumo das Minhas Guias</h2>
+          <p>Visão geral dos status de cobrança</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card total">
+          <div class="stat-icon">
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Total de Guias</h3>
+            <strong id="guias_emitidas_show">0</strong>
+            <span>Cadastradas</span>
+          </div>
+        </article>
+
+        <article class="stat-card success">
+          <div class="stat-icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="stat-content">
+            <h3>Guias Pagas</h3>
+            <strong id="guias_pagas_show">0</strong>
+            <span>Confirmadas</span>
+          </div>
           <button class="btn-ver-mais" id="verGuiasPagas" type="button">
             <i class="fa-solid fa-eye"></i>
             Ver histórico
           </button>
-
         </article>
 
-
-        <!-- Pendentes -->
-
         <article class="stat-card warning">
-
           <div class="stat-icon">
             <i class="fa-solid fa-clock"></i>
           </div>
-
           <div class="stat-content">
-
             <h3>Pendentes</h3>
-
             <strong id="guias_pendentes_show">0</strong>
-
             <span>Aguardando pagamento</span>
-
           </div>
-
         </article>
-
-
       </div>
-
-
     </section>
 
-    <!-- Modal histórico de pagamentos -->
-
     <div class="popup-pagamento" id="popupGuiasPagas">
-
       <div class="popup-content">
-
         <button class="btn-fechar" id="fecharGuiasPagas" type="button">
           Voltar
         </button>
@@ -306,90 +343,18 @@
         </div>
 
         <div id="listaGuiasPagas" class="lista-guias">
-
-          <!-- Exemplo gerado pelo JavaScript -->
-
-          <!--
-            <div class="guia-item">
-
-                <h3>
-                    Competência: 07/2026
-                </h3>
-
-
-                <p>
-                    Valor: R$ 150,00
-                </p>
-
-
-                <p>
-                    Pago em:
-                    24/07/2026 às 14:30
-                </p>
-
-
-                <span>
-                    Pago ✅
-                </span>
-
-            </div>
-            -->
-
-        </div>
-
+          </div>
       </div>
-
     </div>
 
-    <!-- Ações rápidas -->
-    <section class="card">
-
-      <div class="card-title">
-        <i class="fa-solid fa-bolt"></i>
-        <h2>Ações Rápidas</h2>
-      </div>
-
-      <div class="actions-grid">
-
-        <button type="button">
-          <i class="fa-solid fa-file-lines"></i>
-          Ver Guias
-        </button>
-
-        <button type="button">
-          <i class="fa-solid fa-user"></i>
-          Meu Perfil
-        </button>
-
-        <button type="button">
-          <i class="fa-solid fa-gear"></i>
-          Configurações
-        </button>
-
-        <button type="button">
-          <i class="fa-solid fa-clock-rotate-left"></i>
-          Histórico
-        </button>
-
-      </div>
-
-    </section>
-
-    <!-- Último acesso -->
     <section class="card last-access">
-
       <i class="fa-solid fa-clock" aria-hidden="true"></i>
-
       <div>
-
         <strong>Último acesso</strong>
-
         <p>
-          <span id="userDateLastTime">22/07/2026 às 23:15</span>
+          <span id="userDateLastTime">--/--/---- às --:--</span>
         </p>
-
       </div>
-
     </section>
 
   </main>

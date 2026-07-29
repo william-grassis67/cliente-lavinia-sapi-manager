@@ -1616,3 +1616,89 @@ textarea:focus-visible {
     padding: 22px;
   }
 }
+/* ==========================================================================
+   NOVA SEÇÃO: MEUS PROCESSOS
+   --------------------------------------------------------------------------
+   Bloco 100% aditivo — reaproveita tokens (--radius-*, --border, --muted,
+   --success, --warning etc.) e padrões visuais já usados nos cards de guias
+   (.guia-info, .empty-guias, .status-pago/.status-pendente) para manter a
+   nova seção visualmente idêntica ao restante do sistema.
+   Cole este bloco ao final de css/style.css.
+   ========================================================================== */
+
+.dashboard-page .processos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--gap-md);
+}
+
+.dashboard-page .processo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--azul-marinho);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.dashboard-page .processo-card:hover,
+.dashboard-page .processo-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-page .processo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.dashboard-page .processo-numero {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* Badge de status genérico — a cor é aplicada inline por processo,
+   conforme o status (amarelo/azul/laranja/verde). */
+.dashboard-page .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dashboard-page .status-badge i {
+  font-size: 8px;
+}
+
+/* Barra de progresso do status (4 etapas) */
+.dashboard-page .progresso-barra {
+  display: flex;
+  gap: 6px;
+}
+
+.dashboard-page .progresso-segmento {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--border);
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE — SEÇÃO DE PROCESSOS
+   ========================================================================== */
+@media (max-width: 768px) {
+  .dashboard-page .processos-grid {
+    grid-template-columns: 1fr;
+  }
+}

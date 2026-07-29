@@ -145,118 +145,75 @@
           <div id="usuarioUltimoLogin"></div>
         </div>
         <div class="guias-verify">
-          <div class="btn_verify">Verificar Guias pagas!</div>
-          <button id="btn_verify">Verificar Guias Pagas!</button>
+          <button id="btn_verify" class="primary-btn" type="button">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Verificar Guias Pagas
+          </button>
         </div>
       </div>
-    </div>
-  </div>
- <div class="modal-overlay" id="modalGuiasAdmin" aria-hidden="true">
 
-    <section class="modal-card guias-fullscreen">
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e5e7eb;" />
 
-
-        <header class="guias-header">
-
-
-            <div>
-
-                <p class="eyebrow">
-                    Histórico financeiro
-                </p>
-
-
-                <h2 id="tituloGuiasUsuario">
-                    Guias do Cliente
-                </h2>
-
-            </div>
-
-
-
-            <button 
-                class="modal-close" 
-                id="fecharGuiasAdmin"
-                type="button">
-
-                <i class="fa-solid fa-xmark" style="color: black;"></i>
-
-            </button>
-
-
-        </header>
-
-
-
-        <div class="table-wrapper">
-
-
-            <table class="users-table">
-
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Competência
-                        </th>
-
-
-                        <th>
-                            Valor
-                        </th>
-
-
-                        <th>
-                            Vencimento
-                        </th>
-
-
-                        <th>
-                            Status
-                        </th>
-
-
-                    </tr>
-
-
-                </thead>
-
-
-
-                <tbody id="tabelaGuiasAdmin">
-
-
-                    <tr>
-
-                        <td colspan="4">
-
-                            Nenhuma guia carregada.
-
-                        </td>
-
-                    </tr>
-
-
-                </tbody>
-
-
-            </table>
-
-
+      <section id="secaoProcessos">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3><i class="fa-solid fa-folder-open"></i> Processos do Cliente</h3>
+          <button id="btnToggleNovoProcesso" class="primary-btn" type="button">
+            <i class="fa-solid fa-plus"></i> Novo Processo
+          </button>
         </div>
 
+        <form id="formNovoProcesso" style="display: none; margin-bottom: 16px; background: #f9fafb; padding: 12px; border-radius: 8px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <input type="text" id="procTipo" placeholder="Tipo (ex: Aposentadoria)" required />
+            <input type="text" id="procNumero" placeholder="Número do Processo" required />
+            <input type="text" id="procStatus" placeholder="Status" value="AGUARDANDO_DOCUMENTOS" required />
+            <input type="number" id="procValor" placeholder="Valor (R$)" step="0.01" required />
+            <input type="text" id="procDocsPendentes" placeholder="Documentos Pendentes" />
+            <input type="text" id="procPendencias" placeholder="Pendências" />
+            <input type="text" id="procObservacao" placeholder="Observação" />
+            <div style="display: flex; gap: 10px; align-items: center; grid-column: span 2;">
+              <label><input type="checkbox" id="procPagamento" /> Pagamento Realizado</label>
+              <label><input type="checkbox" id="procBiometria" /> Biometria Realizada</label>
+            </div>
+          </div>
+          <button type="submit" class="primary-btn" style="margin-top: 10px;">Salvar Processo</button>
+        </form>
 
-    </section>
-
+        <div id="listaProcessos"></div>
+      </section>
+    </div>
   </div>
 
-  <!--
-    Modal de envio de mensagem via WhatsApp.
-    IDs abaixo precisam bater exatamente com o que enviarMensagemCliente.js espera:
-    modal_mensagem, nome_cliente_modal, mensagem_cliente, btn_send_message, btn_close_send.
-  -->
+  <div class="modal-overlay" id="modalGuiasAdmin" aria-hidden="true">
+    <section class="modal-card guias-fullscreen">
+      <header class="guias-header">
+        <div>
+          <p class="eyebrow">Histórico financeiro</p>
+          <h2 id="tituloGuiasUsuario">Guias do Cliente</h2>
+        </div>
+        <button class="modal-close" id="fecharGuiasAdmin" type="button">
+          <i class="fa-solid fa-xmark" style="color: black;"></i>
+        </button>
+      </header>
+      <div class="table-wrapper">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Competência</th>
+              <th>Valor</th>
+              <th>Vencimento</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaGuiasAdmin">
+            <tr>
+              <td colspan="4">Nenhuma guia carregada.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
   <div id="modal_mensagem" style="display: none;" aria-hidden="true">
     <div class="enviar-menssagem" id="send_menssage">
       <button class="modal-close" id="btn_close_send" type="button" aria-label="Fechar">
@@ -273,5 +230,4 @@
 
   <script type="module" src="./js/admin.js"></script>
 </body>
-
 </html>

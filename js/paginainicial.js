@@ -3,9 +3,21 @@ import { pagamentoGuiasInss } from "./pagamento-guias.js";
 import { Notificacao } from "./Notifacao.js";
 import { verifyButton } from "./BotaoPayment.js";
 import { ShowGuias } from "./ShowGuais.js";
+import { initProcessos } from "./processos.js";
 
 /* ==========================================================================
-   CONFIGURAÇÃO & SELETORES DO DOM
+   CONFIGURAÇÃO DA API & ROTAS DO CLIENTE
+   ========================================================================== */
+const API_ROUTES = {
+    criarGuia: (usuarioId) => `/api/guias/${usuarioId}`,
+    confirmarPagamento: (guiaId) => `/api/pagamento/${guiaId}`,
+    buscarProcessos: (usuarioId) => `/api/me/processos/${usuarioId}`
+};
+
+const FETCH_TIMEOUT_MS = 15000; // 15 segundos de timeout
+
+/* ==========================================================================
+   SELETORES DO DOM
    ========================================================================== */
 const DOM = {
     profileName: document.getElementById('person_name'),
@@ -30,7 +42,7 @@ const TOAST_DURATION_MS = 4500;
    ========================================================================== */
 
 /**
- * Garante que o container de toasts exista no DOM, criando-o se necessário.
+ * Garante que o container de toasts exista no DOM.
  * @returns {HTMLElement}
  */
 function ensureToastContainer() {
@@ -48,7 +60,7 @@ function ensureToastContainer() {
 }
 
 /**
- * Retorna o ícone adequado para cada tipo de notificação.
+ * Retorna o ícone adequado para o tipo de notificação.
  * @param {'info'|'success'|'error'|'warning'} type
  */
 function iconForToastType(type) {
@@ -61,8 +73,7 @@ function iconForToastType(type) {
 }
 
 /**
- * Exibe uma notificação temporária e amigável para o usuário.
- * Disponível globalmente como window.SapiToast para os demais módulos.
+ * Exibe notificação temporária no padrão window.SapiToast.
  * @param {string} message
  * @param {'info'|'success'|'error'|'warning'} [type]
  */
@@ -92,6 +103,7 @@ function showToast(message, type = 'info') {
     }, TOAST_DURATION_MS);
 }
 
+// Expõe window.SapiToast para consumo global e compatibilidade com scripts legados
 window.SapiToast = {
     show: showToast,
     success: (msg) => showToast(msg, 'success'),
@@ -101,12 +113,94 @@ window.SapiToast = {
 };
 
 /* ==========================================================================
+   CENTRALIZADOR DE REQUISIÇÕES HTTP & RETRIES Defensivos
+   ========================================================================== */
+
+/**
+ * Wrapper centralizado para requisições com timeout e tratamento robusto de erros HTTP/JSON.
+ * @param {string} url
+ * @param {RequestInit} [options={}]
+ * @returns {Promise<any>}
+ */
+async function apiFetch(url, options = {}) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+    const defaultHeaders = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    };
+
+    const config = {
+        ...options,
+        headers: {
+            ...defaultHeaders,
+            ...options.headers
+        },
+        signal: controller.signal
+    };
+
+    try {
+        const response = await fetch(url, config);
+        clearTimeout(timeoutId);
+
+        if (response.status === 401 || response.status === 403) {
+            showToast('Sessão expirada ou não autorizada. Faça login novamente.', 'warning');
+            handleLogout();
+            throw new Error('Acesso não autorizado');
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        let data = null;
+
+        if (contentType.includes('application/json')) {
+            try {
+                data = await response.json();
+            } catch {
+                throw new Error('Resposta do servidor em formato JSON inválido.');
+            }
+        } else {
+            const textData = await response.text();
+            data = textData ? { message: textData } : null;
+        }
+
+        if (!response.ok) {
+            const errorMessage = data?.message || data?.error || `Erro HTTP ${response.status}`;
+            throw new Error(errorMessage);
+        }
+
+        return data;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error('A requisição demorou muito para responder (Timeout).');
+        }
+        throw error;
+    }
+}
+
+// Utilitários de API expostos para interações diretas se necessário
+window.SapiApi = {
+    criarGuia: (usuarioId, payload) => apiFetch(API_ROUTES.criarGuia(usuarioId), {
+        method: 'POST',
+        body: JSON.stringify(payload)
+    }),
+    confirmarPagamento: (guiaId, payload) => apiFetch(API_ROUTES.confirmarPagamento(guiaId), {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+    }),
+    buscarProcessos: (usuarioId) => apiFetch(API_ROUTES.buscarProcessos(usuarioId), {
+        method: 'GET'
+    })
+};
+
+/* ==========================================================================
    SESSÃO & AUTENTICAÇÃO
    ========================================================================== */
 
 /**
- * Busca e valida o objeto do usuário gravado no localStorage.
- * @returns {Object|null} Retorna o usuário válido ou null.
+ * Valida a sessão e retorna os dados do usuário.
+ * @returns {Object|null}
  */
 function getStoredUser() {
     try {
@@ -115,20 +209,19 @@ function getStoredUser() {
 
         const user = JSON.parse(data);
 
-        // Validação defensiva do objeto retornado
         if (typeof user !== 'object' || user === null || !user.id) {
             return null;
         }
 
         return user;
     } catch (error) {
-        console.error('[paginainicial] Não foi possível ler os dados de sessão:', error);
+        console.error('[paginainicial] Erro ao analisar sessão do usuário:', error);
         return null;
     }
 }
 
 /**
- * Realiza o redirecionamento de navegação de forma segura.
+ * Redireciona a navegação de forma segura.
  * @param {string} page
  */
 function redirectTo(page) {
@@ -136,34 +229,32 @@ function redirectTo(page) {
 }
 
 /**
- * Executa o encerramento da sessão do usuário.
+ * Encerra a sessão e apaga dados locais.
  */
 function handleLogout() {
     try {
         localStorage.removeItem('usuario');
         sessionStorage.clear();
     } catch (error) {
-        console.error('[paginainicial] Erro ao limpar dados de sessão:', error);
+        console.error('[paginainicial] Erro ao desconectar:', error);
     } finally {
         redirectTo('index.html');
     }
 }
 
 /**
- * Confirma com o usuário antes de encerrar a sessão.
+ * Manipulador do evento de clique no botão de logout.
  * @param {MouseEvent} event
  */
 function handleLogoutClick(event) {
     event.preventDefault();
-
-    const confirmado = window.confirm('Tem certeza que deseja sair da sua conta?');
-    if (confirmado) {
+    if (window.confirm('Tem certeza que deseja sair da sua conta?')) {
         handleLogout();
     }
 }
 
 /* ==========================================================================
-   ATUALIZAÇÃO DA INTERFACE (UI)
+   INTERFACE E DOM (UI)
    ========================================================================== */
 
 /**
@@ -191,7 +282,7 @@ function formatLastAccessDate(dateString) {
 }
 
 /**
- * Extrai as iniciais do nome do usuário (ex: "William Gabriel" -> "WG").
+ * Extrai as iniciais do nome.
  * @param {string} name
  * @returns {string}
  */
@@ -208,7 +299,7 @@ function getInitials(name) {
 }
 
 /**
- * Atualiza o avatar do perfil com as iniciais do usuário, quando possível.
+ * Atualiza o avatar e as iniciais.
  * @param {string} name
  */
 function updateAvatarUI(name) {
@@ -226,7 +317,7 @@ function updateAvatarUI(name) {
 }
 
 /**
- * Atualiza o nome do usuário nos diferentes locais da UI.
+ * Atualiza os campos de nome na interface.
  * @param {string} name
  */
 function updateUserNameUI(name) {
@@ -241,7 +332,7 @@ function updateUserNameUI(name) {
 }
 
 /**
- * Atualiza as informações detalhadas do perfil.
+ * Preenche o perfil do usuário.
  * @param {Object} user
  */
 function updateUserProfileUI(user) {
@@ -266,7 +357,7 @@ function updateUserProfileUI(user) {
 }
 
 /**
- * Renderiza todos os dados do usuário na interface.
+ * Renderiza todos os dados do usuário.
  * @param {Object} user
  */
 function renderUserData(user) {
@@ -275,8 +366,7 @@ function renderUserData(user) {
 }
 
 /**
- * Preenche a competência atual (mês/ano) no formulário de pagamento e no resumo,
- * evitando duplicar essa lógica em um script inline no HTML.
+ * Define a competência atual por padrão (mês/ano).
  */
 function setDefaultCompetenciaAtual() {
     const hoje = new Date();
@@ -294,11 +384,11 @@ function setDefaultCompetenciaAtual() {
 }
 
 /* ==========================================================================
-   INICIALIZAÇÃO DE MÓDULOS E EVENTOS
+   INICIALIZAÇÃO E INTEGRAÇÃO DOS MÓDULOS
    ========================================================================== */
 
 /**
- * Registra ouvintes de eventos da página.
+ * Configura os escutadores de eventos básicos.
  */
 function setupEventListeners() {
     if (DOM.logoutBtn) {
@@ -307,37 +397,32 @@ function setupEventListeners() {
 }
 
 /**
- * Inicializa os módulos externos integrados.
- * Cada módulo é isolado para que a falha de um não derrube os demais.
+ * Inicializa com segurança cada um dos módulos importados com as novas rotas.
  * @param {Object} user
  */
 function initModules(user) {
+    const userId = user.id;
+
     const modules = [
-        { name: 'PaymentPopUp', fn: () => PaymentPopUp?.(), critical: false },
-        { name: 'pagamentoGuiasInss', fn: () => pagamentoGuiasInss?.(), critical: false },
-        { name: 'Notificacao', fn: () => Notificacao?.(), critical: false },
-        { name: 'verifyButton', fn: () => verifyButton?.(), critical: false },
-        { name: 'ShowGuias', fn: () => ShowGuias?.(user.id), critical: true }
+        { name: 'PaymentPopUp', fn: () => PaymentPopUp?.() },
+        { name: 'pagamentoGuiasInss', fn: () => pagamentoGuiasInss?.(userId) },
+        { name: 'Notificacao', fn: () => Notificacao?.(userId) },
+        { name: 'verifyButton', fn: () => verifyButton?.() },
+        { name: 'ShowGuias', fn: () => ShowGuias?.(userId) },
+        { name: 'initProcessos', fn: () => initProcessos?.(userId) }
     ];
 
-    modules.forEach(({ name, fn, critical }) => {
+    modules.forEach(({ name, fn }) => {
         try {
             fn();
         } catch (error) {
-            console.error(`[paginainicial] Falha ao iniciar o módulo "${name}":`, error);
-
-            if (critical) {
-                showToast(
-                    'Não foi possível carregar suas guias no momento. Tente atualizar a página.',
-                    'error'
-                );
-            }
+            console.error(`[paginainicial] Erro ao inicializar o módulo "${name}":`, error);
         }
     });
 }
 
 /**
- * Ponto de entrada principal da página inicial.
+ * Ponto de entrada da aplicação.
  */
 function init() {
     try {
@@ -354,12 +439,12 @@ function init() {
         setupEventListeners();
         initModules(user);
     } catch (error) {
-        console.error('[paginainicial] Erro inesperado ao inicializar a página:', error);
-        showToast('Ocorreu um erro ao carregar a página. Tente recarregar.', 'error');
+        console.error('[paginainicial] Erro na inicialização do script:', error);
+        showToast('Ocorreu um erro ao carregar seus dados na página.', 'error');
     }
 }
 
-// Inicia a aplicação assim que o DOM estiver pronto
+// Dispara a inicialização após o DOM estar totalmente pronto
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

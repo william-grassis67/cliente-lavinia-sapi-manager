@@ -1,0 +1,683 @@
+/* ==========================================================================
+   cliente.css — Portal do Cliente (SAPI)
+   Paleta e tipografia dedicadas à área do cliente.
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap");
+
+:root {
+    /* Cor */
+    --navy: #10243e;
+    --steel: #2c5f7c;
+    --teal: #1b998b;
+    --teal-dark: #147b70;
+    --amber: #d98e32;
+    --danger: #c1443c;
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --line: #d9e0e6;
+    --text: #1b2430;
+    --text-muted: #5b6b7a;
+
+    /* Tipografia */
+    --font-display: "Space Grotesk", "Inter", sans-serif;
+    --font-body: "Inter", "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+
+    /* Espaçamento */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --shadow-card: 0 1px 2px rgba(16, 36, 62, 0.06), 0 8px 24px rgba(16, 36, 62, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body.cliente-page {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   TOPBAR
+   ========================================================================== */
+
+.cliente-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 32px;
+    background: var(--navy);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.cliente-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+}
+
+.cliente-logo i {
+    color: var(--teal);
+}
+
+.cliente-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.cliente-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.92rem;
+}
+
+.cliente-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.cliente-logout-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* ==========================================================================
+   LAYOUT GERAL
+   ========================================================================== */
+
+.cliente-main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+
+.cliente-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cliente-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal-dark);
+}
+
+.cliente-hero h1 {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 4px 0 0;
+    color: var(--navy);
+}
+
+.cliente-hero p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: 0.98rem;
+}
+
+/* ==========================================================================
+   SEÇÕES / TÍTULOS
+   ========================================================================== */
+
+.cliente-section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.cliente-section-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0;
+}
+
+.cliente-section-header p {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   RESUMO / STATS
+   ========================================================================== */
+
+.cliente-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.cliente-stat-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cliente-stat-card .stat-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cliente-stat-card .stat-value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.cliente-stat-card.accent-teal .stat-value {
+    color: var(--teal-dark);
+}
+
+.cliente-stat-card.accent-amber .stat-value {
+    color: var(--amber);
+}
+
+/* ==========================================================================
+   GRID DE PROCESSOS — cartões estilo "protocolo"
+   ========================================================================== */
+
+.processos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.processo-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 18px 20px 20px;
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+}
+
+.processo-card:hover,
+.processo-card:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(16, 36, 62, 0.08), 0 14px 28px rgba(16, 36, 62, 0.1);
+    outline: none;
+}
+
+.processo-card:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+}
+
+.processo-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.processo-tipo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--navy);
+}
+
+.processo-tipo i {
+    color: var(--steel);
+}
+
+.processo-numero {
+    margin: -6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 12px;
+}
+
+.processo-card-body {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.processo-card-body div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.processo-card-body strong {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+}
+
+.processo-card-body span {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.processo-ver-mais {
+    align-self: flex-end;
+    font-size: 0.82rem;
+    color: var(--teal-dark);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ==========================================================================
+   BADGES DE STATUS
+   ========================================================================== */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.status-docs {
+    background: #fdecd2;
+    color: #9a5b12;
+}
+
+.status-analise {
+    background: #dbe8f2;
+    color: var(--steel);
+}
+
+.status-pagamento {
+    background: #fbe4e1;
+    color: var(--danger);
+}
+
+.status-finalizado {
+    background: #d9f1ec;
+    color: var(--teal-dark);
+}
+
+.status-desconhecido {
+    background: #e6e9ec;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   BARRA DE PROGRESSO ("trilha de protocolo")
+   ========================================================================== */
+
+.progresso {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.progresso-marco {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--line);
+    position: relative;
+}
+
+.progresso-marco.concluido {
+    background: var(--teal);
+}
+
+.progresso-marco.atual {
+    background: var(--amber);
+}
+
+/* ==========================================================================
+   ESTADOS (carregando / vazio / erro)
+   ========================================================================== */
+
+.estado-lista {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 24px;
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--line);
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    background: var(--surface);
+}
+
+.estado-erro {
+    color: var(--danger);
+    border-color: rgba(193, 68, 60, 0.35);
+}
+
+.estado-vazio i,
+.estado-carregando i {
+    color: var(--steel);
+}
+
+/* ==========================================================================
+   PAGAMENTOS
+   ========================================================================== */
+
+.pagamentos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pagamento-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    box-shadow: var(--shadow-card);
+}
+
+.pagamento-item.pendente {
+    border-left: 4px solid var(--amber);
+}
+
+.pagamento-item.pago {
+    border-left: 4px solid var(--teal);
+}
+
+.pagamento-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pagamento-info strong {
+    font-size: 0.94rem;
+    color: var(--navy);
+}
+
+.pagamento-info span {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.btn-confirmar-pagamento {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.btn-confirmar-pagamento:hover {
+    background: var(--teal-dark);
+}
+
+.btn-confirmar-pagamento:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+/* ==========================================================================
+   MODAL DE DETALHES
+   ========================================================================== */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 36, 62, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease;
+    z-index: 50;
+}
+
+.modal-overlay.aberto {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 28px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-fechar {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0 0 16px;
+}
+
+.modal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.modal-header-row h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--navy);
+}
+
+.modal-numero {
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: -10px 0 16px;
+}
+
+.modal-progresso {
+    margin-bottom: 20px;
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 20px;
+}
+
+.modal-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.modal-grid strong {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+}
+
+.modal-grid p {
+    margin: 0;
+    font-size: 0.94rem;
+    color: var(--text);
+}
+
+.modal-actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ==========================================================================
+   TOASTS
+   ========================================================================== */
+
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+.toast {
+    background: var(--navy);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+    box-shadow: 0 8px 24px rgba(16, 36, 62, 0.25);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-success {
+    background: var(--teal-dark);
+}
+
+.toast-error {
+    background: var(--danger);
+}
+
+.toast-warning {
+    background: var(--amber);
+}
+
+/* ==========================================================================
+   RESPONSIVO
+   ========================================================================== */
+
+@media (max-width: 720px) {
+    .cliente-topbar {
+        padding: 14px 18px;
+    }
+
+    .cliente-main {
+        padding: 24px 16px 48px;
+        gap: 32px;
+    }
+
+    .cliente-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pagamento-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
