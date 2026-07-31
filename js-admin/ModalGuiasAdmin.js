@@ -12,13 +12,39 @@ const API_BASE = "https://apiadministrativa.onrender.com";
  * Escapa strings contra XSS antes da inserção no HTML.
  */
 function escapeHtml(val) {
-  if (val === null || val === undefined) return "";
+  if (val === null || val === undefined || val === "") return "—";
   return String(val)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+/**
+ * Formata datas com segurança para evitar deslocamento por fuso horário local.
+ */
+function formatarData(dataRaw) {
+  if (!dataRaw) return "—";
+  const dataString = String(dataRaw).split("T")[0];
+  const partes = dataString.split("-");
+  if (partes.length === 3) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+  const dateObj = new Date(dataRaw);
+  return isNaN(dateObj.getTime()) ? "—" : dateObj.toLocaleDateString("pt-BR");
+}
+
+/**
+ * Retorna a classe badge apropriada conforme a situação/status da guia.
+ */
+function obterClasseBadge(status) {
+  if (!status) return "guia-badge";
+  const st = String(status).toLowerCase();
+  if (st.includes("pago") || st.includes("paga")) return "guia-badge guia-badge-paga";
+  if (st.includes("vencid")) return "guia-badge guia-badge-vencida";
+  if (st.includes("pendent")) return "guia-badge guia-badge-pendente";
+  return "guia-badge";
 }
 
 /**
@@ -65,6 +91,9 @@ export function ModalGuiasAdmin() {
   const tabelaGuias = document.getElementById("tabelaGuiasAdmin");
   const tituloGuias = document.getElementById("tituloGuiasUsuario");
 
+  let carregandoGuias = false;
+  let abortController = null;
+
   if (!modal || !btnFechar) {
     console.error("Elementos do modal de guias não foram encontrados no DOM.");
     return {
@@ -82,6 +111,11 @@ export function ModalGuiasAdmin() {
   }
 
   function fechar() {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+    carregandoGuias = false;
     modal.classList.remove("active");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
@@ -92,10 +126,29 @@ export function ModalGuiasAdmin() {
     if (tabelaGuias) {
       tabelaGuias.innerHTML = `
         <tr>
-          <td colspan="4" style="text-align: center; padding: 20px;">
+          <td colspan="5" style="text-align: center; padding: 20px;">
             <i class="fa-solid fa-spinner fa-spin"></i> Carregando guias...
           </td>
         </tr>`;
+    }
+  }
+
+  function renderizarErroComRetry(mensagem, clienteOuId) {
+    if (!tabelaGuias) return;
+
+    tabelaGuias.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 20px; color: var(--danger-color, #dc2626);">
+          <p style="margin-bottom: 10px;">${escapeHtml(mensagem)}</p>
+          <button id="btnRetryGuias" type="button" style="padding: 6px 16px; cursor: pointer; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-weight: 600;">
+            <i class="fa-solid fa-rotate-right"></i> Tentar novamente
+          </button>
+        </td>
+      </tr>`;
+
+    const btnRetry = document.getElementById("btnRetryGuias");
+    if (btnRetry) {
+      btnRetry.onclick = () => carregarGuias(clienteOuId, true);
     }
   }
 
@@ -105,7 +158,7 @@ export function ModalGuiasAdmin() {
     if (!Array.isArray(guias) || guias.length === 0) {
       tabelaGuias.innerHTML = `
         <tr>
-          <td colspan="4" style="text-align: center; padding: 15px;">
+          <td colspan="5" style="text-align: center; padding: 15px;">
             Nenhuma guia encontrada para este cliente.
           </td>
         </tr>`;
@@ -114,62 +167,47 @@ export function ModalGuiasAdmin() {
 
     tabelaGuias.innerHTML = guias
       .map((guia) => {
-        const competencia = escapeHtml(guia.competencia ?? "-");
-        const valor = Number(guia.valor || 0).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL"
-        });
-
-        // Formatação de data segura para evitar deslocamentos por fuso horário
-        let vencimento = "-";
-        if (guia.vencimento) {
-          const dataString = String(guia.vencimento).split("T")[0];
-          const partes = dataString.split("-");
-          if (partes.length === 3) {
-            vencimento = `${partes[2]}/${partes[1]}/${partes[0]}`;
-          } else {
-            vencimento = new Date(guia.vencimento).toLocaleDateString("pt-BR");
-          }
-        }
-
-        const status = escapeHtml(guia.status || "Pago");
+        const idGuia = escapeHtml(guia.id ?? guia._id ?? "—");
+        const valor = guia.valor !== undefined && guia.valor !== null
+          ? Number(guia.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+          : "—";
+        const vencimento = formatarData(guia.vencimento);
+        const dataPagamento = formatarData(guia.dataPagamento || guia.pagamento);
+        const statusTexto = guia.status || guia.situacao || "Pendente";
+        const statusBadgeClass = obterClasseBadge(statusTexto);
 
         return `
           <tr>
-            <td>${competencia}</td>
+            <td>${idGuia}</td>
             <td>${valor}</td>
             <td>${vencimento}</td>
-            <td><span class="status-pill">${status}</span></td>
+            <td>${dataPagamento}</td>
+            <td><span class="${statusBadgeClass}">${escapeHtml(statusTexto)}</span></td>
           </tr>`;
       })
       .join("");
   }
 
   /**
-   * Busca e carrega as guias do cliente fornecido, direto da API.
+   * Busca e carrega as guias do cliente fornecido.
    * @param {Object|string|number} clienteOuId
+   * @param {boolean} forcarAtualizacao Se verdadeiro, ignora o cache local cliente.guias
    */
-  async function carregarGuias(clienteOuId) {
-    // 1. Identificação do ID do usuário e Nome do Cliente
+  async function carregarGuias(clienteOuId, forcarAtualizacao = false) {
     let usuarioId = null;
     let nomeCliente = "";
+    let guiasExistentes = null;
 
     if (typeof clienteOuId === "object" && clienteOuId !== null) {
       usuarioId = clienteOuId.usuarioId || clienteOuId.id || clienteOuId._id;
       nomeCliente = clienteOuId.nome || "";
+      if (Array.isArray(clienteOuId.guias)) {
+        guiasExistentes = clienteOuId.guias;
+      }
     } else {
       usuarioId = clienteOuId;
     }
 
-    // 2. Construção da URL
-    const url = `${API_BASE}/api/cliente/guias/${usuarioId}`;
-
-    // 3. Logs temporários de depuração
-    console.log("Cliente recebido:", clienteOuId);
-    console.log("ID enviado:", usuarioId);
-    console.log("URL:", url);
-
-    // 4. Atualização da Interface Visual
     if (tituloGuias) {
       tituloGuias.textContent = nomeCliente
         ? `Guias de ${escapeHtml(nomeCliente)}`
@@ -177,35 +215,52 @@ export function ModalGuiasAdmin() {
     }
 
     abrir();
-    renderizarLoading();
 
-    // Validação da existência do ID
-    if (!usuarioId) {
-      mostrarNotificacao("Cliente inválido: não foi possível identificar o ID.", "erro");
-      if (tabelaGuias) {
-        tabelaGuias.innerHTML = `
-          <tr>
-            <td colspan="4" style="text-align: center; color: var(--danger-color, #dc2626); padding: 15px;">
-              Não foi possível identificar o cliente selecionado.
-            </td>
-          </tr>`;
-      }
+    // 1. Aproveitar dados em memória se disponíveis e não forçada a atualização
+    if (!forcarAtualizacao && guiasExistentes && guiasExistentes.length > 0) {
+      console.log("Usando guias já existentes no objeto do cliente:", usuarioId);
+      renderizarGuias(guiasExistentes);
       return;
     }
 
-    // 5. Requisição HTTP e Tratamento da Resposta
+    // 2. Prevenção de requisições sobrepostas / paralelas
+    if (carregandoGuias) {
+      if (abortController) {
+        abortController.abort();
+      }
+    }
+
+    if (!usuarioId) {
+      mostrarNotificacao("Cliente inválido: não foi possível identificar o ID.", "erro");
+      renderizarErroComRetry("Não foi possível identificar o cliente selecionado.", clienteOuId);
+      return;
+    }
+
+    carregandoGuias = true;
+    abortController = new AbortController();
+    renderizarLoading();
+
+    const url = `${API_BASE}/api/cliente/guias/${usuarioId}`;
+
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: abortController.signal });
 
       if (!response.ok) {
         const erroTexto = await response.text();
-        console.error("Erro na API de Guias:", response.status, erroTexto);
-        throw new Error(`Erro ${response.status}`);
+
+        // 3. Log completo do erro da API
+        console.group("Erro API Guias");
+        console.log("Status:", response.status);
+        console.log("URL:", url);
+        console.log("Cliente:", clienteOuId);
+        console.log("Resposta da API:", erroTexto);
+        console.groupEnd();
+
+        throw new Error(`Erro HTTP ${response.status}`);
       }
 
       const respostaJson = await response.json();
 
-      // Extração resiliente da lista de guias (Array ou Objeto)
       let guiasExtraidas = [];
       if (Array.isArray(respostaJson)) {
         guiasExtraidas = respostaJson;
@@ -218,37 +273,36 @@ export function ModalGuiasAdmin() {
           [];
       }
 
+      // Atualiza o objeto do cliente localmente se for um objeto
+      if (typeof clienteOuId === "object" && clienteOuId !== null) {
+        clienteOuId.guias = guiasExtraidas;
+      }
+
       renderizarGuias(guiasExtraidas);
     } catch (error) {
-      console.error("Erro ao carregar guias:", error);
-      if (tabelaGuias) {
-        tabelaGuias.innerHTML = `
-          <tr>
-            <td colspan="4" style="text-align: center; color: var(--danger-color, #dc2626); padding: 15px;">
-              Erro ao carregar as guias do cliente.
-            </td>
-          </tr>`;
+      if (error.name === "AbortError") {
+        console.log("Requisição anterior de guias abortada.");
+        return;
       }
+
+      console.error("Erro ao processar guias do cliente:", error);
       mostrarNotificacao("Não foi possível carregar as guias.", "erro");
+      renderizarErroComRetry("Erro 500: Erro interno no servidor da API ao buscar guias.", clienteOuId);
+    } finally {
+      carregandoGuias = false;
     }
   }
 
-  // Remoção de listeners prévios para evitar acúmulo (vazamento de memória)
-  const novoBtnFechar = btnFechar.cloneNode(true);
-  btnFechar.parentNode.replaceChild(novoBtnFechar, btnFechar);
-  novoBtnFechar.addEventListener("click", fechar);
-
-  const novoModal = modal.cloneNode(false);
-  while (modal.firstChild) {
-    novoModal.appendChild(modal.firstChild);
+  // Configuração segura de listeners sem vazamento de memória
+  if (!modal.dataset.guiasListenersAttached) {
+    btnFechar.addEventListener("click", fechar);
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        fechar();
+      }
+    });
+    modal.dataset.guiasListenersAttached = "true";
   }
-  modal.parentNode.replaceChild(novoModal, modal);
-
-  novoModal.addEventListener("click", (event) => {
-    if (event.target === novoModal) {
-      fechar();
-    }
-  });
 
   return {
     abrir,
