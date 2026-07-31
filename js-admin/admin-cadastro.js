@@ -1,7 +1,7 @@
 import { formatarNumero } from "./formataNumero.js";
 
 
-const API_REGISTER = "https://apiadministrativa.onrender.com/api/register";
+const API_REGISTER = "https://apiadministrativa.onrender.com/api/admin/register";
 const API_CLIENTES = "https://apiadministrativa.onrender.com/api/admin/clientes";
 
 
