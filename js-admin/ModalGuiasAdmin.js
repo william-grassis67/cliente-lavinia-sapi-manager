@@ -36,14 +36,24 @@ function formatarData(dataRaw) {
 }
 
 /**
- * Retorna a classe badge apropriada conforme a situação/status da guia.
+ * Retorna a classe badge apropriada conforme a situação/status da guia (suporta Booleano e String).
  */
-function obterClasseBadge(status) {
-  if (!status) return "guia-badge";
-  const st = String(status).toLowerCase();
-  if (st.includes("pago") || st.includes("paga")) return "guia-badge guia-badge-paga";
+function obterClasseBadge(statusOuPago) {
+  if (typeof statusOuPago === "boolean") {
+    return statusOuPago
+      ? "guia-badge guia-badge-paga"
+      : "guia-badge guia-badge-pendente";
+  }
+
+  if (!statusOuPago) return "guia-badge";
+  const st = String(statusOuPago).toLowerCase();
+  if (st.includes("pago") || st.includes("paga") || st === "true") {
+    return "guia-badge guia-badge-paga";
+  }
   if (st.includes("vencid")) return "guia-badge guia-badge-vencida";
-  if (st.includes("pendent")) return "guia-badge guia-badge-pendente";
+  if (st.includes("pendent") || st === "false") {
+    return "guia-badge guia-badge-pendente";
+  }
   return "guia-badge";
 }
 
@@ -167,14 +177,17 @@ export function ModalGuiasAdmin() {
 
     tabelaGuias.innerHTML = guias
       .map((guia) => {
-        const idGuia = escapeHtml(guia.id ?? guia._id ?? "—");
+        const idGuia = escapeHtml(guia.id ?? "—");
         const valor = guia.valor !== undefined && guia.valor !== null
           ? Number(guia.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
           : "—";
         const vencimento = formatarData(guia.vencimento);
         const dataPagamento = formatarData(guia.dataPagamento || guia.pagamento);
-        const statusTexto = guia.status || guia.situacao || "Pendente";
-        const statusBadgeClass = obterClasseBadge(statusTexto);
+
+        // Trata o campo booleano 'pago' retornado pela API
+        const pago = Boolean(guia.pago);
+        const statusTexto = pago ? "Paga" : "Pendente";
+        const statusClasse = obterClasseBadge(pago);
 
         return `
           <tr>
@@ -182,7 +195,7 @@ export function ModalGuiasAdmin() {
             <td>${valor}</td>
             <td>${vencimento}</td>
             <td>${dataPagamento}</td>
-            <td><span class="${statusBadgeClass}">${escapeHtml(statusTexto)}</span></td>
+            <td><span class="${statusClasse}">${statusTexto}</span></td>
           </tr>`;
       })
       .join("");
@@ -200,7 +213,7 @@ export function ModalGuiasAdmin() {
 
     if (typeof clienteOuId === "object" && clienteOuId !== null) {
       usuarioId = clienteOuId.usuarioId || clienteOuId.id || clienteOuId._id;
-      nomeCliente = clienteOuId.nome || "";
+      nomeCliente = clienteOuId.nome || clienteOuId.nomeUsuario || "";
       if (Array.isArray(clienteOuId.guias)) {
         guiasExistentes = clienteOuId.guias;
       }
@@ -248,7 +261,7 @@ export function ModalGuiasAdmin() {
       if (!response.ok) {
         const erroTexto = await response.text();
 
-        // 3. Log completo do erro da API
+        // Log completo em caso de falha da API
         console.group("Erro API Guias");
         console.log("Status:", response.status);
         console.log("URL:", url);
@@ -273,6 +286,14 @@ export function ModalGuiasAdmin() {
           [];
       }
 
+      // Atualiza o título do modal com nomeUsuario retornado se não estivesse definido antes
+      if (!nomeCliente && guiasExtraidas.length > 0 && guiasExtraidas[0].nomeUsuario) {
+        nomeCliente = guiasExtraidas[0].nomeUsuario;
+        if (tituloGuias) {
+          tituloGuias.textContent = `Guias de ${escapeHtml(nomeCliente)}`;
+        }
+      }
+
       // Atualiza o objeto do cliente localmente se for um objeto
       if (typeof clienteOuId === "object" && clienteOuId !== null) {
         clienteOuId.guias = guiasExtraidas;
@@ -287,7 +308,7 @@ export function ModalGuiasAdmin() {
 
       console.error("Erro ao processar guias do cliente:", error);
       mostrarNotificacao("Não foi possível carregar as guias.", "erro");
-      renderizarErroComRetry("Erro 500: Erro interno no servidor da API ao buscar guias.", clienteOuId);
+      renderizarErroComRetry("Erro ao buscar guias no servidor.", clienteOuId);
     } finally {
       carregandoGuias = false;
     }
