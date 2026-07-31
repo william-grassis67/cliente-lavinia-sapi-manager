@@ -2,12 +2,11 @@
  * Módulo Autônomo do Modal de Guias (Histórico Financeiro)
  * Arquivo: ModalGuiasAdmin.js
  *
- * OBS: Este módulo não depende de "clientesService.js" nem de "toast.js"
- * (ambos removidos por não existirem no projeto). As chamadas de API e
- * as notificações visuais são resolvidas internamente, neste arquivo.
+ * OBS: Este módulo não depende de "clientesService.js" nem de "toast.js".
+ * As chamadas de API e notificações visuais são resolvidas internamente.
  */
 
-const API_GUIAS_BASE = "https://apiadministrativa.onrender.com/api/payments/guias";
+const API_BASE = "https://apiadministrativa.onrender.com";
 
 /**
  * Escapa strings contra XSS antes da inserção no HTML.
@@ -23,9 +22,7 @@ function escapeHtml(val) {
 }
 
 /**
- * Notificação visual interna (substitui o antigo showToast de "./toast.js").
- * Mesmo padrão visual usado em enviarMensagemCliente.js, para manter
- * consistência sem precisar de um arquivo compartilhado.
+ * Notificação visual interna.
  */
 function mostrarNotificacao(mensagem, tipo = "sucesso") {
   const notificacaoExistente = document.getElementById("notificacao-custom-guias");
@@ -122,9 +119,19 @@ export function ModalGuiasAdmin() {
           style: "currency",
           currency: "BRL"
         });
-        const vencimento = guia.vencimento
-          ? new Date(guia.vencimento).toLocaleDateString("pt-BR")
-          : "-";
+
+        // Formatação de data segura para evitar deslocamentos por fuso horário
+        let vencimento = "-";
+        if (guia.vencimento) {
+          const dataString = String(guia.vencimento).split("T")[0];
+          const partes = dataString.split("-");
+          if (partes.length === 3) {
+            vencimento = `${partes[2]}/${partes[1]}/${partes[0]}`;
+          } else {
+            vencimento = new Date(guia.vencimento).toLocaleDateString("pt-BR");
+          }
+        }
+
         const status = escapeHtml(guia.status || "Pago");
 
         return `
@@ -143,19 +150,37 @@ export function ModalGuiasAdmin() {
    * @param {Object|string|number} clienteOuId
    */
   async function carregarGuias(clienteOuId) {
-    const clienteId = typeof clienteOuId === "object" ? clienteOuId?.id : clienteOuId;
-    const nomeCliente = typeof clienteOuId === "object" ? clienteOuId?.nome : "";
+    // 1. Identificação do ID do usuário e Nome do Cliente
+    let usuarioId = null;
+    let nomeCliente = "";
 
+    if (typeof clienteOuId === "object" && clienteOuId !== null) {
+      usuarioId = clienteOuId.usuarioId || clienteOuId.id || clienteOuId._id;
+      nomeCliente = clienteOuId.nome || "";
+    } else {
+      usuarioId = clienteOuId;
+    }
+
+    // 2. Construção da URL
+    const url = `${API_BASE}/api/cliente/guias/${usuarioId}`;
+
+    // 3. Logs temporários de depuração
+    console.log("Cliente recebido:", clienteOuId);
+    console.log("ID enviado:", usuarioId);
+    console.log("URL:", url);
+
+    // 4. Atualização da Interface Visual
     if (tituloGuias) {
       tituloGuias.textContent = nomeCliente
-        ? `Guias de ${nomeCliente}`
+        ? `Guias de ${escapeHtml(nomeCliente)}`
         : "Guias do Cliente";
     }
 
     abrir();
     renderizarLoading();
 
-    if (!clienteId) {
+    // Validação da existência do ID
+    if (!usuarioId) {
       mostrarNotificacao("Cliente inválido: não foi possível identificar o ID.", "erro");
       if (tabelaGuias) {
         tabelaGuias.innerHTML = `
@@ -168,14 +193,32 @@ export function ModalGuiasAdmin() {
       return;
     }
 
+    // 5. Requisição HTTP e Tratamento da Resposta
     try {
-      const response = await fetch(`${API_GUIAS_BASE}/${encodeURIComponent(clienteId)}`);
+      const response = await fetch(url);
+
       if (!response.ok) {
-        throw new Error(`Erro ${response.status} ao carregar guias`);
+        const erroTexto = await response.text();
+        console.error("Erro na API de Guias:", response.status, erroTexto);
+        throw new Error(`Erro ${response.status}`);
       }
 
-      const guias = await response.json();
-      renderizarGuias(guias);
+      const respostaJson = await response.json();
+
+      // Extração resiliente da lista de guias (Array ou Objeto)
+      let guiasExtraidas = [];
+      if (Array.isArray(respostaJson)) {
+        guiasExtraidas = respostaJson;
+      } else if (respostaJson && typeof respostaJson === "object") {
+        guiasExtraidas =
+          respostaJson.guias ||
+          respostaJson.data ||
+          respostaJson.content ||
+          respostaJson.items ||
+          [];
+      }
+
+      renderizarGuias(guiasExtraidas);
     } catch (error) {
       console.error("Erro ao carregar guias:", error);
       if (tabelaGuias) {
@@ -190,11 +233,19 @@ export function ModalGuiasAdmin() {
     }
   }
 
-  // Listeners para fechamento
-  btnFechar.addEventListener("click", fechar);
+  // Remoção de listeners prévios para evitar acúmulo (vazamento de memória)
+  const novoBtnFechar = btnFechar.cloneNode(true);
+  btnFechar.parentNode.replaceChild(novoBtnFechar, btnFechar);
+  novoBtnFechar.addEventListener("click", fechar);
 
-  modal.addEventListener("click", (event) => {
-    if (event.target === modal) {
+  const novoModal = modal.cloneNode(false);
+  while (modal.firstChild) {
+    novoModal.appendChild(modal.firstChild);
+  }
+  modal.parentNode.replaceChild(novoModal, modal);
+
+  novoModal.addEventListener("click", (event) => {
+    if (event.target === novoModal) {
       fechar();
     }
   });
