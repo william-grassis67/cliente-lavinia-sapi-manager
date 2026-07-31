@@ -110,81 +110,164 @@
 
   <div class="modal-overlay" id="modalUsuario" aria-hidden="true">
     <div class="modal-card modal-card-cliente" role="dialog" aria-modal="true" aria-labelledby="usuarioTitulo">
-      <button class="modal-close" id="fecharUsuario" type="button" aria-label="Fechar detalhes">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <p class="eyebrow">Informações do usuário</p>
-      <h2 id="usuarioTitulo">Detalhes</h2>
-      <div class="detail-grid">
-        <div class="detail-item">
-          <strong>Nome</strong>
-          <div id="usuarioNome"></div>
+      <header class="crm-modal-header">
+        <div class="crm-header-title">
+          <p class="eyebrow"><i class="fa-solid fa-user-shield"></i> Prontuário do Cliente</p>
+          <h2 id="usuarioTitulo">Nome do Cliente</h2>
         </div>
-        <div class="detail-item">
-          <strong>Email</strong>
-          <div id="usuarioEmail"></div>
-        </div>
-        <div class="detail-item">
-          <strong>CPF</strong>
-          <div id="usuarioCpf"></div>
-        </div>
-        <div class="detail-item">
-          <strong>Telefone</strong>
-          <div id="usuarioTelefone"></div>
-        </div>
-        <div class="detail-item">
-          <strong>Tipo</strong>
-          <div id="usuarioTipo"></div>
-        </div>
-        <div class="detail-item">
-          <strong>Status</strong>
-          <div id="usuarioStatus"></div>
-        </div>
-        <div class="detail-item detail-item-full">
-          <strong>Endereço</strong>
-          <div id="usuarioEndereco"></div>
-        </div>
-        <div class="detail-item detail-item-full">
-          <strong><i class="fa-solid fa-clock-rotate-left"></i> Último acesso</strong>
-          <div id="usuarioUltimoLogin"></div>
-        </div>
-        <div class="guias-verify">
+        <div class="crm-header-actions">
           <button id="btn_verify" class="primary-btn" type="button">
-            <i class="fa-solid fa-file-invoice-dollar"></i> Verificar Guias Pagas
+            <i class="fa-solid fa-file-invoice-dollar"></i> Guias Financeiras
+          </button>
+          <button class="modal-close" id="fecharUsuario" type="button" aria-label="Fechar detalhes">
+            <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
-      </div>
+      </header>
 
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e5e7eb;" />
-
-      <section id="secaoProcessos">
-        <div class="processos-header">
-          <h3><i class="fa-solid fa-folder-open"></i> Processos do Cliente</h3>
-          <button id="btnToggleNovoProcesso" class="primary-btn" type="button">
-            <i class="fa-solid fa-plus"></i> Novo Processo
-          </button>
-        </div>
-
-        <!--
-          Apenas os campos existentes no modelo "Processo" do backend são
-          coletados aqui (tipo, status, biometriaRealizada). Os demais campos
-          do ProcessoDTO (id, dataCriacao, dataConclusao, usuarioId,
-          nomeUsuario) são gerados pelo servidor e não devem ser enviados.
-        -->
-        <form id="formNovoProcesso" class="processo-form" style="display: none;">
-          <div class="processo-form-grid">
-            <input type="text" id="procTipo" list="procTipoLista" placeholder="Tipo (ex: Aposentadoria por Idade)" required />
-            <datalist id="procTipoLista"></datalist>
-            <input type="text" id="procStatus" placeholder="Status (ex: AGUARDANDO_DOCUMENTOS)" />
-            <label class="processo-form-check">
-              <input type="checkbox" id="procBiometria" /> Biometria Realizada
-            </label>
+      <div class="crm-container">
+        <section class="crm-section">
+          <div class="crm-section-header">
+            <h3><i class="fa-solid fa-id-card"></i> Informações do Cliente</h3>
           </div>
-          <button type="submit" class="primary-btn" style="margin-top: 10px;">Salvar Processo</button>
-        </form>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <strong>Nome</strong>
+              <div id="usuarioNome">-</div>
+            </div>
+            <div class="detail-item">
+              <strong>Email</strong>
+              <div id="usuarioEmail">-</div>
+            </div>
+            <div class="detail-item">
+              <strong>CPF</strong>
+              <div id="usuarioCpf">-</div>
+            </div>
+            <div class="detail-item">
+              <strong>Telefone</strong>
+              <div id="usuarioTelefone">-</div>
+            </div>
+            <div class="detail-item">
+              <strong>Tipo de Conta</strong>
+              <div id="usuarioTipo">-</div>
+            </div>
+            <div class="detail-item">
+              <strong>Status da Conta</strong>
+              <div id="usuarioStatus">-</div>
+            </div>
+            <div class="detail-item detail-item-full">
+              <strong>Endereço Cadastrado</strong>
+              <div id="usuarioEndereco">-</div>
+            </div>
+          </div>
+        </section>
 
-        <div id="listaProcessos"></div>
-      </section>
+        <section class="crm-section">
+          <div class="crm-section-header">
+            <h3><i class="fa-solid fa-user-pen"></i> Atualizar Dados</h3>
+          </div>
+          <form id="formAtualizarCliente" class="crm-form">
+            <div class="crm-form-grid">
+              <div class="form-group">
+                <label for="editNome">Nome Completo</label>
+                <input type="text" id="editNome" placeholder="Digite o nome completo" required />
+              </div>
+              <div class="form-group">
+                <label for="editEmail">E-mail</label>
+                <input type="email" id="editEmail" placeholder="exemplo@email.com" required />
+              </div>
+              <div class="form-group">
+                <label for="editTelefone">Telefone / WhatsApp</label>
+                <input type="text" id="editTelefone" placeholder="(00) 00000-0000" required />
+              </div>
+              <div class="form-group">
+                <label for="editCpf">CPF (Somente Leitura)</label>
+                <input type="text" id="editCpf" readonly class="input-readonly" />
+              </div>
+              <div class="form-group full-width">
+                <label for="editEndereco">Endereço Residencial</label>
+                <input type="text" id="editEndereco" placeholder="Rua, Número, Bairro, Cidade - UF" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="primary-btn" id="btnSalvarDados">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section id="secaoProcessos" class="crm-section">
+          <div class="crm-section-header sticky-header">
+            <div>
+              <h3><i class="fa-solid fa-folder-open"></i> Processos Jurídicos</h3>
+              <p class="section-subtitle">Gerencie o andamento dos processos deste cliente</p>
+            </div>
+            <button id="btnToggleNovoProcesso" class="primary-btn" type="button">
+              <i class="fa-solid fa-plus"></i> Novo Processo
+            </button>
+          </div>
+
+          <form id="formNovoProcesso" class="crm-card-form" style="display: none;">
+            <div class="form-title">
+              <h4><i class="fa-solid fa-pen-to-square"></i> Cadastrar / Editar Processo</h4>
+            </div>
+            <div class="crm-form-grid">
+              <div class="form-group">
+                <label for="procTipo">Tipo de Benefício / Ação</label>
+                <input type="text" id="procTipo" list="procTipoLista" placeholder="Ex: Aposentadoria por Idade"
+                  required />
+                <datalist id="procTipoLista"></datalist>
+              </div>
+              <div class="form-group">
+                <label for="procStatus">Status do Processo</label>
+                <input type="text" id="procStatus" placeholder="Ex: AGUARDANDO_DOCUMENTOS" />
+              </div>
+              <div class="form-group checkbox-group">
+                <label class="crm-checkbox-label">
+                  <input type="checkbox" id="procBiometria" />
+                  <span>Biometria Realizada</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="primary-btn"><i class="fa-solid fa-check"></i> Salvar Processo</button>
+            </div>
+          </form>
+
+          <div id="listaProcessos" class="crm-processos-container">
+          </div>
+        </section>
+
+        <section class="crm-section">
+          <div class="crm-section-header">
+            <div>
+              <h3><i class="fa-solid fa-clock-rotate-left"></i> Logs de Acesso</h3>
+              <p class="section-subtitle">Histórico de entradas do cliente na plataforma</p>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="crm-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Horário</th>
+                  <th>Endereço IP</th>
+                  <th>Dispositivo / Origem</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaLogsAcesso">
+                <tr>
+                  <td id="usuarioUltimoLoginData">--/--/----</td>
+                  <td id="usuarioUltimoLoginHora">--:--</td>
+                  <td>—</td>
+                  <td><i class="fa-solid fa-desktop"></i> Navegador Web</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
@@ -236,4 +319,5 @@
 
   <script type="module" src="./js-admin/admin.js"></script>
 </body>
+
 </html>
