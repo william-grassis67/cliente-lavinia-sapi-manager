@@ -2,7 +2,7 @@ import { formatarNumero } from "./formataNumero.js";
 
 
 const API_REGISTER = "https://apiadministrativa.onrender.com/api/register";
-const API_CLIENTES = "https://apiadministrativa.onrender.com/api/clientes";
+const API_CLIENTES = "https://apiadministrativa.onrender.com/api/admin/clientes";
 
 
 const form = document.getElementById("registerForm");
