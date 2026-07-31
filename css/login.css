@@ -553,3 +553,50 @@ label {
         transition-duration: 0.001ms !important;
     }
 }
+.load {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background-color: white;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ================= LOADING ================= */
+
+.load {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+
+    z-index: 9999;
+}
+
+.animation-loading {
+    width: 70px;
+    height: 70px;
+    border: 6px solid #d9d9d9;
+    border-top-color: var(--navy);
+    border-radius: 50%;
+
+    animation: girando 0.8s linear infinite;
+}
+
+@keyframes girando {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -1,240 +1,167 @@
-const API_BASE_URL = "https://apiadministrativa.onrender.com";
+const API_BASE = "https://apiadministrativa.onrender.com";
 
-let guiasCache = [];
-let usuarioIdAtual = null;
-let listenersRegistrados = false;
-
-/**
- * Recupera o token de autenticação salvo na sessão do usuário.
- * @returns {string}
- */
-function getToken() {
-    try {
-        const usuario = JSON.parse(localStorage.getItem("usuario"));
-        return usuario?.token || "";
-    } catch {
-        return "";
-    }
+function formatarData(data) {
+    if (!data) return "";
+    const partes = data.split("T")[0].split("-");
+    if (partes.length !== 3) return data;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
-/**
- * Determina se uma guia está paga, com compatibilidade para respostas
- * antigas da API que só retornavam guias já pagas (sem um campo de status).
- * @param {Object} guia
- * @returns {boolean}
- */
-function isGuiaPaga(guia) {
-    if (typeof guia.pago === "boolean") return guia.pago;
-    if (typeof guia.status === "string") return guia.status.toUpperCase() === "PAGO";
-    return true;
-}
+async function ShowGuias() {
+    const guias_emitidas_show = document.getElementById("guias_emitidas_show");
+    const guias_pagas_show = document.getElementById("guias_pagas_show");
+    const guias_pendentes_show = document.getElementById("guias_pendentes_show");
+    const listaGuiasPagas = document.getElementById("listaGuiasPagas");
 
-function formatarMoeda(valor) {
-    const numero = Number(valor);
-    return Number.isFinite(numero)
-        ? numero.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
-        : "0,00";
-}
-
-function formatarDataCurta(dataString) {
-    if (!dataString) return "Não informado";
-    const data = new Date(dataString);
-    return isNaN(data.getTime()) ? "Não informado" : data.toLocaleDateString("pt-BR");
-}
-
-/**
- * Busca as guias do usuário na API e atualiza toda a interface relacionada
- * (resumo/contadores e histórico de pagamentos).
- * @param {number|string} usuarioId
- * @returns {Promise<Array>}
- */
-async function carregarGuias(usuarioId) {
-    if (!usuarioId) {
-        console.error("[guias] ID do usuário não informado");
-        return [];
+    const usuarioRaw = localStorage.getItem("usuario");
+    if (!usuarioRaw) {
+        console.error("Usuário não encontrado no localStorage");
+        return;
     }
 
-    usuarioIdAtual = usuarioId;
+    let usuario;
+    try {
+        usuario = JSON.parse(usuarioRaw);
+    } catch (e) {
+        console.error("Erro ao converter os dados do usuário do localStorage:", e);
+        return;
+    }
+
+    if (!usuario || !usuario.id) {
+        console.error("Dados de usuário inválidos ou ID não encontrado");
+        return;
+    }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/payments/guias/${usuarioId}`, {
-            method: "GET",
-            headers: {
-                "Authorization": getToken() ? `Bearer ${getToken()}` : ""
+        const resposta = await fetch(`${API_BASE}/api/cliente/guias/${usuario.id}`);
+
+        if (!resposta.ok) {
+            throw new Error(`Erro ao buscar guias: ${resposta.status}`);
+        }
+
+        const guias = await resposta.json();
+
+        if (!Array.isArray(guias)) {
+            console.error("Formato retornado pela API é inválido, esperava-se um array:", guias);
+            return;
+        }
+
+        let totalGuias = guias.length;
+        let totalPagas = 0;
+        let totalPendentes = 0;
+
+        if (listaGuiasPagas) {
+            listaGuiasPagas.innerHTML = "";
+        }
+
+        guias.forEach(guia => {
+            if (guia.pago) {
+                totalPagas++;
+            } else {
+                totalPendentes++;
+            }
+
+            if (listaGuiasPagas) {
+                const card = document.createElement("div");
+                card.className = "guia-card";
+
+                const valorFormatado = Number(guia.valor).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL"
+                });
+
+                const statusTexto = guia.pago ? "Pago" : "Aguardando pagamento";
+                const statusClasse = guia.pago ? "pago" : "pendente";
+
+                const botaoHTML = guia.pago
+                    ? `<button disabled class="btn-disabled">Pagamento confirmado</button>`
+                    : `<button onclick="abrirModalPagamento(${guia.id})" class="btn-pagar">Informar pagamento</button>`;
+
+                card.innerHTML = `
+                    <div class="guia-header">
+                        <h3>Guia #${guia.id}</h3>
+                        <span class="status-badge ${statusClasse}">${statusTexto}</span>
+                    </div>
+                    <div class="guia-body">
+                        <p><strong>Cliente:</strong> ${guia.nomeUsuario || usuario.nome || "Não informado"}</p>
+                        <p><strong>Competência:</strong> ${guia.competencia}</p>
+                        <p><strong>Vencimento:</strong> ${formatarData(guia.vencimento)}</p>
+                        <p><strong>Valor:</strong> ${valorFormatado}</p>
+                    </div>
+                    <div class="guia-footer">
+                        ${botaoHTML}
+                    </div>
+                `;
+
+                listaGuiasPagas.appendChild(card);
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`Erro HTTP ${response.status}`);
+        if (guias_emitidas_show) guias_emitidas_show.textContent = totalGuias;
+        if (guias_pagas_show) guias_pagas_show.textContent = totalPagas;
+        if (guias_pendentes_show) guias_pendentes_show.textContent = totalPendentes;
+
+    } catch (error) {
+        console.error("Erro ao carregar e renderizar as guias:", error);
+    }
+}
+
+function buttonverGuiasPagas() {
+
+    const verGuiasPagas = document.getElementById("verGuiasPagas");
+    const mostrarGuias = document.getElementById("mostrar_guias_pagas");
+    const tbody = document.getElementById("tbodyClientes");
+    const fecharTabela = document.getElementById("fecharTabela");
+
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    const usuarioId = usuario.id;
+
+    const API_BASE = "https://apiadministrativa.onrender.com";
+    const url = `${API_BASE}/api/cliente/guias/${usuarioId}`;
+
+    verGuiasPagas.addEventListener("click", carregarGuias);
+    fecharTabela.addEventListener("click", () => {  mostrarGuias.style.display = "none"})
+
+    async function carregarGuias() {
+
+        mostrarGuias.style.display = "block";
+
+        try {
+
+            const resposta = await fetch(url);
+
+            if (!resposta.ok) {
+                throw new Error("Erro ao buscar guias.");
+            }
+
+            const guias = await resposta.json();
+
+            tbody.innerHTML = "";
+
+            guias.forEach(guia => {
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${guia.competencia}</td>
+                        <td>${guia.vencimento}</td>
+                        <td>R$ ${guia.valor}</td>
+                        <td>${guia.pago ? "Pago" : "Pendente"}</td>
+                    </tr>
+                `;
+
+            });
+
+        } catch (erro) {
+            console.error(erro);
         }
 
-        const guias = await response.json();
-        guiasCache = Array.isArray(guias) ? guias : [];
-
-        atualizarResumoGuias(guiasCache);
-        atualizarHistoricoGuias(guiasCache);
-
-        return guiasCache;
-    } catch (error) {
-        console.error("[guias] Erro ao carregar guias:", error);
-
-        guiasCache = [];
-        atualizarResumoGuias([]);
-        atualizarHistoricoGuias([], error);
-        window.SapiToast?.error("Não foi possível carregar suas guias.");
-
-        return [];
-    }
-}
-
-/**
- * Atualiza os três contadores do card de resumo: total emitidas, pagas e
- * pendentes. No código anterior apenas "pagas" era preenchido.
- * @param {Array} guias
- */
-function atualizarResumoGuias(guias) {
-    const total = guias.length;
-    const pagas = guias.filter(isGuiaPaga).length;
-    const pendentes = total - pagas;
-
-    const setText = (id, valor) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = valor;
-    };
-
-    setText("guias_emitidas_show", total);
-    setText("guias_pagas_show", pagas);
-    setText("guias_pendentes_show", pendentes);
-}
-
-/**
- * Renderiza a lista do histórico de pagamentos (modal "Ver histórico").
- * @param {Array} guias
- * @param {Error|null} erro
- */
-function atualizarHistoricoGuias(guias, erro = null) {
-    const listaGuiasPagas = document.getElementById("listaGuiasPagas");
-    if (!listaGuiasPagas) return;
-
-    listaGuiasPagas.innerHTML = "";
-
-    if (erro) {
-        listaGuiasPagas.innerHTML = `
-            <section class="empty-guias">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <h2>Erro ao carregar guias</h2>
-                <p>Não foi possível conectar ao servidor.</p>
-            </section>
-        `;
-        return;
     }
 
-    const pagas = guias.filter(isGuiaPaga);
-
-    if (pagas.length === 0) {
-        listaGuiasPagas.innerHTML = `
-            <section class="empty-guias">
-                <i class="fa-solid fa-file-circle-xmark"></i>
-                <h2>Nenhuma guia encontrada</h2>
-                <p>Você ainda não possui pagamentos.</p>
-            </section>
-        `;
-        return;
-    }
-
-    pagas.forEach(guia => {
-        const card = document.createElement("article");
-        card.className = "guia-item";
-        card.innerHTML = `
-            <div class="guia-header">
-                <div class="titulo-guia">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
-                    <h3>${guia.competencia ?? "Sem competência"}</h3>
-                </div>
-                <span class="status-pago">
-                    <i class="fa-solid fa-circle-check"></i>
-                    Pago
-                </span>
-            </div>
-
-            <div class="guia-info">
-                <div>
-                    <i class="fa-solid fa-money-bill-wave"></i>
-                    <strong>Valor</strong>
-                    <p>R$ ${formatarMoeda(guia.valor)}</p>
-                </div>
-
-                <div>
-                    <i class="fa-solid fa-calendar-days"></i>
-                    <strong>Vencimento</strong>
-                    <p>${formatarDataCurta(guia.vencimento)}</p>
-                </div>
-
-                <div>
-                    <i class="fa-solid fa-circle-check"></i>
-                    <strong>Status</strong>
-                    <p>Pagamento confirmado</p>
-                </div>
-            </div>
-        `;
-        listaGuiasPagas.appendChild(card);
-    });
 }
 
-/**
- * Registra os listeners de abrir/fechar o modal de histórico apenas uma vez,
- * mesmo que ShowGuias seja chamada novamente (evita listeners duplicados).
- */
-function setupGuiasEventListeners() {
-    if (listenersRegistrados) return;
-
-    const btnVerGuias = document.getElementById("verGuiasPagas");
-    const popupGuias = document.getElementById("popupGuiasPagas");
-    const fecharGuias = document.getElementById("fecharGuiasPagas");
-
-    if (btnVerGuias && popupGuias) {
-        btnVerGuias.addEventListener("click", () => {
-            popupGuias.classList.add("active");
-            document.body.style.overflow = "hidden";
-        });
-    }
-
-    if (fecharGuias && popupGuias) {
-        fecharGuias.addEventListener("click", () => {
-            popupGuias.classList.remove("active");
-            document.body.style.overflow = "auto";
-        });
-    }
-
-    listenersRegistrados = true;
-}
-
-/**
- * Recarrega as guias do usuário atual. Usado por outros módulos (ex.: após
- * confirmar um pagamento) para atualizar contadores e histórico sem precisar
- * recarregar a página inteira.
- */
-function recarregarGuias() {
-    if (!usuarioIdAtual) return Promise.resolve([]);
-    return carregarGuias(usuarioIdAtual);
-}
-
-// Ponte global para módulos que não importam este arquivo via ES modules
-// (ex.: pagamento-guias.js) poderem disparar uma atualização.
-window.SapiGuias = { reload: recarregarGuias };
-
-/**
- * Ponto de entrada compatível com a assinatura original do módulo.
- * @param {number|string} usuarioId
- */
-async function ShowGuias(usuarioId) {
-    setupGuiasEventListeners();
-    return carregarGuias(usuarioId);
-}
+buttonverGuiasPagas();
 
 export {
-    ShowGuias,
-    carregarGuias,
-    atualizarResumoGuias,
-    atualizarHistoricoGuias
+    buttonverGuiasPagas,
+    ShowGuias
 };

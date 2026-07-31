@@ -109,7 +109,7 @@
   </div>
 
   <div class="modal-overlay" id="modalUsuario" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="usuarioTitulo">
+    <div class="modal-card modal-card-cliente" role="dialog" aria-modal="true" aria-labelledby="usuarioTitulo">
       <button class="modal-close" id="fecharUsuario" type="button" aria-label="Fechar detalhes">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -129,16 +129,20 @@
           <div id="usuarioCpf"></div>
         </div>
         <div class="detail-item">
+          <strong>Telefone</strong>
+          <div id="usuarioTelefone"></div>
+        </div>
+        <div class="detail-item">
           <strong>Tipo</strong>
           <div id="usuarioTipo"></div>
         </div>
         <div class="detail-item">
-          <strong>Endereço</strong>
-          <div id="usuarioEndereco"></div>
-        </div>
-        <div class="detail-item">
           <strong>Status</strong>
           <div id="usuarioStatus"></div>
+        </div>
+        <div class="detail-item detail-item-full">
+          <strong>Endereço</strong>
+          <div id="usuarioEndereco"></div>
         </div>
         <div class="detail-item detail-item-full">
           <strong><i class="fa-solid fa-clock-rotate-left"></i> Último acesso</strong>
@@ -154,26 +158,27 @@
       <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e5e7eb;" />
 
       <section id="secaoProcessos">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div class="processos-header">
           <h3><i class="fa-solid fa-folder-open"></i> Processos do Cliente</h3>
           <button id="btnToggleNovoProcesso" class="primary-btn" type="button">
             <i class="fa-solid fa-plus"></i> Novo Processo
           </button>
         </div>
 
-        <form id="formNovoProcesso" style="display: none; margin-bottom: 16px; background: #f9fafb; padding: 12px; border-radius: 8px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <input type="text" id="procTipo" placeholder="Tipo (ex: Aposentadoria)" required />
-            <input type="text" id="procNumero" placeholder="Número do Processo" required />
-            <input type="text" id="procStatus" placeholder="Status" value="AGUARDANDO_DOCUMENTOS" required />
-            <input type="number" id="procValor" placeholder="Valor (R$)" step="0.01" required />
-            <input type="text" id="procDocsPendentes" placeholder="Documentos Pendentes" />
-            <input type="text" id="procPendencias" placeholder="Pendências" />
-            <input type="text" id="procObservacao" placeholder="Observação" />
-            <div style="display: flex; gap: 10px; align-items: center; grid-column: span 2;">
-              <label><input type="checkbox" id="procPagamento" /> Pagamento Realizado</label>
-              <label><input type="checkbox" id="procBiometria" /> Biometria Realizada</label>
-            </div>
+        <!--
+          Apenas os campos existentes no modelo "Processo" do backend são
+          coletados aqui (tipo, status, biometriaRealizada). Os demais campos
+          do ProcessoDTO (id, dataCriacao, dataConclusao, usuarioId,
+          nomeUsuario) são gerados pelo servidor e não devem ser enviados.
+        -->
+        <form id="formNovoProcesso" class="processo-form" style="display: none;">
+          <div class="processo-form-grid">
+            <input type="text" id="procTipo" list="procTipoLista" placeholder="Tipo (ex: Aposentadoria por Idade)" required />
+            <datalist id="procTipoLista"></datalist>
+            <input type="text" id="procStatus" placeholder="Status (ex: AGUARDANDO_DOCUMENTOS)" />
+            <label class="processo-form-check">
+              <input type="checkbox" id="procBiometria" /> Biometria Realizada
+            </label>
           </div>
           <button type="submit" class="primary-btn" style="margin-top: 10px;">Salvar Processo</button>
         </form>
@@ -198,15 +203,16 @@
         <table class="users-table">
           <thead>
             <tr>
-              <th>Competência</th>
+              <th>ID</th>
               <th>Valor</th>
               <th>Vencimento</th>
-              <th>Status</th>
+              <th>Pagamento</th>
+              <th>Situação</th>
             </tr>
           </thead>
           <tbody id="tabelaGuiasAdmin">
             <tr>
-              <td colspan="4">Nenhuma guia carregada.</td>
+              <td colspan="5">Nenhuma guia carregada.</td>
             </tr>
           </tbody>
         </table>
@@ -228,6 +234,6 @@
     </div>
   </div>
 
-  <script type="module" src="./js/admin.js"></script>
+  <script type="module" src="./js-admin/admin.js"></script>
 </body>
 </html>

@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="./css/login.css">
 </head>
 <body class="page-login">
-
+<div class="load" id="load_animation" style="display: none;">
+    <div class="animation-loading"></div>
+</div>
     <div class="container">
         <div class="auth-shell">
 
@@ -128,9 +130,8 @@
     </div>
 
     <!-- Lógica de autenticação original: NÃO alterada -->
-    <script type="module" src="./js/app.js"></script>
+    <script type="module" src="./js-public/login.js"></script>
 
     <!-- Aprimoramentos visuais (não interfere na lógica de login): máscara de CPF, mostrar/ocultar senha, estado de loading do botão -->
-    <script src="./js/ui-enhancements.js"></script>
 </body>
 </html>

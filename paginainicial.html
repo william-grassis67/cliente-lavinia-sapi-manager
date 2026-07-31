@@ -12,6 +12,43 @@
 
 <body class="dashboard-page">
 
+  <div class="container-table" id="mostrar_guias_pagas" style="display: none;">
+
+    <div class="table-header">
+        <h2>
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            Histórico de Guias Pagas
+        </h2>
+
+        <button class="btn-fechar-tabela" id="fecharTabela">
+            <i class="fa-solid fa-xmark"></i>
+            Fechar
+        </button>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Competência</th>
+                    <th>Vencimento</th>
+                    <th>Valor Pago</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="tbodyClientes">
+
+                <!-- JavaScript adicionará as linhas aqui -->
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
   <header class="topbar">
@@ -104,11 +141,6 @@
           <p>
             <strong>Competência:</strong>
             <span id="date_competencia">--/----</span>
-          </p>
-
-          <p>
-            <strong>Valor:</strong>
-            <span id="valor_guia">R$ 0,00</span>
           </p>
 
           <p>
@@ -206,7 +238,7 @@
       </div>
 
       <div id="listaProcessos" class="processos-grid">
-        </div>
+      </div>
     </section>
 
     <div class="popup-pagamento" id="popupDetalhesProcesso">
@@ -343,7 +375,7 @@
         </div>
 
         <div id="listaGuiasPagas" class="lista-guias">
-          </div>
+        </div>
       </div>
     </div>
 

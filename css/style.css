@@ -1,45 +1,349 @@
 /* ==========================================================================
-   VARIÁVEIS E RESET GLOBAL
+   SAPI — Portal do Cliente
+   Design System · CSS Premium
+   --------------------------------------------------------------------------
+   Sumário
+   01. Fontes
+   02. Reset
+   03. Tokens — Tema Claro
+   04. Tokens — Tema Escuro
+   05. Tipografia base
+   06. Acessibilidade (foco, seleção, scrollbar, reduced motion)
+   07. Layout base / Página inicial (welcome)
+   08. Perfil (welcome)
+   09. Guia do INSS (welcome)
+   10. Ações (welcome)
+   11. Login
+   12. Shell / Topbar / Dashboard (genérico)
+   13. Cards genéricos / Estatísticas (genérico)
+   14. Modais e Alertas (genérico)
+   15. Responsividade (genérico)
+   16. Dashboard do Cliente — tokens locais
+   17. Dashboard do Cliente — Topbar
+   18. Dashboard do Cliente — Hero
+   19. Dashboard do Cliente — Perfil
+   20. Dashboard do Cliente — Botões primários
+   21. Dashboard do Cliente — Pagamento
+   22. Dashboard do Cliente — Estatísticas
+   23. Dashboard do Cliente — Ações rápidas
+   24. Dashboard do Cliente — Último acesso
+   25. Popups (pagamento / histórico)
+   26. Toasts
+   27. Processos
+   28. Tabela — Histórico de Guias Pagas
+   29. Responsividade — Dashboard do Cliente
+   30. Utilitários e animações
    ========================================================================== */
-:root {
-  --azul-marinho: #000080;
-  --cinza-executivo: #696969;
-  --azul-corporativo: #191970;
-  --bg: #f4f6fb;
-  --surface: #ffffff;
-  --text: #1f2937;
-  --muted: #5b6472;
-  --border: #d9e0ea;
-  --shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
-}
 
-* {
+/* ==========================================================================
+   01. FONTES
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ==========================================================================
+   02. RESET
+   ========================================================================== */
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
 }
 
-body {
-  min-height: 100vh;
-  padding: 24px;
-  background: linear-gradient(135deg, #f4f6fb 0%, #e8ebf3 100%);
-  color: var(--text);
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
+  color: inherit;
 }
 
-/* Acessibilidade: foco visível e respeito a "prefers-reduced-motion".
-   Adição puramente aditiva, não altera a aparência padrão de nenhuma tela. */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/* ==========================================================================
+   03. TOKENS — TEMA CLARO
+   ========================================================================== */
+:root {
+  color-scheme: light;
+
+  /* ---- Marca ---- */
+  --azul-marinho: #1B2A6B;
+  --azul-marinho-forte: #101B4D;
+  --azul-corporativo: #2F3FA0;
+  --azul-suave: #EEF1FC;
+  --cinza-executivo: #64748B;
+
+  /* ---- Superfícies ---- */
+  --bg: #F5F7FC;
+  --surface: #FFFFFF;
+  --surface-alt: #F8FAFD;
+  --surface-sunken: #EEF2FA;
+  --surface-overlay: rgba(15, 23, 42, 0.55);
+
+  /* ---- Texto ---- */
+  --text: #101323;
+  --text-muted: #5B6472;
+  --text-subtle: #8A93A6;
+  --text-on-primary: #FFFFFF;
+
+  /* ---- Bordas ---- */
+  --border: #E1E6F0;
+  --border-strong: #CBD3E6;
+
+  /* ---- Semânticas ---- */
+  --success: #0B8D49;
+  --success-bg: #E7F9EF;
+  --success-border: #BEEAD1;
+  --warning: #92400E;
+  --warning-bg: #FFF3D9;
+  --warning-border: #F5DFA6;
+  --danger: #B42318;
+  --danger-bg: #FDF0EF;
+  --danger-border: #F5C8C3;
+  --info: var(--azul-corporativo);
+  --info-bg: var(--azul-suave);
+
+  /* ---- Tipografia ---- */
+  --font-base: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --fs-xs: 0.8rem;
+  --fs-sm: 0.9rem;
+  --fs-base: 1rem;
+  --fs-md: 1.08rem;
+  --fs-lg: 1.28rem;
+  --fs-xl: 1.6rem;
+  --fs-2xl: 2rem;
+  --fs-3xl: 2.4rem;
+  --lh-tight: 1.25;
+  --lh-normal: 1.55;
+  --lh-relaxed: 1.7;
+
+  /* ---- Espaçamento ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+
+  /* ---- Raio ---- */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ---- Sombra ---- */
+  --shadow-xs: 0 2px 6px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 6px 16px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 12px 28px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 20px 48px rgba(16, 24, 40, 0.12);
+  --shadow-brand: 0 14px 30px rgba(27, 42, 107, 0.22);
+  --shadow-focus: 0 0 0 4px rgba(47, 63, 160, 0.18);
+
+  /* ---- Movimento ---- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms var(--ease);
+  --transition-base: 220ms var(--ease);
+  --transition-slow: 340ms var(--ease);
+
+  /* ---- Camadas ---- */
+  --z-base: 1;
+  --z-dropdown: 20;
+  --z-sticky: 40;
+  --z-overlay: 900;
+  --z-modal: 1000;
+  --z-table-overlay: 1050;
+  --z-toast: 1100;
+
+  /* Breakpoints de referência (uso em comentários / documentação):
+     480 · 768 · 1024 · 1366px */
+}
+
+/* ==========================================================================
+   04. TOKENS — TEMA ESCURO
+   Ativado automaticamente pelas preferências do sistema, e também
+   disponível manualmente via [data-theme="dark"] caso a página adicione
+   um seletor de tema no futuro (sem exigir alterações no HTML atual).
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --azul-marinho: #7E93FF;
+    --azul-marinho-forte: #A9B8FF;
+    --azul-corporativo: #93A4FF;
+    --azul-suave: rgba(126, 147, 255, 0.14);
+    --cinza-executivo: #97A2B8;
+
+    --bg: #0A0F1E;
+    --surface: #121A2E;
+    --surface-alt: #17203A;
+    --surface-sunken: #0D1426;
+    --surface-overlay: rgba(3, 6, 16, 0.72);
+
+    --text: #EDF1FC;
+    --text-muted: #A6B0C8;
+    --text-subtle: #6E7994;
+    --text-on-primary: #0A0F1E;
+
+    --border: #253158;
+    --border-strong: #333F6E;
+
+    --success: #34D399;
+    --success-bg: rgba(52, 211, 153, 0.12);
+    --success-border: rgba(52, 211, 153, 0.28);
+    --warning: #FBBF24;
+    --warning-bg: rgba(251, 191, 36, 0.12);
+    --warning-border: rgba(251, 191, 36, 0.28);
+    --danger: #F87171;
+    --danger-bg: rgba(248, 113, 113, 0.12);
+    --danger-border: rgba(248, 113, 113, 0.28);
+    --info: var(--azul-corporativo);
+    --info-bg: var(--azul-suave);
+
+    --shadow-xs: 0 2px 6px rgba(0, 0, 0, 0.28);
+    --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.32);
+    --shadow-md: 0 14px 32px rgba(0, 0, 0, 0.38);
+    --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.46);
+    --shadow-brand: 0 16px 34px rgba(0, 0, 0, 0.5);
+    --shadow-focus: 0 0 0 4px rgba(126, 147, 255, 0.28);
+  }
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --azul-marinho: #7E93FF;
+  --azul-marinho-forte: #A9B8FF;
+  --azul-corporativo: #93A4FF;
+  --azul-suave: rgba(126, 147, 255, 0.14);
+  --cinza-executivo: #97A2B8;
+  --bg: #0A0F1E;
+  --surface: #121A2E;
+  --surface-alt: #17203A;
+  --surface-sunken: #0D1426;
+  --surface-overlay: rgba(3, 6, 16, 0.72);
+  --text: #EDF1FC;
+  --text-muted: #A6B0C8;
+  --text-subtle: #6E7994;
+  --text-on-primary: #0A0F1E;
+  --border: #253158;
+  --border-strong: #333F6E;
+  --success: #34D399;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.28);
+  --warning: #FBBF24;
+  --warning-bg: rgba(251, 191, 36, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.28);
+  --danger: #F87171;
+  --danger-bg: rgba(248, 113, 113, 0.12);
+  --danger-border: rgba(248, 113, 113, 0.28);
+  --shadow-brand: 0 16px 34px rgba(0, 0, 0, 0.5);
+  --shadow-focus: 0 0 0 4px rgba(126, 147, 255, 0.28);
+}
+
+/* ==========================================================================
+   05. TIPOGRAFIA BASE
+   ========================================================================== */
+body {
+  min-height: 100vh;
+  padding: var(--space-6);
+  font-family: var(--font-base);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--text);
+  background: var(--bg);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.01em;
+  color: var(--azul-marinho);
+}
+
+p {
+  color: var(--text);
+}
+
+strong {
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   06. ACESSIBILIDADE
+   ========================================================================== */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid var(--azul-corporativo);
-  outline-offset: 2px;
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2.5px solid var(--azul-corporativo);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: var(--azul-corporativo);
+  color: #FFFFFF;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-full);
+  border: 3px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cinza-executivo);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -54,14 +358,14 @@ textarea:focus-visible {
 }
 
 /* ==========================================================================
-   PÁGINA INICIAL / WELCOME PAGE
+   07. LAYOUT BASE / PÁGINA INICIAL (WELCOME)
    ========================================================================== */
 .welcome-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
   min-height: 100vh;
+  padding: var(--space-6);
 }
 
 .welcome-shell {
@@ -71,257 +375,267 @@ textarea:focus-visible {
 .welcome-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 28px;
-  padding: 48px 36px;
-  box-shadow: var(--shadow);
+  border-radius: var(--radius-xl);
+  padding: var(--space-9) var(--space-7);
+  box-shadow: var(--shadow-lg);
   text-align: center;
 }
 
-/* Header */
 .welcome-header {
-  margin-bottom: 28px;
+  margin-bottom: var(--space-6);
 }
 
 .welcome-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: #eef4ff;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--azul-suave);
   color: var(--azul-corporativo);
   font-weight: 700;
-  font-size: 0.85rem;
-  margin-bottom: 16px;
-  border: 1px solid rgba(25, 25, 112, 0.1);
+  font-size: var(--fs-sm);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--border);
 }
 
 .eyebrow {
   text-transform: uppercase;
-  letter-spacing: 0.24em;
-  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  font-size: var(--fs-xs);
   font-weight: 700;
   color: var(--cinza-executivo);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-2);
 }
 
 .welcome-card h1 {
-  font-size: 2.2rem;
-  color: var(--azul-marinho);
-  margin-bottom: 12px;
-  font-weight: 700;
+  font-size: var(--fs-3xl);
+  margin-bottom: var(--space-3);
 }
 
 .welcome-text {
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 24px;
+  color: var(--text-muted);
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  margin-bottom: var(--space-6);
 }
 
-/* Perfil do Usuário */
+/* ==========================================================================
+   08. PERFIL (WELCOME)
+   ========================================================================== */
 .profile-card {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 20px;
-  padding: 20px 24px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #f8faff 0%, #eef4ff 100%);
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--surface-alt);
   border: 1px solid var(--border);
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
   text-align: left;
 }
 
 .profile-avatar {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  color: white;
+  color: #fff;
   display: grid;
   place-items: center;
-  font-size: 1.5rem;
+  font-size: var(--fs-xl);
   flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(0, 0, 128, 0.2);
+  box-shadow: var(--shadow-brand);
 }
 
 .profile-info h3 {
-  color: var(--azul-marinho);
-  font-size: 1.15rem;
+  font-size: var(--fs-lg);
   margin-bottom: 2px;
 }
 
 .profile-info p {
-  color: var(--muted);
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
 }
 
 .profile-pill {
   display: inline-block;
-  margin-top: 6px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: #ecfdf3;
-  color: #027a48;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--success-bg);
+  color: var(--success);
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: var(--fs-xs);
+  border: 1px solid var(--success-border);
 }
 
 .profile-pill.admin {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg);
+  color: var(--warning);
+  border-color: var(--warning-border);
 }
 
 /* ==========================================================================
-   NOVA SEÇÃO: GUIA DO INSS / PAGAMENTO
+   09. GUIA DO INSS (WELCOME)
    ========================================================================== */
 .payment-card {
-  background: #ffffff;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 32px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-7);
   text-align: left;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
   position: relative;
   overflow: hidden;
 }
 
-/* Detalhe estético lateral */
 .payment-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0 auto 0 0;
   width: 5px;
-  height: 100%;
   background: linear-gradient(180deg, var(--azul-marinho), var(--azul-corporativo));
 }
 
 .payment-header {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .payment-icon {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
-  background: #f0f4ff;
+  border-radius: var(--radius-md);
+  background: var(--azul-suave);
   color: var(--azul-corporativo);
   display: grid;
   place-items: center;
-  font-size: 1.3rem;
+  font-size: var(--fs-lg);
   flex-shrink: 0;
 }
 
 .payment-header h2 {
-  font-size: 1.25rem;
-  color: var(--azul-marinho);
+  font-size: var(--fs-lg);
   margin-bottom: 4px;
 }
 
 .payment-description {
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-relaxed);
 }
 
 .payment-amount {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
   width: fit-content;
 }
 
 .payment-amount .currency {
-  font-size: 1.1rem;
+  font-size: var(--fs-md);
   font-weight: 700;
   color: var(--azul-corporativo);
 }
 
 .payment-amount .value {
-  font-size: 2rem;
+  font-size: var(--fs-2xl);
   font-weight: 800;
   color: var(--azul-marinho);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 .payment-amount .period {
-  font-size: 0.85rem;
-  color: var(--muted);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
   margin-left: 2px;
 }
 
 .pay-btn {
   width: 100%;
-  height: 52px;
+  min-height: 52px;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  color: #ffffff;
-  font-size: 1.05rem;
+  color: #fff;
+  font-size: var(--fs-md);
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  box-shadow: 0 10px 24px rgba(0, 0, 128, 0.22);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-brand);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
 }
 
 .pay-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(0, 0, 128, 0.3);
-  filter: brightness(1.1);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.08);
 }
 
 .pay-btn:active {
   transform: translateY(0);
 }
 
-/* Botões Inferiores da Página */
+.pay-btn:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.pay-btn:disabled {
+  background: var(--cinza-executivo);
+  box-shadow: none;
+  cursor: not-allowed;
+  filter: none;
+  transform: none;
+  opacity: 0.75;
+}
+
+/* ==========================================================================
+   10. AÇÕES (WELCOME)
+   ========================================================================== */
 .welcome-actions {
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
 .primary-btn,
 .ghost-btn {
   border: none;
-  border-radius: 999px;
-  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-6);
+  min-height: 48px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--fs-base);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-  text-decoration: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast), filter var(--transition-fast);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .primary-btn {
   background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  color: white;
-  box-shadow: 0 10px 20px rgba(0, 0, 128, 0.2);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
 }
 
 .ghost-btn {
-  background: #f7f8fb;
+  background: var(--surface-alt);
   color: var(--azul-corporativo);
   border: 1px solid var(--border);
 }
@@ -331,14 +645,28 @@ textarea:focus-visible {
   transform: translateY(-2px);
 }
 
+.primary-btn:hover {
+  filter: brightness(1.08);
+}
+
+.ghost-btn:hover {
+  background: var(--azul-suave);
+}
+
+.primary-btn:active,
+.ghost-btn:active {
+  transform: translateY(0);
+}
+
 /* ==========================================================================
-   OUTRAS TELAS (LOGIN, DASHBOARD, MODAIS)
+   11. LOGIN
    ========================================================================== */
 .page-login {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px;
+  min-height: 100vh;
+  padding: var(--space-6);
 }
 
 .page-login .container {
@@ -351,83 +679,104 @@ textarea:focus-visible {
 .page-login .form {
   width: min(420px, 100%);
   background: var(--surface);
-  padding: 36px 32px;
-  border-radius: 20px;
-  box-shadow: var(--shadow);
+  padding: var(--space-8) var(--space-7);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
 }
 
 .page-login .h2 {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .page-login .h2 h2 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--azul-marinho);
+  font-size: var(--fs-2xl);
 }
 
 .page-login .input-cpf,
 .page-login .input-senha {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .page-login .input-cpf label,
 .page-login .input-senha label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   font-weight: 600;
-  color: var(--muted);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
 }
 
 .page-login .input-cpf input,
 .page-login .input-senha input {
   width: 100%;
-  height: 48px;
-  padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #f8f9fc;
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-alt);
+  color: var(--text);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-size: var(--fs-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.page-login .input-cpf input::placeholder,
+.page-login .input-senha input::placeholder {
+  color: var(--text-subtle);
+}
+
+.page-login .input-cpf input:hover,
+.page-login .input-senha input:hover {
+  border-color: var(--border-strong);
 }
 
 .page-login .input-cpf input:focus,
 .page-login .input-senha input:focus {
   border-color: var(--azul-corporativo);
-  box-shadow: 0 0 0 4px rgba(25, 25, 112, 0.15);
+  box-shadow: var(--shadow-focus);
+  background: var(--surface);
 }
 
 .page-login .btn {
-  margin-top: 10px;
+  margin-top: var(--space-2);
 }
 
 .page-login .btn button {
   width: 100%;
-  height: 48px;
+  min-height: 52px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  color: white;
-  font-weight: 600;
+  color: #fff;
+  font-weight: 700;
+  font-size: var(--fs-md);
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 10px 20px rgba(25, 25, 112, 0.2);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+  box-shadow: var(--shadow-brand);
 }
 
 .page-login .btn button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  filter: brightness(1.08);
 }
 
+.page-login .btn button:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   12. SHELL / TOPBAR / DASHBOARD (GENÉRICO)
+   ========================================================================== */
 .page-shell {
   max-width: 1120px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(105, 105, 105, 0.2);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  padding: 32px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-7);
   backdrop-filter: blur(18px);
 }
 
@@ -435,54 +784,58 @@ textarea:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .dashboard {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
+/* ==========================================================================
+   13. CARDS GENÉRICOS / ESTATÍSTICAS (GENÉRICO)
+   ========================================================================== */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .section-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .stat-card {
-  padding: 16px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #f3f5fa, #f9fafc);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
   border: 1px solid var(--border);
 }
 
 .stat-card strong {
   display: block;
-  font-size: 1.4rem;
+  font-size: var(--fs-xl);
   color: var(--azul-corporativo);
   margin-bottom: 4px;
 }
 
 .stat-card span {
-  color: var(--muted);
-  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
 }
 
 .listaclientes {
@@ -493,101 +846,117 @@ textarea:focus-visible {
 }
 
 .empty-state {
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: center;
-  padding: 24px;
-  border: 1px dashed var(--border);
-  border-radius: 16px;
+  padding: var(--space-6);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-md);
   width: 100%;
-  background: #f9fafc;
+  background: var(--surface-alt);
 }
 
-/* Modais e Alertas */
+/* ==========================================================================
+   14. MODAIS E ALERTAS (GENÉRICO)
+   ========================================================================== */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.66);
+  background: var(--surface-overlay);
+  backdrop-filter: blur(3px);
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  z-index: 1000;
+  padding: var(--space-5);
+  z-index: var(--z-overlay);
 }
 
 .overlay.active {
   display: flex;
+  animation: sapiFadeIn var(--transition-base);
 }
 
 .modal {
   position: relative;
   width: min(520px, 100%);
   background: var(--surface);
-  border-radius: 24px;
-  padding: 28px;
-  box-shadow: var(--shadow);
+  border-radius: var(--radius-xl);
+  padding: var(--space-7);
+  box-shadow: var(--shadow-lg);
+  animation: sapiPopIn var(--transition-slow);
 }
 
 .close-btn {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  border: none;
-  background: #f1f4f9;
+  top: var(--space-3);
+  right: var(--space-3);
+  background: var(--surface-sunken);
   color: var(--azul-corporativo);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-md);
+  display: grid;
+  place-items: center;
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.close-btn:hover {
+  background: var(--azul-marinho);
+  color: #fff;
+  transform: rotate(90deg);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 16px;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .field label {
   font-weight: 600;
-  color: var(--muted);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
 }
 
 .field input {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #f8fafc;
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-alt);
+  color: var(--text);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-size: var(--fs-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .field input:focus {
   border-color: var(--azul-corporativo);
-  box-shadow: 0 0 0 4px rgba(25, 25, 112, 0.12);
+  box-shadow: var(--shadow-focus);
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 6px;
+  margin-top: var(--space-2);
 }
 
 .alerts {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: var(--space-5);
+  right: var(--space-5);
   display: none;
   flex-direction: column;
-  gap: 10px;
-  z-index: 1000;
+  gap: var(--space-3);
+  z-index: var(--z-toast);
 }
 
 .alert-erro,
@@ -595,35 +964,39 @@ textarea:focus-visible {
 .alert-servidor {
   display: none;
   width: 280px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.15);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid transparent;
+  animation: sapiSlideIn var(--transition-base);
 }
 
 .alert-erro {
-  border-left: 5px solid #b42318;
-  background: #fdf3f2;
-  color: #b42318;
+  border-left: 5px solid var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 .alert-true {
   border-left: 5px solid var(--azul-marinho);
-  background: #f2f4fb;
+  background: var(--azul-suave);
   color: var(--azul-corporativo);
 }
 
 .alert-servidor {
   border-left: 5px solid var(--cinza-executivo);
-  background: #f5f5f5;
+  background: var(--surface-sunken);
   color: var(--cinza-executivo);
 }
 
 .alerts h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--fs-sm);
 }
 
-/* Responsividade */
+/* ==========================================================================
+   15. RESPONSIVIDADE (GENÉRICO)
+   ========================================================================== */
 @media (max-width: 840px) {
   .dashboard {
     grid-template-columns: 1fr;
@@ -635,7 +1008,7 @@ textarea:focus-visible {
   }
 
   .welcome-card {
-    padding: 36px 20px;
+    padding: var(--space-7) var(--space-4);
   }
 
   .welcome-actions {
@@ -650,30 +1023,13 @@ textarea:focus-visible {
 }
 
 /* ==========================================================================
-   DASHBOARD DO CLIENTE (PORTAL DO CLIENTE)
+   16. DASHBOARD DO CLIENTE — TOKENS LOCAIS
    --------------------------------------------------------------------------
-   Tudo nesta seção é escopado em ".dashboard-page" (classe exclusiva do
-   <body> de paginainicial.html) para não afetar nenhuma outra tela que
-   reutilize nomes de classe genéricos como .card, .topbar ou .stat-card.
+   Escopado em ".dashboard-page" (classe do <body> de paginainicial.html)
+   para não afetar outras telas que reutilizem nomes genéricos como .card,
+   .topbar ou .stat-card.
    ========================================================================== */
-
 .dashboard-page {
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 24px;
-  --radius-full: 999px;
-  --gap-sm: 12px;
-  --gap-md: 20px;
-  --gap-lg: 28px;
-  --transition-fast: 0.2s ease;
-  --transition-base: 0.3s ease;
-  --success: #0b8d49;
-  --success-bg: #e8fff2;
-  --warning: #ad7d00;
-  --warning-bg: #fff8dc;
-  --danger: #b42318;
-  --danger-bg: #fdf3f2;
-
   background: var(--bg);
   min-height: 100vh;
 }
@@ -682,79 +1038,63 @@ textarea:focus-visible {
   font-family: inherit;
 }
 
-/* Animação de entrada suave para as seções principais */
-@keyframes dashboardFadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dashboard-page .dashboard > * {
-  animation: dashboardFadeInUp 0.5s ease both;
-}
-
-.dashboard-page .dashboard > *:nth-child(1) { animation-delay: 0s; }
-.dashboard-page .dashboard > *:nth-child(2) { animation-delay: 0.06s; }
-.dashboard-page .dashboard > *:nth-child(3) { animation-delay: 0.12s; }
-.dashboard-page .dashboard > *:nth-child(4) { animation-delay: 0.18s; }
-.dashboard-page .dashboard > *:nth-child(5) { animation-delay: 0.24s; }
-
-/* Topo */
+/* ==========================================================================
+   17. DASHBOARD DO CLIENTE — TOPBAR
+   ========================================================================== */
 .dashboard-page .topbar {
   max-width: 1300px;
-  margin: 0 auto 30px;
-  padding: 18px 32px;
+  margin: 0 auto var(--space-7);
+  padding: var(--space-4) var(--space-7);
   background: var(--surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--gap-md);
+  gap: var(--space-5);
+  position: sticky;
+  top: var(--space-4);
+  z-index: var(--z-sticky);
 }
 
 .dashboard-page .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 1.4rem;
-  font-weight: 700;
+  gap: var(--space-3);
+  font-size: var(--fs-lg);
+  font-weight: 800;
   color: var(--azul-marinho);
+  letter-spacing: -0.01em;
 }
 
 .dashboard-page .logo i {
-  font-size: 1.8rem;
+  font-size: 1.7rem;
 }
 
 .dashboard-page .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .dashboard-page .notification-btn,
 .dashboard-page .logout-btn {
-  width: 44px;
-  height: 44px;
-  border: none;
-  cursor: pointer;
-  border-radius: 50%;
-  background: #eef3ff;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-full);
+  background: var(--azul-suave);
   color: var(--azul-corporativo);
   font-size: 17px;
-  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  display: grid;
+  place-items: center;
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
 .dashboard-page .notification-btn:hover,
 .dashboard-page .logout-btn:hover {
   background: var(--azul-marinho);
-  color: white;
+  color: #fff;
   transform: translateY(-2px);
 }
 
@@ -765,40 +1105,39 @@ textarea:focus-visible {
 
 .dashboard-page .logout-btn:hover {
   background: var(--danger);
-  color: white;
+  color: #fff;
 }
 
 .dashboard-page .admin-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   height: 44px;
-  padding: 0 18px;
-  border: 1px solid var(--border);
+  padding: 0 var(--space-5);
+  border: 1px solid var(--warning-border);
   border-radius: var(--radius-full);
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--warning-bg);
+  color: var(--warning);
   font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
+  font-size: var(--fs-sm);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .dashboard-page .admin-link:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(146, 64, 14, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .dashboard-page .user-menu {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   font-weight: 600;
   color: var(--text);
 }
 
 .dashboard-page .user-menu i {
-  font-size: 36px;
+  font-size: 34px;
   color: var(--azul-marinho);
 }
 
@@ -807,90 +1146,113 @@ textarea:focus-visible {
   max-width: 1300px;
   margin: 0 auto;
   display: grid;
-  gap: var(--gap-lg);
+  gap: var(--space-7);
 }
+
+.dashboard-page .dashboard > * {
+  animation: sapiFadeInUp 0.5s var(--ease) both;
+}
+
+.dashboard-page .dashboard > *:nth-child(1) { animation-delay: 0s; }
+.dashboard-page .dashboard > *:nth-child(2) { animation-delay: 0.06s; }
+.dashboard-page .dashboard > *:nth-child(3) { animation-delay: 0.12s; }
+.dashboard-page .dashboard > *:nth-child(4) { animation-delay: 0.18s; }
+.dashboard-page .dashboard > *:nth-child(5) { animation-delay: 0.24s; }
 
 .dashboard-page .dashboard-columns {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  gap: var(--gap-lg);
+  gap: var(--space-7);
   align-items: start;
 }
 
 /* Cards */
 .dashboard-page .card {
   background: var(--surface);
-  border-radius: var(--radius-lg);
-  padding: 28px;
+  border-radius: var(--radius-xl);
+  padding: var(--space-7);
   border: 1px solid var(--border);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-page .card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .dashboard-page .card-title {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 22px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
 }
 
 .dashboard-page .card-title i {
   color: var(--azul-marinho);
   font-size: 22px;
+  flex-shrink: 0;
 }
 
 .dashboard-page .card-title h2 {
-  color: var(--azul-marinho);
-  font-size: 1.3rem;
+  font-size: var(--fs-lg);
 }
 
 .dashboard-page .card-title p {
-  color: var(--muted);
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
   margin-top: 2px;
 }
 
-/* Hero */
+/* ==========================================================================
+   18. DASHBOARD DO CLIENTE — HERO
+   ========================================================================== */
 .dashboard-page .hero-section {
-  background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  color: white;
-  padding: 42px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(255, 255, 255, 0.12), transparent 55%),
+    linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
+  color: #fff;
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-brand);
 }
 
 .dashboard-page .hero-badge {
   display: inline-flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
-  padding: 8px 18px;
-  background: rgba(255, 255, 255, 0.15);
+  padding: var(--space-2) var(--space-5);
+  background: rgba(255, 255, 255, 0.16);
   border-radius: var(--radius-full);
-  margin-bottom: 18px;
-  font-size: 0.85rem;
+  margin-bottom: var(--space-5);
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 
 .dashboard-page .hero-section h1 {
-  font-size: 2.15rem;
-  margin-bottom: 10px;
+  font-size: var(--fs-2xl);
+  color: #fff;
+  margin-bottom: var(--space-3);
   line-height: 1.25;
 }
 
 .dashboard-page .hero-section p {
   opacity: 0.92;
+  color: #fff;
 }
 
 .dashboard-page .hero-description {
-  opacity: 0.85;
-  margin-top: 8px;
+  opacity: 0.86;
+  margin-top: var(--space-2);
   max-width: 650px;
-  line-height: 1.7;
+  line-height: var(--lh-relaxed);
+  color: #fff;
 }
 
-/* Perfil */
+/* ==========================================================================
+   19. DASHBOARD DO CLIENTE — PERFIL
+   ========================================================================== */
 .dashboard-page .profile-content {
   display: flex;
-  gap: 24px;
+  gap: var(--space-6);
   align-items: center;
 }
 
@@ -898,15 +1260,15 @@ textarea:focus-visible {
   position: relative;
   width: 96px;
   height: 96px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  color: white;
+  color: #fff;
   font-size: 48px;
   flex-shrink: 0;
-  box-shadow: 0 10px 22px rgba(0, 0, 128, 0.22);
+  box-shadow: var(--shadow-brand);
 }
 
 .dashboard-page .avatar-initials {
@@ -927,7 +1289,7 @@ textarea:focus-visible {
 .dashboard-page .profile-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   min-width: 0;
 }
 
@@ -936,6 +1298,7 @@ textarea:focus-visible {
   flex-wrap: wrap;
   gap: 6px;
   color: var(--text);
+  font-size: var(--fs-base);
 }
 
 .dashboard-page .profile-info strong {
@@ -945,53 +1308,58 @@ textarea:focus-visible {
 .dashboard-page .status {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 14px;
+  gap: var(--space-2);
+  padding: 5px var(--space-4);
   border-radius: var(--radius-full);
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
 }
 
 .dashboard-page .status.active {
   background: var(--success-bg);
   color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .dashboard-page .status.pending {
   background: var(--warning-bg);
   color: var(--warning);
+  border: 1px solid var(--warning-border);
 }
 
 .dashboard-page .status i {
   font-size: 9px;
 }
 
-/* Botões primários */
+/* ==========================================================================
+   20. DASHBOARD DO CLIENTE — BOTÕES PRIMÁRIOS
+   ========================================================================== */
 .dashboard-page .primary-btn,
 .dashboard-page .pay-btn {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   width: 100%;
+  min-height: 52px;
   border: none;
   cursor: pointer;
-  padding: 15px 26px;
-  border-radius: var(--radius-sm);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-md);
   font-weight: 700;
-  font-size: 1rem;
-  color: white;
+  font-size: var(--fs-md);
+  color: #fff;
   background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  box-shadow: 0 10px 22px rgba(0, 0, 128, 0.2);
+  box-shadow: var(--shadow-brand);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .dashboard-page .primary-btn:hover,
 .dashboard-page .pay-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 14px 26px rgba(0, 0, 128, 0.28);
-  filter: brightness(1.05);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.06);
 }
 
 .dashboard-page .primary-btn:active,
@@ -999,45 +1367,64 @@ textarea:focus-visible {
   transform: translateY(-1px);
 }
 
-/* Pagamento */
+.dashboard-page .primary-btn:focus-visible,
+.dashboard-page .pay-btn:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.dashboard-page .primary-btn:disabled,
+.dashboard-page .pay-btn:disabled {
+  background: var(--cinza-executivo);
+  box-shadow: none;
+  filter: none;
+  transform: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   21. DASHBOARD DO CLIENTE — PAGAMENTO
+   ========================================================================== */
 .dashboard-page .payment-info {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-bottom: 4px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-1);
 }
 
 .dashboard-page .payment-info p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-3);
   color: var(--text);
 }
 
-/* Resumo / Estatísticas */
+/* ==========================================================================
+   22. DASHBOARD DO CLIENTE — ESTATÍSTICAS
+   ========================================================================== */
 .dashboard-page .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--gap-md);
+  gap: var(--space-5);
 }
 
 .dashboard-page .stat-card {
   position: relative;
-  background: #f8faff;
-  border-radius: var(--radius-md);
-  padding: 24px;
+  background: var(--surface-alt);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   border: 1px solid var(--border);
   border-top: 4px solid var(--azul-marinho);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-4);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .dashboard-page .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
 }
 
 .dashboard-page .stat-card.total {
@@ -1055,12 +1442,12 @@ textarea:focus-visible {
 .dashboard-page .stat-icon {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  background: #eef3ff;
+  background: var(--azul-suave);
   color: var(--azul-marinho);
 }
 
@@ -1075,15 +1462,15 @@ textarea:focus-visible {
 }
 
 .dashboard-page .stat-content h3 {
-  font-size: 0.95rem;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-bottom: 6px;
 }
 
 .dashboard-page .stat-content strong {
   display: block;
-  font-size: 2rem;
+  font-size: var(--fs-2xl);
   font-weight: 800;
   color: var(--azul-marinho);
   line-height: 1;
@@ -1099,23 +1486,20 @@ textarea:focus-visible {
 }
 
 .dashboard-page .stat-content span {
-  color: var(--muted);
-  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
 }
 
 .dashboard-page .btn-ver-mais {
   align-self: flex-start;
-  border: none;
-  background: none;
   color: var(--success);
   font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
+  font-size: var(--fs-sm);
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0;
-  transition: gap var(--transition-fast);
+  padding: var(--space-1) 0;
+  transition: gap var(--transition-fast), opacity var(--transition-fast);
 }
 
 .dashboard-page .btn-ver-mais:hover {
@@ -1123,55 +1507,58 @@ textarea:focus-visible {
   text-decoration: underline;
 }
 
-/* Ações rápidas */
+/* ==========================================================================
+   23. DASHBOARD DO CLIENTE — AÇÕES RÁPIDAS
+   ========================================================================== */
 .dashboard-page .actions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .dashboard-page .actions-grid button {
-  height: 70px;
+  min-height: 72px;
   border: 1px solid var(--border);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  background: #f6f8fc;
+  border-radius: var(--radius-lg);
+  background: var(--surface-alt);
   color: var(--text);
-  font-size: 15px;
+  font-size: var(--fs-base);
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+  gap: var(--space-3);
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .dashboard-page .actions-grid button:hover {
   background: var(--azul-marinho);
-  color: white;
+  color: #fff;
   transform: translateY(-3px);
-  box-shadow: 0 12px 22px rgba(0, 0, 128, 0.2);
+  box-shadow: var(--shadow-brand);
 }
 
 .dashboard-page .actions-grid i {
   font-size: 19px;
 }
 
-/* Último acesso */
+/* ==========================================================================
+   24. DASHBOARD DO CLIENTE — ÚLTIMO ACESSO
+   ========================================================================== */
 .dashboard-page .last-access {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: var(--space-5);
 }
 
 .dashboard-page .last-access i {
   width: 54px;
   height: 54px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eef3ff;
+  background: var(--azul-suave);
   color: var(--azul-marinho);
   font-size: 22px;
   flex-shrink: 0;
@@ -1184,85 +1571,72 @@ textarea:focus-visible {
 }
 
 .dashboard-page .last-access p {
-  color: var(--muted);
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
 }
 
 /* ==========================================================================
-   POPUPS (PAGAMENTO E HISTÓRICO)
+   25. POPUPS (PAGAMENTO / HISTÓRICO)
    --------------------------------------------------------------------------
    Ambos usam a classe base ".popup-pagamento" para o comportamento comum
-   (oculto por padrão, exibido com ".active"), mas cada um tem seu próprio
-   layout através do seletor por ID, pois cumprem papéis diferentes.
+   (oculto por padrão, exibido com ".active"); cada um tem layout próprio
+   via seletor por ID.
    ========================================================================== */
-
 .dashboard-page .popup-pagamento {
   position: fixed;
   inset: 0;
   display: none;
-  z-index: 9999;
-  padding: 20px;
+  z-index: var(--z-modal);
+  padding: var(--space-5);
 }
 
 .dashboard-page .popup-pagamento.active {
   display: flex;
+  animation: sapiFadeIn var(--transition-base);
 }
 
 .dashboard-page .popup-pagamento .popup-content {
   width: min(560px, 100%);
   background: var(--surface);
-  border-radius: var(--radius-lg);
-  padding: 32px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
-  animation: dashboardPopupIn 0.25s ease;
+  border-radius: var(--radius-xl);
+  padding: var(--space-7);
+  box-shadow: var(--shadow-lg);
+  animation: sapiPopIn var(--transition-slow);
 }
 
-@keyframes dashboardPopupIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Popup de pagamento: modal centralizado */
 .dashboard-page #popup_payment {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  background: var(--surface-overlay);
+  backdrop-filter: blur(5px);
   align-items: center;
   justify-content: center;
 }
 
 .dashboard-page #popup_payment .popup-content h2 {
   text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 24px;
-  color: var(--azul-marinho);
+  font-size: var(--fs-xl);
+  margin-bottom: var(--space-6);
 }
 
 .dashboard-page .campo {
   display: flex;
   flex-direction: column;
-  margin-bottom: 18px;
+  margin-bottom: var(--space-5);
 }
 
 .dashboard-page .campo label {
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   color: var(--text);
 }
 
 .dashboard-page .campo input,
 .dashboard-page .campo textarea {
   width: 100%;
-  padding: 13px 14px;
-  font-size: 0.95rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-base);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
   background: var(--bg);
   color: var(--text);
   outline: none;
@@ -1274,60 +1648,74 @@ textarea:focus-visible {
   resize: vertical;
 }
 
+.dashboard-page .campo input::placeholder,
+.dashboard-page .campo textarea::placeholder {
+  color: var(--text-subtle);
+}
+
 .dashboard-page .campo input:focus,
 .dashboard-page .campo textarea:focus {
   border-color: var(--azul-marinho);
-  box-shadow: 0 0 0 4px rgba(0, 0, 128, 0.12);
+  box-shadow: var(--shadow-focus);
 }
 
 .dashboard-page #confirma {
   width: 100%;
-  padding: 16px;
-  font-size: 1.05rem;
+  min-height: 52px;
+  padding: var(--space-4);
+  font-size: var(--fs-md);
   font-weight: 700;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
-  color: white;
+  color: #fff;
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
 }
 
 .dashboard-page #confirma:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 22px rgba(0, 0, 128, 0.22);
+  box-shadow: var(--shadow-brand);
+  filter: brightness(1.06);
+}
+
+.dashboard-page #confirma:focus-visible {
+  box-shadow: var(--shadow-focus);
 }
 
 .dashboard-page #confirma:disabled {
   background: var(--cinza-executivo);
-  color: #ffffff;
+  color: #fff;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  filter: none;
+  opacity: 0.75;
 }
 
 .dashboard-page .btn-fechar {
   width: 100%;
-  padding: 13px;
-  margin-bottom: 18px;
-  background: var(--bg);
+  min-height: 48px;
+  margin-bottom: var(--space-5);
+  background: var(--surface-alt);
   color: var(--azul-marinho);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.95rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
   font-weight: 700;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .dashboard-page .btn-fechar:hover {
   background: var(--azul-marinho);
-  color: white;
+  color: #fff;
+  border-color: var(--azul-marinho);
 }
 
 /* Popup de histórico: tela cheia rolável */
 .dashboard-page #popupGuiasPagas {
-  background: #f5f7fb;
+  background: var(--surface-overlay);
   overflow-y: auto;
   align-items: flex-start;
   justify-content: center;
@@ -1339,45 +1727,49 @@ textarea:focus-visible {
 
 .dashboard-page #popupGuiasPagas .popup-content {
   width: min(900px, 100%);
-  margin: 30px auto;
+  margin: var(--space-7) auto;
 }
 
 .dashboard-page #popupGuiasPagas .card-title h2 {
-  font-size: 1.4rem;
+  font-size: var(--fs-lg);
 }
 
 .dashboard-page .lista-guias {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-top: 20px;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
 }
 
-/* Itens do histórico. Aceita tanto ".guia-card" quanto ".guia-item" para
-   ser compatível com o nome de classe usado pelo módulo ShowGuias.js. */
 .dashboard-page .guia-card,
 .dashboard-page .guia-item {
   background: var(--surface);
-  border-radius: var(--radius-md);
-  padding: 22px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   border: 1px solid var(--border);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow var(--transition-fast);
+}
+
+.dashboard-page .guia-card:hover,
+.dashboard-page .guia-item:hover {
+  box-shadow: var(--shadow-sm);
 }
 
 .dashboard-page .guia-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
   border-bottom: 1px solid var(--border);
 }
 
 .dashboard-page .titulo-guia {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .dashboard-page .titulo-guia i {
@@ -1388,99 +1780,102 @@ textarea:focus-visible {
 .dashboard-page .titulo-guia h3,
 .dashboard-page .guia-card h3,
 .dashboard-page .guia-item h3 {
-  font-size: 1.05rem;
+  font-size: var(--fs-md);
   color: var(--text);
 }
 
 .dashboard-page .status-pago,
 .dashboard-page .status-pendente {
-  font-size: 0.85rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  padding: 6px 14px;
+  padding: 6px var(--space-4);
   border-radius: var(--radius-full);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .dashboard-page .status-pago {
   background: var(--success-bg);
   color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .dashboard-page .status-pendente {
   background: var(--warning-bg);
   color: var(--warning);
+  border: 1px solid var(--warning-border);
 }
 
 .dashboard-page .guia-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .dashboard-page .guia-info div {
-  background: #f8fafc;
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
+  background: var(--surface-alt);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
   border-left: 4px solid var(--azul-corporativo);
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-4);
 }
 
 .dashboard-page .guia-info i {
   font-size: 20px;
   color: var(--azul-corporativo);
+  flex-shrink: 0;
 }
 
 .dashboard-page .guia-info strong {
-  font-size: 0.9rem;
+  font-size: var(--fs-sm);
   min-width: 120px;
 }
 
 .dashboard-page .guia-info p {
-  font-size: 0.95rem;
+  font-size: var(--fs-base);
   margin: 0;
   color: var(--text);
 }
 
 .dashboard-page .empty-guias {
   text-align: center;
-  padding: 50px 20px;
-  color: var(--muted);
+  padding: var(--space-9) var(--space-5);
+  color: var(--text-muted);
 }
 
 .dashboard-page .empty-guias i {
   font-size: 56px;
-  color: #94a3b8;
-  margin-bottom: 16px;
+  color: var(--border-strong);
+  margin-bottom: var(--space-4);
 }
 
 .dashboard-page .empty-guias h2 {
-  font-size: 1.4rem;
+  font-size: var(--fs-xl);
   color: var(--text);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .dashboard-page .empty-guias p {
-  font-size: 0.95rem;
+  font-size: var(--fs-base);
 }
 
 /* ==========================================================================
-   TOASTS (FEEDBACK VISUAL)
+   26. TOASTS
    ========================================================================== */
 .toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  left: 20px;
+  top: var(--space-5);
+  right: var(--space-5);
+  left: var(--space-5);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 10px;
-  z-index: 10000;
+  gap: var(--space-3);
+  z-index: var(--z-toast);
   pointer-events: none;
 }
 
@@ -1488,20 +1883,20 @@ textarea:focus-visible {
   pointer-events: auto;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   max-width: 360px;
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: var(--surface, #fff);
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
-  border-left: 5px solid var(--azul-marinho, #000080);
-  color: var(--text, #1f2937);
-  font-size: 0.9rem;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  border-left: 5px solid var(--azul-marinho);
+  color: var(--text);
+  font-size: var(--fs-sm);
   font-weight: 600;
   opacity: 0;
   transform: translateY(-12px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity var(--transition-base), transform var(--transition-base);
 }
 
 .toast.show {
@@ -1515,28 +1910,255 @@ textarea:focus-visible {
 }
 
 .toast-success {
-  border-left-color: #0b8d49;
-  color: #0b8d49;
+  border-left-color: var(--success);
+  color: var(--success);
 }
 
 .toast-error {
-  border-left-color: #b42318;
-  color: #b42318;
+  border-left-color: var(--danger);
+  color: var(--danger);
 }
 
 .toast-warning {
-  border-left-color: #ad7d00;
-  color: #ad7d00;
+  border-left-color: var(--warning);
+  color: var(--warning);
 }
 
 .toast-info {
-  border-left-color: #191970;
-  color: #191970;
+  border-left-color: var(--azul-marinho);
+  color: var(--azul-marinho);
 }
 
 /* ==========================================================================
-   RESPONSIVIDADE — DASHBOARD DO CLIENTE
+   27. PROCESSOS
+   --------------------------------------------------------------------------
+   Reaproveita tokens já definidos (--radius-*, --border, --text-muted,
+   --success, --warning etc.) para manter identidade visual consistente
+   com os cards de guias.
    ========================================================================== */
+.dashboard-page .processos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-5);
+}
+
+.dashboard-page .processo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--azul-marinho);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.dashboard-page .processo-card:hover,
+.dashboard-page .processo-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.dashboard-page .processo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.dashboard-page .processo-numero {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.dashboard-page .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dashboard-page .status-badge i {
+  font-size: 8px;
+}
+
+.dashboard-page .progresso-barra {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.dashboard-page .progresso-segmento {
+  flex: 1;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--border);
+  transition: background-color var(--transition-base);
+}
+
+.guiaspagas {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--surface);
+}
+
+/* ==========================================================================
+   28. TABELA — HISTÓRICO DE GUIAS PAGAS
+   ========================================================================== */
+.container-table {
+  width: min(1000px, calc(100% - var(--space-6) * 2));
+  max-height: calc(100vh - var(--space-8) * 2);
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-table-overlay);
+  display: flex;
+  flex-direction: column;
+  animation: sapiPopIn var(--transition-slow);
+}
+
+.container-table::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--surface-overlay);
+  backdrop-filter: blur(4px);
+  z-index: -1;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-7);
+  background: linear-gradient(135deg, var(--azul-marinho), var(--azul-corporativo));
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.table-header h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: #fff;
+}
+
+.btn-fechar-tabela {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-fechar-tabela:hover {
+  background: rgba(255, 255, 255, 0.26);
+  transform: translateY(-1px);
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+thead {
+  background: var(--surface-sunken);
+  position: sticky;
+  top: 0;
+}
+
+thead th {
+  padding: var(--space-5);
+  text-align: left;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-weight: 700;
+  border-bottom: 2px solid var(--border);
+}
+
+tbody td {
+  padding: var(--space-5);
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+tbody tr:hover {
+  background: var(--azul-suave);
+}
+
+tbody tr:nth-child(even) {
+  background: var(--surface-alt);
+}
+
+tbody tr:nth-child(even):hover {
+  background: var(--azul-suave);
+}
+
+/* Status (variante em tabela) */
+.status-pago {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--success-bg);
+  color: var(--success);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.status-pendente {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+/* ==========================================================================
+   29. RESPONSIVIDADE — DASHBOARD DO CLIENTE
+   ========================================================================== */
+@media (max-width: 1366px) {
+  .dashboard-page .dashboard,
+  .dashboard-page .topbar {
+    max-width: 1180px;
+  }
+}
+
 @media (max-width: 1024px) {
   .dashboard-page .dashboard-columns {
     grid-template-columns: 1fr;
@@ -1544,9 +2166,14 @@ textarea:focus-visible {
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: var(--space-4);
+  }
+
   .dashboard-page .topbar {
     flex-wrap: wrap;
-    padding: 16px 20px;
+    padding: var(--space-4);
+    position: static;
   }
 
   .dashboard-page .topbar-actions {
@@ -1555,11 +2182,11 @@ textarea:focus-visible {
   }
 
   .dashboard-page .hero-section {
-    padding: 28px 22px;
+    padding: var(--space-6) var(--space-5);
   }
 
   .dashboard-page .hero-section h1 {
-    font-size: 1.7rem;
+    font-size: var(--fs-xl);
   }
 
   .dashboard-page .profile-content {
@@ -1572,29 +2199,46 @@ textarea:focus-visible {
   }
 
   .dashboard-page .card {
-    padding: 22px;
+    padding: var(--space-5);
   }
 
   .dashboard-page .stats-grid,
-  .dashboard-page .actions-grid {
+  .dashboard-page .actions-grid,
+  .dashboard-page .processos-grid {
     grid-template-columns: 1fr;
   }
 
   .toast-container {
-    left: 12px;
-    right: 12px;
-    top: 12px;
+    left: var(--space-3);
+    right: var(--space-3);
+    top: var(--space-3);
     align-items: stretch;
   }
 
   .toast {
     max-width: 100%;
   }
+
+  .container-table {
+    width: calc(100% - var(--space-4) * 2);
+    max-height: calc(100vh - var(--space-6) * 2);
+  }
+
+  .table-header {
+    flex-direction: column;
+    gap: var(--space-4);
+    align-items: flex-start;
+    padding: var(--space-5);
+  }
+
+  table {
+    min-width: 700px;
+  }
 }
 
 @media (max-width: 480px) {
   body {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .dashboard-page .logo span {
@@ -1603,7 +2247,7 @@ textarea:focus-visible {
 
   .dashboard-page .admin-link span,
   .dashboard-page .user-menu span {
-    font-size: 0.85rem;
+    font-size: var(--fs-sm);
   }
 
   .dashboard-page .avatar {
@@ -1613,92 +2257,80 @@ textarea:focus-visible {
   }
 
   .dashboard-page .popup-pagamento .popup-content {
-    padding: 22px;
+    padding: var(--space-5);
+  }
+
+  .payment-amount .value {
+    font-size: var(--fs-xl);
   }
 }
+
+/* Telas muito pequenas (320–360px): garante toque confortável mesmo
+   nos aparelhos mais compactos usados pelo público-alvo. */
+@media (max-width: 360px) {
+  .dashboard-page .actions-grid button,
+  .dashboard-page .primary-btn,
+  .dashboard-page .pay-btn,
+  .primary-btn,
+  .ghost-btn,
+  .page-login .btn button {
+    font-size: var(--fs-sm);
+  }
+
+  .dashboard-page .stat-content strong {
+    font-size: var(--fs-xl);
+  }
+}
+
 /* ==========================================================================
-   NOVA SEÇÃO: MEUS PROCESSOS
-   --------------------------------------------------------------------------
-   Bloco 100% aditivo — reaproveita tokens (--radius-*, --border, --muted,
-   --success, --warning etc.) e padrões visuais já usados nos cards de guias
-   (.guia-info, .empty-guias, .status-pago/.status-pendente) para manter a
-   nova seção visualmente idêntica ao restante do sistema.
-   Cole este bloco ao final de css/style.css.
+   30. UTILITÁRIOS E ANIMAÇÕES
    ========================================================================== */
-
-.dashboard-page .processos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--gap-md);
+@keyframes sapiFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.dashboard-page .processo-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 4px solid var(--azul-marinho);
-  border-radius: var(--radius-md);
-  padding: 22px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+@keyframes sapiFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dashboard-page .processo-card:hover,
-.dashboard-page .processo-card:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+@keyframes sapiPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.dashboard-page .processo-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
+@keyframes sapiSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.dashboard-page .processo-numero {
-  color: var(--muted);
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
-/* Badge de status genérico — a cor é aplicada inline por processo,
-   conforme o status (amarelo/azul/laranja/verde). */
-.dashboard-page .status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 14px;
-  border-radius: var(--radius-full);
-  font-size: 0.8rem;
-  font-weight: 700;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-}
-
-.dashboard-page .status-badge i {
-  font-size: 8px;
-}
-
-/* Barra de progresso do status (4 etapas) */
-.dashboard-page .progresso-barra {
-  display: flex;
-  gap: 6px;
-}
-
-.dashboard-page .progresso-segmento {
-  flex: 1;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background: var(--border);
-}
-
-/* ==========================================================================
-   RESPONSIVIDADE — SEÇÃO DE PROCESSOS
-   ========================================================================== */
-@media (max-width: 768px) {
-  .dashboard-page .processos-grid {
-    grid-template-columns: 1fr;
-  }
+  border: 0;
 }

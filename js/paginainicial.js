@@ -2,9 +2,9 @@ import { PaymentPopUp } from "./popuppayment.js";
 import { pagamentoGuiasInss } from "./pagamento-guias.js";
 import { Notificacao } from "./Notifacao.js";
 import { verifyButton } from "./BotaoPayment.js";
-import { ShowGuias } from "./ShowGuais.js";
 import { initProcessos } from "./processos.js";
-
+import { ShowGuias } from "./ShowGuais.js";
+import { buttonverGuiasPagas } from "./ShowGuais.js";
 /* ==========================================================================
    CONFIGURAÇÃO DA API & ROTAS DO CLIENTE
    ========================================================================== */
@@ -450,3 +450,6 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
+initProcessos();
+ShowGuias();
+buttonverGuiasPagas();

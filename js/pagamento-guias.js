@@ -8,6 +8,10 @@ function pagamentoGuiasInss() {
     }
 
     btnConfirma.addEventListener("click", async () => {
+
+        const status_guia = document.getElementById("status_guia");
+        status_guia.innerHTML = "Pago";
+        status_guia.style.background = "green";
         let usuario;
 
         try {
@@ -95,9 +99,12 @@ function pagamentoGuiasInss() {
             // fecha o popup de pagamento
             document.getElementById("popup_payment")?.classList.remove("active");
             document.body.style.overflow = "auto";
+            document.getElementById("status_guia").style.color = "green"
 
             // atualiza contadores e histórico de guias sem recarregar a página
             await window.SapiGuias?.reload();
+            statusGuia = document.getElementById("status_guia")
+
 
         } catch (erro) {
             console.error("Erro guia:", erro);

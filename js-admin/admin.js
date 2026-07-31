@@ -12,12 +12,28 @@ import { ModalGuiasAdmin } from "./ModalGuiasAdmin.js";
 const API_BASE_URL = "https://apiadministrativa.onrender.com";
 
 const ENDPOINTS = {
-  USERS: `${API_BASE_URL}/api/users`,
-  CLIENTES: `${API_BASE_URL}/api/users`,
-  REMOVE_CLIENTE: (cpf) => `${API_BASE_URL}/api/remove/${encodeURIComponent(cpf)}`,
-  PROCESSOS_CLIENTE: (id) => `${API_BASE_URL}/api/cliente/processos/${encodeURIComponent(id)}`,
-  CRIAR_PROCESSO: (usuarioId) => `${API_BASE_URL}/api/processos/${encodeURIComponent(usuarioId)}`
+  CLIENTES: `${API_BASE_URL}/api/admin/clientes`,
+  REGISTER: `${API_BASE_URL}/api/admin/register`,
+  PAGAMENTOS: `${API_BASE_URL}/api/admin/pagamentos`,
+  REMOVE_CLIENTE: (cpf) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(cpf)}`,
+  PROCESSOS_CLIENTE: (usuarioId) => `${API_BASE_URL}/api/cliente/processos/${encodeURIComponent(usuarioId)}`,
+  CRIAR_PROCESSO: (usuarioId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(usuarioId)}`,
+  ENVIAR_DOCUMENTO: (processoId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(processoId)}/documentos`,
+  GUIAS_CLIENTE: (usuarioId) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(usuarioId)}/guias`
 };
+
+// Tipos de processo sugeridos para o formulário de criação
+const TIPOS_PROCESSO = [
+  "Aposentadoria por Idade",
+  "Aposentadoria por Tempo",
+  "Auxílio Doença",
+  "Auxílio Acidente",
+  "Pensão por Morte",
+  "BPC/LOAS",
+  "Salário Maternidade",
+  "Revisão de Benefício",
+  "Planejamento Previdenciário"
+];
 
 // ===========================================================
 // 2. ESTADO GLOBAL DA APLICAÇÃO
@@ -25,7 +41,11 @@ const ENDPOINTS = {
 const estado = {
   clientes: [],
   sortAscending: false,
-  clienteEmDetalhe: null
+  clienteEmDetalhe: null,
+  // Guarda, apenas nesta sessão do navegador, os nomes dos arquivos
+  // enviados com sucesso para cada processo (não existe endpoint de
+  // listagem de documentos no backend atual).
+  documentosEnviadosPorProcesso: {}
 };
 
 // Instância do módulo externo de guias
@@ -40,9 +60,11 @@ const dom = {
   // Modal Usuário
   get modalUsuario() { return document.getElementById("modalUsuario"); },
   get fecharUsuario() { return document.getElementById("fecharUsuario"); },
+  get usuarioTitulo() { return document.getElementById("usuarioTitulo"); },
   get usuarioNome() { return document.getElementById("usuarioNome"); },
   get usuarioEmail() { return document.getElementById("usuarioEmail"); },
   get usuarioCpf() { return document.getElementById("usuarioCpf"); },
+  get usuarioTelefone() { return document.getElementById("usuarioTelefone"); },
   get usuarioEndereco() { return document.getElementById("usuarioEndereco"); },
   get usuarioTipo() { return document.getElementById("usuarioTipo"); },
   get usuarioStatus() { return document.getElementById("usuarioStatus"); },
@@ -52,6 +74,8 @@ const dom = {
   // Processos DOM
   get btnToggleNovoProcesso() { return document.getElementById("btnToggleNovoProcesso"); },
   get formNovoProcesso() { return document.getElementById("formNovoProcesso"); },
+  get procTipo() { return document.getElementById("procTipo"); },
+  get procTipoLista() { return document.getElementById("procTipoLista"); },
   get listaProcessos() { return document.getElementById("listaProcessos"); },
 
   // Controls & Layout
@@ -108,10 +132,14 @@ async function fazerRequisicaoAPI(url, opcoes = {}, timeoutMs = 15000) {
 
   const usuario = obterUsuarioSessao();
   const headers = {
-    "Content-Type": "application/json",
     "Authorization": `Bearer ${usuario.token}`,
     ...(opcoes.headers || {})
   };
+
+  // Aplica Content-Type como JSON apenas se não for FormData
+  if (!(opcoes.body instanceof FormData) && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
 
   try {
     const resposta = await fetch(url, {
@@ -188,6 +216,41 @@ function formatarStatus(status) {
   };
 }
 
+// Classifica o status livre de um Processo em uma das 3 fases visuais
+// (aberto / em análise / concluído), sem inventar valores que o backend
+// não envia — serve apenas para escolher a cor do badge e do marcador.
+function classificarStatusProcesso(status, dataConclusao) {
+  if (dataConclusao) {
+    return { fase: "concluido", label: textoOuTraco(status, "Concluído"), className: "processo-badge processo-badge-concluido" };
+  }
+  const norm = String(status || "").toUpperCase();
+  if (!norm || norm.includes("AGUARD") || norm.includes("PENDENTE") || norm.includes("ABERT")) {
+    return { fase: "aberto", label: textoOuTraco(status, "Aberto"), className: "processo-badge processo-badge-aberto" };
+  }
+  if (norm.includes("CONCLU") || norm.includes("FINALIZ") || norm.includes("DEFERID")) {
+    return { fase: "concluido", label: status, className: "processo-badge processo-badge-concluido" };
+  }
+  if (norm.includes("INDEFER") || norm.includes("NEGAD") || norm.includes("CANCEL")) {
+    return { fase: "negado", label: status, className: "processo-badge processo-badge-negado" };
+  }
+  return { fase: "andamento", label: status, className: "processo-badge processo-badge-andamento" };
+}
+
+// Classifica a situação de uma guia em Paga / Pendente / Vencida
+function classificarSituacaoGuia(guia) {
+  if (guia.dataPagamento) {
+    return { label: "Paga", className: "guia-badge guia-badge-paga", icone: "fa-circle-check" };
+  }
+  const vencimento = guia.dataVencimento || guia.vencimento;
+  if (vencimento) {
+    const dataVenc = new Date(vencimento);
+    if (!Number.isNaN(dataVenc.getTime()) && dataVenc.getTime() < Date.now()) {
+      return { label: "Vencida", className: "guia-badge guia-badge-vencida", icone: "fa-triangle-exclamation" };
+    }
+  }
+  return { label: "Pendente", className: "guia-badge guia-badge-pendente", icone: "fa-clock" };
+}
+
 function formatarDataHora(dataIso) {
   if (!dataIso) return "Nunca acessou";
   const date = new Date(dataIso);
@@ -199,12 +262,24 @@ function formatarDataHora(dataIso) {
   })}`;
 }
 
+function formatarData(dataIso, textoPadrao = "—") {
+  if (!dataIso) return textoPadrao;
+  const date = new Date(dataIso);
+  if (Number.isNaN(date.getTime())) return textoPadrao;
+  return date.toLocaleDateString("pt-BR");
+}
+
 function criarElemento(tag, { className, texto, atributos = {} } = {}) {
   const el = document.createElement(tag);
   if (className) el.className = className;
   if (texto !== undefined) el.textContent = texto;
   Object.entries(atributos).forEach(([chave, valor]) => el.setAttribute(chave, valor));
   return el;
+}
+
+function obterIdCliente(cliente) {
+  if (!cliente) return null;
+  return cliente.id || cliente._id || cliente.usuarioId || cliente.cpf || null;
 }
 
 // ===========================================================
@@ -351,15 +426,15 @@ function criarLinhaCliente(cliente) {
   const tdAcoes = criarElemento("td", { atributos: { "data-label": "Ações" } });
   const containerAcoes = criarElemento("div", { className: "actions" });
 
-  const btnVer = criarElemento("button", { className: "icon-btn view-btn", atributos: { title: "Visualizar Detalhes" } });
+  const btnVer = criarElemento("button", { className: "icon-btn view-btn", atributos: { title: "Visualizar Detalhes", type: "button" } });
   btnVer.appendChild(criarElemento("i", { className: "fa-solid fa-eye" }));
   btnVer.addEventListener("click", () => abrirModalUsuario(cliente));
 
-  const btnRemover = criarElemento("button", { className: "delete-btn", atributos: { title: "Remover Cliente" } });
+  const btnRemover = criarElemento("button", { className: "delete-btn", atributos: { title: "Remover Cliente", type: "button" } });
   btnRemover.appendChild(criarElemento("i", { className: "fa-solid fa-trash" }));
   btnRemover.addEventListener("click", () => removerCliente(cliente.cpf));
 
-  const btnWpp = criarElemento("button", { className: "send-message-btn", atributos: { title: "Enviar WhatsApp" } });
+  const btnWpp = criarElemento("button", { className: "send-message-btn", atributos: { title: "Enviar WhatsApp", type: "button" } });
   btnWpp.appendChild(criarElemento("i", { className: "fa-brands fa-whatsapp" }));
   btnWpp.addEventListener("click", () => abrirModalMensagemCliente(cliente));
 
@@ -400,14 +475,16 @@ function renderizarClientes(clientes) {
 }
 
 // ===========================================================
-// 9. MODAL DE USUÁRIO & GERENCIAMENTO DE PROCESSOS
+// 9. MODAL DE USUÁRIO
 // ===========================================================
-async function abrirModalUsuario(cliente) {
+function abrirModalUsuario(cliente) {
   estado.clienteEmDetalhe = cliente;
 
+  if (dom.usuarioTitulo) dom.usuarioTitulo.textContent = textoOuTraco(cliente.nome, "Detalhes do cliente");
   if (dom.usuarioNome) dom.usuarioNome.textContent = textoOuTraco(cliente.nome);
   if (dom.usuarioEmail) dom.usuarioEmail.textContent = textoOuTraco(cliente.email);
   if (dom.usuarioCpf) dom.usuarioCpf.textContent = textoOuTraco(cliente.cpf);
+  if (dom.usuarioTelefone) dom.usuarioTelefone.textContent = textoOuTraco(cliente.telefone);
   if (dom.usuarioTipo) dom.usuarioTipo.textContent = textoOuTraco(cliente.tipo, "CLIENTE");
   if (dom.usuarioEndereco) dom.usuarioEndereco.textContent = textoOuTraco(cliente.endereco);
 
@@ -423,13 +500,10 @@ async function abrirModalUsuario(cliente) {
 
   if (dom.formNovoProcesso) {
     dom.formNovoProcesso.style.display = "none";
+    dom.formNovoProcesso.reset();
   }
 
-  const idParaProcessos = cliente.id || cliente._id || cliente.cpf;
-  if (idParaProcessos) {
-    const processos = await buscarProcessos(idParaProcessos);
-    renderizarProcessos(processos);
-  }
+  carregarProcessosDoCliente(cliente);
 }
 
 function fecharModalUsuario() {
@@ -441,42 +515,186 @@ function fecharModalUsuario() {
   estado.clienteEmDetalhe = null;
 }
 
+// ===========================================================
+// 10. RENDERIZAÇÃO DE PROCESSOS (ProcessoDTO)
+// ===========================================================
+async function carregarProcessosDoCliente(cliente) {
+  const id = obterIdCliente(cliente);
+  if (!dom.listaProcessos) return;
+
+  if (!id) {
+    renderizarProcessos(cliente.processos || []);
+    return;
+  }
+
+  renderizarProcessosCarregando();
+  const processos = await buscarProcessosCliente(id);
+
+  // Se o modal foi fechado ou o cliente trocado enquanto a requisição
+  // estava em andamento, descarta o resultado.
+  if (!estado.clienteEmDetalhe || obterIdCliente(estado.clienteEmDetalhe) !== id) return;
+
+  renderizarProcessos(processos);
+}
+
+function renderizarProcessosCarregando() {
+  if (!dom.listaProcessos) return;
+  dom.listaProcessos.innerHTML = "";
+  const container = criarElemento("div", { className: "processos-vazio", atributos: { "aria-busy": "true" } });
+  container.append(
+    criarElemento("i", { className: "fa-solid fa-spinner fa-spin" }),
+    document.createTextNode(" Carregando processos do cliente...")
+  );
+  dom.listaProcessos.appendChild(container);
+}
+
 function renderizarProcessos(processos) {
   if (!dom.listaProcessos) return;
   dom.listaProcessos.innerHTML = "";
 
   if (!Array.isArray(processos) || processos.length === 0) {
-    dom.listaProcessos.innerHTML = "<p style='color: #6b7280; font-style: italic;'>Nenhum processo cadastrado para este cliente.</p>";
+    dom.listaProcessos.appendChild(
+      criarElemento("p", { className: "processos-vazio", texto: "Nenhum processo cadastrado para este cliente." })
+    );
     return;
   }
 
   const fragment = document.createDocumentFragment();
-
-  processos.forEach(p => {
-    const card = criarElemento("div", {
-      atributos: {
-        style: "background: #f3f4f6; padding: 12px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #3b82f6;"
-      }
-    });
-
-    const valorFormatado = Number(p.valorProcesso || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-    card.innerHTML = `
-      <div><strong>Tipo:</strong> ${textoOuTraco(p.tipo)} | <strong>Status:</strong> ${textoOuTraco(p.status)}</div>
-      <div><strong>Nº Processo:</strong> ${textoOuTraco(p.numeroProcesso)} | <strong>Valor:</strong> ${valorFormatado}</div>
-      <div><strong>Doc. Pendentes:</strong> ${textoOuTraco(p.documentosPendentes)} | <strong>Pendências:</strong> ${textoOuTraco(p.pendencias)}</div>
-      <div><strong>Obs:</strong> ${textoOuTraco(p.observacao)}</div>
-      <div><strong>Pagamento:</strong> ${p.pagamentoRealizado ? "Sim" : "Não"} | <strong>Biometria:</strong> ${p.biometriaRealizada ? "Sim" : "Não"}</div>
-    `;
-
-    fragment.appendChild(card);
-  });
-
+  processos.forEach(processo => fragment.appendChild(criarCardProcesso(processo)));
   dom.listaProcessos.appendChild(fragment);
 }
 
+function criarCardProcesso(processo) {
+  const card = criarElemento("div", { className: "processo-card" });
+  const statusInfo = classificarStatusProcesso(processo.status, processo.dataConclusao);
+
+  // Cabeçalho: tipo + badge de status
+  const cabecalho = criarElemento("div", { className: "processo-cabecalho" });
+  cabecalho.append(
+    criarElemento("h4", { className: "processo-tipo", texto: textoOuTraco(processo.tipo, "Processo") }),
+    criarElemento("span", { className: statusInfo.className, texto: statusInfo.label })
+  );
+
+  // Linha do tempo simplificada: Criado -> Em andamento -> Concluído
+  const timeline = criarElemento("div", { className: "processo-timeline" });
+  const etapas = [
+    { chave: "aberto", texto: "Criado" },
+    { chave: "andamento", texto: "Em andamento" },
+    { chave: "concluido", texto: statusInfo.fase === "negado" ? "Encerrado" : "Concluído" }
+  ];
+  const faseAtualIndex = statusInfo.fase === "negado" ? 2 : etapas.findIndex(e => e.chave === statusInfo.fase);
+  etapas.forEach((etapa, index) => {
+    const concluida = index <= faseAtualIndex;
+    const ponto = criarElemento("div", {
+      className: `processo-timeline-etapa ${concluida ? "concluida" : ""} ${statusInfo.fase === "negado" && index === 2 ? "negada" : ""}`.trim()
+    });
+    ponto.append(
+      criarElemento("span", { className: "processo-timeline-marcador" }),
+      criarElemento("span", { className: "processo-timeline-label", texto: etapa.texto })
+    );
+    timeline.appendChild(ponto);
+  });
+
+  // Metadados
+  const linhaDatas = criarElemento("div", { className: "processo-linha" });
+  linhaDatas.append(
+    criarElemento("span", { texto: `Criado em: ${formatarData(processo.dataCriacao)}` }),
+    criarElemento("span", { texto: `Concluído em: ${formatarData(processo.dataConclusao, "Em andamento")}` })
+  );
+
+  const linhaExtra = criarElemento("div", { className: "processo-linha" });
+  const badgeBiometria = criarElemento("span", {
+    className: `processo-biometria ${processo.biometriaRealizada ? "ok" : "pendente"}`
+  });
+  badgeBiometria.append(
+    criarElemento("i", { className: `fa-solid ${processo.biometriaRealizada ? "fa-fingerprint" : "fa-circle-exclamation"}` }),
+    document.createTextNode(processo.biometriaRealizada ? " Biometria realizada" : " Biometria pendente")
+  );
+  linhaExtra.append(
+    badgeBiometria,
+    criarElemento("span", { className: "processo-ref", texto: `Nº ref.: ${textoOuTraco(processo.id)}` })
+  );
+
+  card.append(cabecalho, timeline, linhaDatas, linhaExtra);
+  card.appendChild(criarUploadDocumento(processo));
+
+  return card;
+}
+
+function criarUploadDocumento(processo) {
+  const container = criarElemento("div", { className: "processo-upload" });
+
+  const linhaAcao = criarElemento("div", { className: "processo-upload-acao" });
+  const inputArquivo = document.createElement("input");
+  inputArquivo.type = "file";
+  inputArquivo.className = "processo-upload-input";
+
+  const btnEnviar = criarElemento("button", {
+    className: "secondary-btn",
+    atributos: { type: "button" }
+  });
+  btnEnviar.append(
+    criarElemento("i", { className: "fa-solid fa-file-arrow-up" }),
+    document.createTextNode(" Adicionar Documento")
+  );
+
+  const listaEnviados = criarElemento("ul", { className: "processo-documentos-lista" });
+  const idProcesso = processo.id || "";
+  const jaEnviados = estado.documentosEnviadosPorProcesso[idProcesso] || [];
+  jaEnviados.forEach(nomeArquivo => listaEnviados.appendChild(criarItemDocumentoEnviado(nomeArquivo)));
+
+  btnEnviar.addEventListener("click", async () => {
+    const arquivo = inputArquivo.files?.[0];
+    if (!arquivo) {
+      alert("Selecione um arquivo antes de enviar.");
+      return;
+    }
+    if (!processo.id) {
+      alert("Este processo não possui um identificador válido.");
+      return;
+    }
+
+    btnEnviar.disabled = true;
+    const textoOriginal = btnEnviar.innerHTML;
+    btnEnviar.innerHTML = "";
+    btnEnviar.append(
+      criarElemento("i", { className: "fa-solid fa-spinner fa-spin" }),
+      document.createTextNode(" Enviando...")
+    );
+
+    const resultado = await enviarDocumento(processo.id, arquivo);
+
+    btnEnviar.disabled = false;
+    btnEnviar.innerHTML = textoOriginal;
+
+    if (resultado !== null) {
+      const nomeArquivo = arquivo.name;
+      inputArquivo.value = "";
+
+      if (!estado.documentosEnviadosPorProcesso[idProcesso]) {
+        estado.documentosEnviadosPorProcesso[idProcesso] = [];
+      }
+      estado.documentosEnviadosPorProcesso[idProcesso].push(nomeArquivo);
+      listaEnviados.appendChild(criarItemDocumentoEnviado(nomeArquivo));
+    }
+  });
+
+  linhaAcao.append(inputArquivo, btnEnviar);
+  container.append(linhaAcao, listaEnviados);
+  return container;
+}
+
+function criarItemDocumentoEnviado(nomeArquivo) {
+  const item = criarElemento("li", { className: "processo-documento-item" });
+  item.append(
+    criarElemento("i", { className: "fa-solid fa-circle-check" }),
+    document.createTextNode(` ${nomeArquivo}`)
+  );
+  return item;
+}
+
 // ===========================================================
-// 10. FILTROS, BUSCA E ORDENAÇÃO
+// 11. FILTROS, BUSCA E ORDENAÇÃO
 // ===========================================================
 function aplicarFiltrosEOrdenacao() {
   const termo = dom.searchInput?.value.trim().toLowerCase() || "";
@@ -504,7 +722,7 @@ function renderizarListaAtual() {
 }
 
 // ===========================================================
-// 11. OPERAÇÕES DE REQUISIÇÃO À API
+// 12. OPERAÇÕES DE REQUISIÇÃO À API
 // ===========================================================
 export async function listarClientes() {
   renderizarLoading();
@@ -526,13 +744,17 @@ export async function listarClientes() {
   }
 }
 
-export async function listarUsuarios() {
+export async function cadastrarCliente(dadosCliente) {
   try {
-    const dados = await fazerRequisicaoAPI(ENDPOINTS.USERS);
-    return Array.isArray(dados) ? dados : [];
+    const resposta = await fazerRequisicaoAPI(ENDPOINTS.REGISTER, {
+      method: "POST",
+      body: JSON.stringify(dadosCliente)
+    });
+    await listarClientes();
+    return resposta;
   } catch (error) {
-    console.error("Erro ao listar usuários:", error);
-    return [];
+    alert(error.message || "Erro ao cadastrar cliente.");
+    return null;
   }
 }
 
@@ -550,12 +772,21 @@ export async function removerCliente(cpf) {
   }
 }
 
-export async function buscarProcessos(usuarioId) {
+export async function buscarProcessosCliente(usuarioId) {
   try {
     const dados = await fazerRequisicaoAPI(ENDPOINTS.PROCESSOS_CLIENTE(usuarioId));
     return Array.isArray(dados) ? dados : [];
   } catch (error) {
-    console.error("Erro ao buscar processos:", error);
+    console.error("Erro ao buscar processos do cliente:", error);
+    if (dom.listaProcessos) {
+      dom.listaProcessos.innerHTML = "";
+      const container = criarElemento("div", { className: "processos-vazio processos-erro" });
+      container.append(
+        criarElemento("i", { className: "fa-solid fa-triangle-exclamation" }),
+        document.createTextNode(` ${error.message || "Erro ao carregar processos."}`)
+      );
+      dom.listaProcessos.appendChild(container);
+    }
     return [];
   }
 }
@@ -572,8 +803,46 @@ export async function criarProcesso(usuarioId, processo) {
   }
 }
 
+export async function enviarDocumento(processoId, arquivo) {
+  try {
+    const formData = new FormData();
+    formData.append("arquivo", arquivo);
+
+    return await fazerRequisicaoAPI(ENDPOINTS.ENVIAR_DOCUMENTO(processoId), {
+      method: "POST",
+      body: formData
+    });
+  } catch (error) {
+    alert(error.message || "Erro ao enviar documento.");
+    return null;
+  }
+}
+
+export async function buscarGuiasCliente(usuarioId) {
+  try {
+    const dados = await fazerRequisicaoAPI(ENDPOINTS.GUIAS_CLIENTE(usuarioId));
+    return Array.isArray(dados) ? dados : [];
+  } catch (error) {
+    console.error("Erro ao buscar guias do cliente:", error);
+    return [];
+  }
+}
+
+export async function listarPagamentos() {
+  try {
+    const dados = await fazerRequisicaoAPI(ENDPOINTS.PAGAMENTOS);
+    return Array.isArray(dados) ? dados : [];
+  } catch (error) {
+    console.error("Erro ao listar pagamentos:", error);
+    return [];
+  }
+}
+
+// Exporta o classificador de situação de guia para uso por ModalGuiasAdmin.js
+export { classificarSituacaoGuia };
+
 // ===========================================================
-// 12. BINDING DE EVENTOS
+// 13. BINDING DE EVENTOS
 // ===========================================================
 function configurarEventosSidebar() {
   const toggle = () => {
@@ -601,6 +870,16 @@ function configurarEventosSidebar() {
   });
 }
 
+function popularSugestoesTipoProcesso() {
+  if (!dom.procTipoLista) return;
+  dom.procTipoLista.innerHTML = "";
+  TIPOS_PROCESSO.forEach(tipo => {
+    const option = document.createElement("option");
+    option.value = tipo;
+    dom.procTipoLista.appendChild(option);
+  });
+}
+
 function configurarEventosModalUsuario() {
   dom.fecharUsuario?.addEventListener("click", fecharModalUsuario);
 
@@ -625,31 +904,49 @@ function configurarEventosModalUsuario() {
     e.preventDefault();
     if (!estado.clienteEmDetalhe) return;
 
-    const id = estado.clienteEmDetalhe.id || estado.clienteEmDetalhe._id || estado.clienteEmDetalhe.cpf;
+    const id = obterIdCliente(estado.clienteEmDetalhe);
+    if (!id) {
+      alert("Não foi possível identificar o cliente para criar o processo.");
+      return;
+    }
+
+    // Envia apenas os campos que existem no modelo Processo do backend.
     const novoProcesso = {
-      tipo: document.getElementById("procTipo")?.value || "",
-      status: document.getElementById("procStatus")?.value || "",
-      numeroProcesso: document.getElementById("procNumero")?.value || "",
-      valorProcesso: parseFloat(document.getElementById("procValor")?.value) || 0,
-      pendencias: document.getElementById("procPendencias")?.value || "",
-      documentosPendentes: document.getElementById("procDocsPendentes")?.value || "",
-      observacao: document.getElementById("procObservacao")?.value || "",
-      pagamentoRealizado: Boolean(document.getElementById("procPagamento")?.checked),
+      tipo: document.getElementById("procTipo")?.value.trim() || "",
+      status: document.getElementById("procStatus")?.value.trim() || "",
       biometriaRealizada: Boolean(document.getElementById("procBiometria")?.checked)
     };
 
+    if (!novoProcesso.tipo) {
+      alert("Informe o tipo do processo.");
+      return;
+    }
+
+    const submitBtn = dom.formNovoProcesso.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.disabled = true;
+
     const resultado = await criarProcesso(id, novoProcesso);
+
+    if (submitBtn) submitBtn.disabled = false;
+
     if (resultado) {
       dom.formNovoProcesso.reset();
       dom.formNovoProcesso.style.display = "none";
-      const atualizados = await buscarProcessos(id);
-      renderizarProcessos(atualizados);
+
+      // Atualiza somente a lista de processos deste cliente, sem
+      // recarregar a página nem precisar recarregar todos os clientes.
+      await carregarProcessosDoCliente(estado.clienteEmDetalhe);
+      alert("Processo criado com sucesso.");
     }
   });
 
-  dom.btnVerify?.addEventListener("click", () => {
-    if (estado.clienteEmDetalhe && modalGuias) {
-      modalGuias.carregarGuias(estado.clienteEmDetalhe);
+  dom.btnVerify?.addEventListener("click", async () => {
+    if (!estado.clienteEmDetalhe) return;
+
+    const id = obterIdCliente(estado.clienteEmDetalhe);
+    const guias = await buscarGuiasCliente(id);
+    if (modalGuias) {
+      modalGuias.carregarGuias({ ...estado.clienteEmDetalhe, guias });
     }
   });
 }
@@ -668,7 +965,7 @@ function configurarEventosLista() {
 }
 
 // ===========================================================
-// 13. INICIALIZAÇÃO CONTROLADA DA APLICAÇÃO
+// 14. INICIALIZAÇÃO CONTROLADA DA APLICAÇÃO
 // ===========================================================
 function inicializar() {
   if (!verificarAutenticacao()) return;
@@ -679,15 +976,14 @@ function inicializar() {
     console.warn("ModalGuiasAdmin não pôde ser instanciado diretamente:", err);
   }
 
+  popularSugestoesTipoProcesso();
   configurarEventosSidebar();
   configurarEventosModalUsuario();
   configurarEventosLista();
 
-  // Execução inicial obrigatória
   listarClientes();
 }
 
-// Garante carregamento do DOM antes da execução
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", inicializar);
 } else {
