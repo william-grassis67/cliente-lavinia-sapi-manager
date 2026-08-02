@@ -54,7 +54,7 @@ async function ShowGuias() {
             listaGuiasPagas.innerHTML = "";
         }
 
-        guias.forEach(guia => {
+        guias.forEach((guia) => {
             if (guia.pago) {
                 totalPagas++;
             } else {
@@ -73,13 +73,9 @@ async function ShowGuias() {
                 const statusTexto = guia.pago ? "Pago" : "Aguardando pagamento";
                 const statusClasse = guia.pago ? "pago" : "pendente";
 
-                const botaoHTML = guia.pago
-                    ? `<button disabled class="btn-disabled">Pagamento confirmado</button>`
-                    : `<button onclick="abrirModalPagamento(${guia.id})" class="btn-pagar">Informar pagamento</button>`;
-
                 card.innerHTML = `
                     <div class="guia-header">
-                        <h3>Guia #${guia.id}</h3>
+                        <strong>Guia #${guia.id}</strong>
                         <span class="status-badge ${statusClasse}">${statusTexto}</span>
                     </div>
                     <div class="guia-body">
@@ -87,9 +83,6 @@ async function ShowGuias() {
                         <p><strong>Competência:</strong> ${guia.competencia}</p>
                         <p><strong>Vencimento:</strong> ${formatarData(guia.vencimento)}</p>
                         <p><strong>Valor:</strong> ${valorFormatado}</p>
-                    </div>
-                    <div class="guia-footer">
-                        ${botaoHTML}
                     </div>
                 `;
 
@@ -100,66 +93,67 @@ async function ShowGuias() {
         if (guias_emitidas_show) guias_emitidas_show.textContent = totalGuias;
         if (guias_pagas_show) guias_pagas_show.textContent = totalPagas;
         if (guias_pendentes_show) guias_pendentes_show.textContent = totalPendentes;
-
     } catch (error) {
         console.error("Erro ao carregar e renderizar as guias:", error);
     }
 }
 
 function buttonverGuiasPagas() {
-
     const verGuiasPagas = document.getElementById("verGuiasPagas");
     const mostrarGuias = document.getElementById("mostrar_guias_pagas");
     const tbody = document.getElementById("tbodyClientes");
     const fecharTabela = document.getElementById("fecharTabela");
 
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-    const usuarioId = usuario.id;
+    if (!verGuiasPagas || !mostrarGuias || !tbody || !fecharTabela) {
+        return;
+    }
 
-    const API_BASE = "https://apiadministrativa.onrender.com";
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    const usuarioId = usuario?.id;
+
     const url = `${API_BASE}/api/cliente/guias/${usuarioId}`;
 
-    verGuiasPagas.addEventListener("click", carregarGuias);
-    fecharTabela.addEventListener("click", () => {  mostrarGuias.style.display = "none"})
+    const fechar = () => {
+        mostrarGuias.classList.remove("active");
+        mostrarGuias.style.display = "none";
+        mostrarGuias.setAttribute("aria-hidden", "true");
+    };
 
-    async function carregarGuias() {
-
-        mostrarGuias.style.display = "block";
+    const abrir = async () => {
+        mostrarGuias.style.display = "flex";
+        mostrarGuias.classList.add("active");
+        mostrarGuias.setAttribute("aria-hidden", "false");
 
         try {
-
             const resposta = await fetch(url);
-
-            if (!resposta.ok) {
-                throw new Error("Erro ao buscar guias.");
-            }
+            if (!resposta.ok) throw new Error("Erro ao buscar guias.");
 
             const guias = await resposta.json();
-
             tbody.innerHTML = "";
 
-            guias.forEach(guia => {
-
+            guias.forEach((guia) => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${guia.competencia}</td>
-                        <td>${guia.vencimento}</td>
+                        <td>${formatarData(guia.vencimento)}</td>
                         <td>R$ ${guia.valor}</td>
                         <td>${guia.pago ? "Pago" : "Pendente"}</td>
                     </tr>
                 `;
-
             });
-
         } catch (erro) {
             console.error(erro);
         }
+    };
 
-    }
-
+    verGuiasPagas.addEventListener("click", abrir);
+    fecharTabela.addEventListener("click", fechar);
+    mostrarGuias.addEventListener("click", (event) => {
+        if (event.target === mostrarGuias) {
+            fechar();
+        }
+    });
 }
-
-buttonverGuiasPagas();
 
 export {
     buttonverGuiasPagas,

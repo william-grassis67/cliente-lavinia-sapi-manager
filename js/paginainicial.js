@@ -3,48 +3,34 @@ import { pagamentoGuiasInss } from "./pagamento-guias.js";
 import { Notificacao } from "./Notifacao.js";
 import { verifyButton } from "./BotaoPayment.js";
 import { initProcessos } from "./processos.js";
-import { ShowGuias } from "./ShowGuais.js";
-import { buttonverGuiasPagas } from "./ShowGuais.js";
-/* ==========================================================================
-   CONFIGURAÇÃO DA API & ROTAS DO CLIENTE
-   ========================================================================== */
+import { ShowGuias, buttonverGuiasPagas } from "./ShowGuais.js";
+
 const API_ROUTES = {
     criarGuia: (usuarioId) => `/api/guias/${usuarioId}`,
     confirmarPagamento: (guiaId) => `/api/pagamento/${guiaId}`,
     buscarProcessos: (usuarioId) => `/api/me/processos/${usuarioId}`
 };
 
-const FETCH_TIMEOUT_MS = 15000; // 15 segundos de timeout
+const FETCH_TIMEOUT_MS = 15000;
+const TOAST_DURATION_MS = 4500;
 
-/* ==========================================================================
-   SELETORES DO DOM
-   ========================================================================== */
 const DOM = {
     profileName: document.getElementById('person_name'),
     profileEmail: document.getElementById('person_email_perfil'),
     profileType: document.getElementById('person_tipe_perfil'),
     profilePerfilName: document.getElementById('person_name_perfil'),
-    profileNameCard: document.getElementById("person_name_card"),
-    userDateLastTime: document.getElementById("userDateLastTime"),
+    profileNameCard: document.getElementById('person_name_card'),
+    userDateLastTime: document.getElementById('userDateLastTime'),
     logoutBtn: document.getElementById('logoutBtn'),
     adminLink: document.getElementById('adminLink'),
     avatar: document.getElementById('profileAvatar'),
     avatarInitials: document.getElementById('avatarInitials'),
     competenciaInput: document.getElementById('competencia'),
     dateCompetenciaSpan: document.getElementById('date_competencia'),
-    toastContainer: document.getElementById('toastContainer')
+    toastContainer: document.getElementById('toastContainer'),
+    topbarTitle: document.getElementById('topbarTitle')
 };
 
-const TOAST_DURATION_MS = 4500;
-
-/* ==========================================================================
-   FEEDBACK VISUAL (TOASTS)
-   ========================================================================== */
-
-/**
- * Garante que o container de toasts exista no DOM.
- * @returns {HTMLElement}
- */
 function ensureToastContainer() {
     if (DOM.toastContainer && document.body.contains(DOM.toastContainer)) {
         return DOM.toastContainer;
@@ -59,10 +45,6 @@ function ensureToastContainer() {
     return container;
 }
 
-/**
- * Retorna o ícone adequado para o tipo de notificação.
- * @param {'info'|'success'|'error'|'warning'} type
- */
 function iconForToastType(type) {
     switch (type) {
         case 'success': return 'fa-circle-check';
@@ -72,16 +54,10 @@ function iconForToastType(type) {
     }
 }
 
-/**
- * Exibe notificação temporária no padrão window.SapiToast.
- * @param {string} message
- * @param {'info'|'success'|'error'|'warning'} [type]
- */
 function showToast(message, type = 'info') {
     if (!message) return;
 
     const container = ensureToastContainer();
-
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.setAttribute('role', 'status');
@@ -103,7 +79,6 @@ function showToast(message, type = 'info') {
     }, TOAST_DURATION_MS);
 }
 
-// Expõe window.SapiToast para consumo global e compatibilidade com scripts legados
 window.SapiToast = {
     show: showToast,
     success: (msg) => showToast(msg, 'success'),
@@ -112,22 +87,12 @@ window.SapiToast = {
     info: (msg) => showToast(msg, 'info')
 };
 
-/* ==========================================================================
-   CENTRALIZADOR DE REQUISIÇÕES HTTP & RETRIES Defensivos
-   ========================================================================== */
-
-/**
- * Wrapper centralizado para requisições com timeout e tratamento robusto de erros HTTP/JSON.
- * @param {string} url
- * @param {RequestInit} [options={}]
- * @returns {Promise<any>}
- */
 async function apiFetch(url, options = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     const defaultHeaders = {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json'
     };
 
@@ -179,7 +144,6 @@ async function apiFetch(url, options = {}) {
     }
 }
 
-// Utilitários de API expostos para interações diretas se necessário
 window.SapiApi = {
     criarGuia: (usuarioId, payload) => apiFetch(API_ROUTES.criarGuia(usuarioId), {
         method: 'POST',
@@ -194,21 +158,12 @@ window.SapiApi = {
     })
 };
 
-/* ==========================================================================
-   SESSÃO & AUTENTICAÇÃO
-   ========================================================================== */
-
-/**
- * Valida a sessão e retorna os dados do usuário.
- * @returns {Object|null}
- */
 function getStoredUser() {
     try {
         const data = localStorage.getItem('usuario');
         if (!data) return null;
 
         const user = JSON.parse(data);
-
         if (typeof user !== 'object' || user === null || !user.id) {
             return null;
         }
@@ -220,17 +175,10 @@ function getStoredUser() {
     }
 }
 
-/**
- * Redireciona a navegação de forma segura.
- * @param {string} page
- */
 function redirectTo(page) {
     window.location.href = page;
 }
 
-/**
- * Encerra a sessão e apaga dados locais.
- */
 function handleLogout() {
     try {
         localStorage.removeItem('usuario');
@@ -242,10 +190,6 @@ function handleLogout() {
     }
 }
 
-/**
- * Manipulador do evento de clique no botão de logout.
- * @param {MouseEvent} event
- */
 function handleLogoutClick(event) {
     event.preventDefault();
     if (window.confirm('Tem certeza que deseja sair da sua conta?')) {
@@ -253,15 +197,6 @@ function handleLogoutClick(event) {
     }
 }
 
-/* ==========================================================================
-   INTERFACE E DOM (UI)
-   ========================================================================== */
-
-/**
- * Formata a data de último acesso do usuário.
- * @param {string|Date} dateString
- * @returns {string}
- */
 function formatLastAccessDate(dateString) {
     if (!dateString) return 'Nunca entrou';
 
@@ -281,11 +216,6 @@ function formatLastAccessDate(dateString) {
     }
 }
 
-/**
- * Extrai as iniciais do nome.
- * @param {string} name
- * @returns {string}
- */
 function getInitials(name) {
     if (!name || typeof name !== 'string') return '';
 
@@ -298,10 +228,6 @@ function getInitials(name) {
     return (first + last).toUpperCase();
 }
 
-/**
- * Atualiza o avatar e as iniciais.
- * @param {string} name
- */
 function updateAvatarUI(name) {
     if (!DOM.avatar || !DOM.avatarInitials) return;
 
@@ -316,25 +242,17 @@ function updateAvatarUI(name) {
     }
 }
 
-/**
- * Atualiza os campos de nome na interface.
- * @param {string} name
- */
 function updateUserNameUI(name) {
     const displayName = name || 'Usuário';
     const elements = [DOM.profileNameCard, DOM.profilePerfilName, DOM.profileName];
 
-    elements.forEach(element => {
+    elements.forEach((element) => {
         if (element) element.textContent = displayName;
     });
 
     updateAvatarUI(name);
 }
 
-/**
- * Preenche o perfil do usuário.
- * @param {Object} user
- */
 function updateUserProfileUI(user) {
     if (DOM.profileEmail) {
         DOM.profileEmail.textContent = user.email || 'Sem e-mail cadastrado';
@@ -356,18 +274,11 @@ function updateUserProfileUI(user) {
     }
 }
 
-/**
- * Renderiza todos os dados do usuário.
- * @param {Object} user
- */
 function renderUserData(user) {
     updateUserNameUI(user.nome);
     updateUserProfileUI(user);
 }
 
-/**
- * Define a competência atual por padrão (mês/ano).
- */
 function setDefaultCompetenciaAtual() {
     const hoje = new Date();
     const mes = String(hoje.getMonth() + 1).padStart(2, '0');
@@ -383,23 +294,66 @@ function setDefaultCompetenciaAtual() {
     }
 }
 
-/* ==========================================================================
-   INICIALIZAÇÃO E INTEGRAÇÃO DOS MÓDULOS
-   ========================================================================== */
+function activateSection(sectionId) {
+    const section = document.getElementById(`section-${sectionId}`);
+    if (!section) return;
 
-/**
- * Configura os escutadores de eventos básicos.
- */
+    document.querySelectorAll('.page-section').forEach((item) => {
+        item.classList.toggle('is-active', item.id === section.id);
+    });
+
+    document.querySelectorAll('.sidebar-link[data-target]').forEach((link) => {
+        link.classList.toggle('is-active', link.dataset.target === sectionId);
+    });
+
+    if (DOM.topbarTitle) {
+        const labels = {
+            dashboard: 'Dashboard',
+            perfil: 'Meu Perfil',
+            processos: 'Processos',
+            guias: 'Guias INSS',
+            historico: 'Histórico',
+            configuracoes: 'Configurações'
+        };
+        DOM.topbarTitle.textContent = labels[sectionId] || 'Dashboard';
+    }
+}
+
+function setupSectionNavigation() {
+    document.querySelectorAll('.sidebar-link[data-target]').forEach((button) => {
+        button.addEventListener('click', () => activateSection(button.dataset.target));
+    });
+
+    document.querySelectorAll('[data-nav-action]').forEach((button) => {
+        button.addEventListener('click', () => activateSection(button.dataset.navAction));
+    });
+}
+
+function setupThemeControls() {
+    const savedTheme = localStorage.getItem('sapi-theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    document.querySelectorAll('[data-theme-option]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const theme = button.dataset.themeOption || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('sapi-theme', theme);
+
+            document.querySelectorAll('[data-theme-option]').forEach((item) => {
+                item.classList.toggle('is-active', item === button);
+            });
+        });
+    });
+}
+
 function setupEventListeners() {
     if (DOM.logoutBtn) {
         DOM.logoutBtn.addEventListener('click', handleLogoutClick);
     }
 }
 
-/**
- * Inicializa com segurança cada um dos módulos importados com as novas rotas.
- * @param {Object} user
- */
 function initModules(user) {
     const userId = user.id;
 
@@ -409,7 +363,8 @@ function initModules(user) {
         { name: 'Notificacao', fn: () => Notificacao?.(userId) },
         { name: 'verifyButton', fn: () => verifyButton?.() },
         { name: 'ShowGuias', fn: () => ShowGuias?.(userId) },
-        { name: 'initProcessos', fn: () => initProcessos?.(userId) }
+        { name: 'initProcessos', fn: () => initProcessos?.(userId) },
+        { name: 'buttonverGuiasPagas', fn: () => buttonverGuiasPagas?.() }
     ];
 
     modules.forEach(({ name, fn }) => {
@@ -419,17 +374,16 @@ function initModules(user) {
             console.error(`[paginainicial] Erro ao inicializar o módulo "${name}":`, error);
         }
     });
+
+    setupSectionNavigation();
+    setupThemeControls();
 }
 
-/**
- * Ponto de entrada da aplicação.
- */
 function init() {
     try {
         setDefaultCompetenciaAtual();
 
         const user = getStoredUser();
-
         if (!user) {
             handleLogout();
             return;
@@ -444,12 +398,8 @@ function init() {
     }
 }
 
-// Dispara a inicialização após o DOM estar totalmente pronto
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
 }
-initProcessos();
-ShowGuias();
-buttonverGuiasPagas();
