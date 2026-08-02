@@ -7,7 +7,6 @@
 // 1. ESTADO INTERNO DO MÓDULO
 // ===========================================================
 let clienteAtual = null;
-let eventosInicializados = false;
 
 // ===========================================================
 // 2. NOTIFICAÇÕES (FEEDBACK VISUAL INTERNO)
@@ -177,19 +176,25 @@ function processarEnvio() {
   }
 }
 
+// CORREÇÃO: antes, uma flag única do módulo (`eventosInicializados`) era
+// marcada como `true` na primeira chamada, mesmo que os botões não
+// tivessem sido encontrados no DOM naquele momento (ex.: modal ainda não
+// montado). Isso fazia os cliques em "Enviar"/"Fechar" nunca mais serem
+// vinculados em aberturas futuras do modal. Agora a marca de "já
+// vinculado" fica no próprio elemento (dataset), então, se um botão não
+// existir na primeira tentativa, a próxima chamada tenta vincular de
+// novo normalmente — e nunca duplica o listener quando ele já existe.
 function configurarEventos() {
-  if (eventosInicializados) return;
-
   const btnEnviar = document.getElementById("btn_send_message");
   const btnFechar = document.getElementById("btn_close_send");
 
-  if (btnEnviar) {
+  if (btnEnviar && !btnEnviar.dataset.mensagemListenerAttached) {
     btnEnviar.addEventListener("click", processarEnvio);
+    btnEnviar.dataset.mensagemListenerAttached = "true";
   }
 
-  if (btnFechar) {
+  if (btnFechar && !btnFechar.dataset.mensagemListenerAttached) {
     btnFechar.addEventListener("click", fecharModalMensagem);
+    btnFechar.dataset.mensagemListenerAttached = "true";
   }
-
-  eventosInicializados = true;
 }

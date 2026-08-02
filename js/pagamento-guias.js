@@ -1,5 +1,23 @@
 const API_BASE_URL = "https://apiadministrativa.onrender.com";
 
+function buildPaymentPayload(guia) {
+    return {
+        competencia: guia.competencia,
+        vencimento: guia.vencimento,
+        valor: Number(guia.valor),
+        mensagemPagamento: guia.mensagemPagamento || ""
+    };
+}
+
+function getAuthToken() {
+    try {
+        const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+        return usuario?.token || "";
+    } catch {
+        return "";
+    }
+}
+
 function pagamentoGuiasInss() {
     const btnConfirma = document.getElementById("confirma");
 
@@ -23,7 +41,13 @@ function pagamentoGuiasInss() {
         }
 
         if (!usuario || !usuario.id) {
-            window.SapiToast?.error("Usuário não encontrado.");
+            window.SapiToast?.error("Usuário não encontrado. Faça login novamente.");
+            return;
+        }
+
+        const token = getAuthToken();
+        if (!token) {
+            window.SapiToast?.warning("Não foi possível confirmar o pagamento porque a sessão está indisponível.");
             return;
         }
 
@@ -45,12 +69,12 @@ function pagamentoGuiasInss() {
         competenciaInput.value =
             `${String(hoje.getMonth() + 1).padStart(2, "0")}/${hoje.getFullYear()}`;
 
-        const guia = {
+        const guia = buildPaymentPayload({
             competencia: competenciaInput.value,
             vencimento: vencimentoInput.value,
             valor: Number(valorInput.value),
             mensagemPagamento: mensagemInput.value.trim()
-        };
+        });
 
         if (!guia.vencimento) {
             window.SapiToast?.warning("Informe o vencimento.");
@@ -70,11 +94,12 @@ function pagamentoGuiasInss() {
 
         try {
             const response = await fetch(
-                `${API_BASE_URL}/api/guias/${usuarioId}`,
+                `${API_BASE_URL}/api/cliente/pagamento/${usuarioId}`,
                 {
-                    method: "POST",
+                    method: "PUT",
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
                     },
                     body: JSON.stringify(guia)
                 }
@@ -83,11 +108,11 @@ function pagamentoGuiasInss() {
             const texto = await response.text();
 
             if (!response.ok) {
-                throw new Error(texto || "Erro ao criar guia.");
+                throw new Error(texto || "Erro ao confirmar pagamento.");
             }
 
             const resultado = texto ? JSON.parse(texto) : null;
-            console.log("Guia criada:", resultado);
+            console.log("Pagamento confirmado:", resultado);
 
             window.SapiToast?.success("Guia INSS confirmada com sucesso!");
 
@@ -99,19 +124,22 @@ function pagamentoGuiasInss() {
             // fecha o popup de pagamento
             document.getElementById("popup_payment")?.classList.remove("active");
             document.body.style.overflow = "auto";
-            document.getElementById("status_guia").style.color = "green"
+            const statusGuiaElement = document.getElementById("status_guia");
+            if (statusGuiaElement) {
+                statusGuiaElement.textContent = "Pago";
+                statusGuiaElement.className = "status active";
+                statusGuiaElement.style.color = "";
+            }
 
             // atualiza contadores e histórico de guias sem recarregar a página
             await window.SapiGuias?.reload();
-            statusGuia = document.getElementById("status_guia")
-
 
         } catch (erro) {
             console.error("Erro guia:", erro);
             window.SapiToast?.error(erro.message || "Erro ao processar pagamento.");
         } finally {
             btnConfirma.textContent = textoOriginalBtn;
-            // reaplica a regra de dias liberados para pagamento
+            btnConfirma.disabled = false;
             window.SapiVerificarBotaoPagamento?.();
         }
     });

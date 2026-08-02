@@ -2,9 +2,26 @@ const API_BASE = "https://apiadministrativa.onrender.com";
 
 function formatarData(data) {
     if (!data) return "";
-    const partes = data.split("T")[0].split("-");
-    if (partes.length !== 3) return data;
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    const parsed = new Date(data);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return parsed.toLocaleDateString("pt-BR");
+}
+
+function getStatusMeta(guia) {
+    const pago = Boolean(guia?.pago || guia?.statusPago || guia?.status === "PAGO");
+    if (pago) {
+        return { label: "Pago", className: "status-badge success", icon: "fa-circle-check" };
+    }
+
+    const vencimento = guia?.vencimento || guia?.dataVencimento;
+    const dataVenc = vencimento ? new Date(vencimento) : null;
+    const vencido = dataVenc && dataVenc.getTime() < Date.now();
+
+    if (vencido) {
+        return { label: "Vencido", className: "status-badge warning", icon: "fa-triangle-exclamation" };
+    }
+
+    return { label: "Pendente", className: "status-badge pending", icon: "fa-clock" };
 }
 
 async function ShowGuias() {
@@ -33,7 +50,12 @@ async function ShowGuias() {
     }
 
     try {
-        const resposta = await fetch(`${API_BASE}/api/cliente/guias/${usuario.id}`);
+        const resposta = await fetch(`${API_BASE}/api/cliente/guias/${usuario.id}`, {
+            headers: {
+                Accept: "application/json",
+                ...(usuario.token ? { Authorization: `Bearer ${usuario.token}` } : {})
+            }
+        });
 
         if (!resposta.ok) {
             throw new Error(`Erro ao buscar guias: ${resposta.status}`);
@@ -55,7 +77,8 @@ async function ShowGuias() {
         }
 
         guias.forEach((guia) => {
-            if (guia.pago) {
+            const statusInfo = getStatusMeta(guia);
+            if (guia.pago || guia.statusPago || String(guia.status || "").toUpperCase() === "PAGO") {
                 totalPagas++;
             } else {
                 totalPendentes++;
@@ -65,23 +88,20 @@ async function ShowGuias() {
                 const card = document.createElement("div");
                 card.className = "guia-card";
 
-                const valorFormatado = Number(guia.valor).toLocaleString("pt-BR", {
+                const valorFormatado = Number(guia.valor || 0).toLocaleString("pt-BR", {
                     style: "currency",
                     currency: "BRL"
                 });
 
-                const statusTexto = guia.pago ? "Pago" : "Aguardando pagamento";
-                const statusClasse = guia.pago ? "pago" : "pendente";
-
                 card.innerHTML = `
                     <div class="guia-header">
-                        <strong>Guia #${guia.id}</strong>
-                        <span class="status-badge ${statusClasse}">${statusTexto}</span>
+                        <strong>Guia #${guia.id || "—"}</strong>
+                        <span class="${statusInfo.className}">${statusInfo.label}</span>
                     </div>
                     <div class="guia-body">
                         <p><strong>Cliente:</strong> ${guia.nomeUsuario || usuario.nome || "Não informado"}</p>
-                        <p><strong>Competência:</strong> ${guia.competencia}</p>
-                        <p><strong>Vencimento:</strong> ${formatarData(guia.vencimento)}</p>
+                        <p><strong>Competência:</strong> ${guia.competencia || "—"}</p>
+                        <p><strong>Vencimento:</strong> ${formatarData(guia.vencimento || guia.dataVencimento)}</p>
                         <p><strong>Valor:</strong> ${valorFormatado}</p>
                     </div>
                 `;
@@ -95,6 +115,7 @@ async function ShowGuias() {
         if (guias_pendentes_show) guias_pendentes_show.textContent = totalPendentes;
     } catch (error) {
         console.error("Erro ao carregar e renderizar as guias:", error);
+        window.SapiToast?.error("Não foi possível carregar as guias no momento.");
     }
 }
 
@@ -125,19 +146,25 @@ function buttonverGuiasPagas() {
         mostrarGuias.setAttribute("aria-hidden", "false");
 
         try {
-            const resposta = await fetch(url);
+            const resposta = await fetch(url, {
+                headers: {
+                    Accept: "application/json",
+                    ...(usuario?.token ? { Authorization: `Bearer ${usuario.token}` } : {})
+                }
+            });
             if (!resposta.ok) throw new Error("Erro ao buscar guias.");
 
             const guias = await resposta.json();
             tbody.innerHTML = "";
 
             guias.forEach((guia) => {
+                const statusInfo = getStatusMeta(guia);
                 tbody.innerHTML += `
                     <tr>
-                        <td data-label="Competência">${guia.competencia}</td>
-                        <td data-label="Vencimento">${formatarData(guia.vencimento)}</td>
-                        <td data-label="Valor">R$ ${guia.valor}</td>
-                        <td data-label="Status">${guia.pago ? "Pago" : "Pendente"}</td>
+                        <td data-label="Competência">${guia.competencia || "—"}</td>
+                        <td data-label="Vencimento">${formatarData(guia.vencimento || guia.dataVencimento)}</td>
+                        <td data-label="Valor">${Number(guia.valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                        <td data-label="Status"><span class="${statusInfo.className}">${statusInfo.label}</span></td>
                     </tr>
                 `;
             });

@@ -4,6 +4,14 @@
  *
  * OBS: Este módulo não depende de "clientesService.js" nem de "toast.js".
  * As chamadas de API e notificações visuais são resolvidas internamente.
+ *
+ * ATENÇÃO: existia uma segunda versão deste mesmo arquivo circulando no
+ * projeto, com um endpoint de guias totalmente diferente
+ * ("/api/payments/guias/{id}") e ignorando o cache de guias já buscado
+ * pelo admin.js. Esta é a versão a ser mantida — ela reaproveita o array
+ * `guias` que o admin.js já buscou em ENDPOINTS.GUIAS_CLIENTE
+ * ("/api/admin/clientes/{id}/guias") e só refaz a requisição quando
+ * necessário, usando a MESMA rota.
  */
 
 const API_BASE = "https://apiadministrativa.onrender.com";
@@ -253,7 +261,10 @@ export function ModalGuiasAdmin() {
     abortController = new AbortController();
     renderizarLoading();
 
-    const url = `${API_BASE}/api/cliente/guias/${usuarioId}`;
+    // CORREÇÃO: a rota antiga era "/api/cliente/guias/{id}" (singular, sem
+    // "/admin"), que não existe no backend administrativo e retornava 404.
+    // A rota correta é a mesma que admin.js usa em ENDPOINTS.GUIAS_CLIENTE.
+    const url = `${API_BASE}/api/admin/clientes/${encodeURIComponent(usuarioId)}/guias`;
 
     try {
       const response = await fetch(url, { signal: abortController.signal });

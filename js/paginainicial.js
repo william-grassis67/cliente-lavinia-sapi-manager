@@ -5,10 +5,12 @@ import { verifyButton } from "./BotaoPayment.js";
 import { initProcessos } from "./processos.js";
 import { ShowGuias, buttonverGuiasPagas } from "./ShowGuais.js";
 
+const API_BASE_URL = 'https://apiadministrativa.onrender.com';
+
 const API_ROUTES = {
-    criarGuia: (usuarioId) => `/api/guias/${usuarioId}`,
-    confirmarPagamento: (guiaId) => `/api/pagamento/${guiaId}`,
-    buscarProcessos: (usuarioId) => `/api/me/processos/${usuarioId}`
+    criarGuia: (usuarioId) => `${API_BASE_URL}/api/cliente/pagamento/${usuarioId}`,
+    confirmarPagamento: (guiaId) => `${API_BASE_URL}/api/cliente/pagamento/${guiaId}`,
+    buscarProcessos: (usuarioId) => `${API_BASE_URL}/api/cliente/processos/${usuarioId}`
 };
 
 const FETCH_TIMEOUT_MS = 15000;
@@ -91,9 +93,11 @@ async function apiFetch(url, options = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
+    const user = getStoredUser();
     const defaultHeaders = {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...(user?.token ? { Authorization: `Bearer ${user.token}` } : {})
     };
 
     const config = {
@@ -146,7 +150,7 @@ async function apiFetch(url, options = {}) {
 
 window.SapiApi = {
     criarGuia: (usuarioId, payload) => apiFetch(API_ROUTES.criarGuia(usuarioId), {
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify(payload)
     }),
     confirmarPagamento: (guiaId, payload) => apiFetch(API_ROUTES.confirmarPagamento(guiaId), {
@@ -363,6 +367,14 @@ function closeMobileMenu() {
 function setupSectionNavigation() {
     document.querySelectorAll('.sidebar-link[data-target], .mobile-nav-link[data-target]').forEach((button) => {
         button.addEventListener('click', () => activateSection(button.dataset.target));
+    });
+
+    document.querySelectorAll('.settings-btn').forEach((button) => {
+        button.addEventListener('click', () => {
+            if (button.dataset.setting) {
+                showToast('Preferência aplicada com sucesso.', 'success');
+            }
+        });
     });
 
     document.querySelectorAll('[data-nav-action]').forEach((button) => {

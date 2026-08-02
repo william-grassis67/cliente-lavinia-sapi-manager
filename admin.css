@@ -1477,6 +1477,122 @@ body.modal-open {
   margin-left: 4px;
 }
 
+.processo-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+
+.processo-detalhes-loading,
+.processo-detalhes-vazio {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  padding: 8px 0;
+}
+
+.processo-detalhes-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.processo-detalhes-header {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.processo-detalhes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.processo-detalhe-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.processo-detalhe-card strong {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-tertiary);
+}
+
+.processo-detalhe-card p {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.processo-detalhes-subtitle {
+  font-size: 12px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.processo-timeline-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  padding: 12px;
+}
+
+.processo-timeline-list,
+.processo-messages-list,
+.processo-docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.processo-timeline-item,
+.processo-message-item,
+.processo-doc-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.processo-timeline-item:first-child,
+.processo-message-item:first-child,
+.processo-doc-item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.processo-timeline-time,
+.processo-message-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.processo-doc-item {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.processo-doc-item i {
+  color: var(--accent);
+}
+
 /* Timeline do processo */
 .processo-timeline {
   display: flex;

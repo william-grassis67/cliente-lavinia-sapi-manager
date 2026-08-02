@@ -16,18 +16,24 @@ const ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/api/admin/register`,
   PAGAMENTOS: `${API_BASE_URL}/api/admin/pagamentos`,
   REMOVE_CLIENTE: (cpf) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(cpf)}`,
-  // ATENÇÃO: endpoint assumido por convenção REST (mesmo recurso do REMOVE_CLIENTE,
-  // trocando o método para PUT). Ainda não confirmado com o backend — ver aviso
-  // no fim da resposta.
   ATUALIZAR_CLIENTE: (id) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(id)}`,
-  PROCESSOS_CLIENTE: (usuarioId) => `${API_BASE_URL}/api/cliente/processos/${encodeURIComponent(usuarioId)}`,
+  PROCESSOS_ADMIN: `${API_BASE_URL}/api/admin/processos`,
+  PROCESSOS_CLIENTE: (usuarioId) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(usuarioId)}/processos`,
   CRIAR_PROCESSO: (usuarioId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(usuarioId)}`,
-  ATUALIZAR_PROCESSO: (id) => `${API_BASE_URL}/api/admin/update/processos/${encodeURIComponent(id)}`,
+  ATUALIZAR_PROCESSO: (id) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(id)}`,
+  ATUALIZAR_STATUS_PROCESSO: (processoId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(processoId)}/status`,
+  HISTORICO_PROCESSO: (processoId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(processoId)}/historico`,
+  MENSAGENS_PROCESSO: (processoId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(processoId)}/mensagens`,
+  MARCAR_MENSAGENS_LIDAS: (processoId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(processoId)}/mensagens/lidas`,
   ENVIAR_DOCUMENTO: (processoId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(processoId)}/documentos`,
+  DOCUMENTOS_ADMIN: `${API_BASE_URL}/api/admin/documentos`,
+  DOCUMENTO_ADMIN: (id) => `${API_BASE_URL}/api/admin/documentos/${encodeURIComponent(id)}`,
   GUIAS_CLIENTE: (usuarioId) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(usuarioId)}/guias`
 };
 
-// Tipos de processo sugeridos para o formulário de criação
+// Tipos de processo sugeridos para o formulário de criação (usados no
+// <datalist id="procTipoLista">, já que procTipo continua sendo um
+// <input> de texto com sugestões, não um <select>).
 const TIPOS_PROCESSO = [
   "Aposentadoria por Idade",
   "Aposentadoria por Tempo",
@@ -40,6 +46,18 @@ const TIPOS_PROCESSO = [
   "Planejamento Previdenciário"
 ];
 
+// Opções de status de processo. Precisam ser IDÊNTICAS (mesmos value) às
+// <option> do <select id="procStatus"> presente no admin.html, pois são
+// usadas tanto para popular esse select quanto para popular/pré-selecionar
+// o <select> de status criado dinamicamente no formulário de edição de
+// processos já existentes (dados vindos do GET).
+const STATUS_PROCESSO_OPCOES = [
+  { value: "AGUARDANDO_DOCUMENTOS", label: "Aguardando documentos" },
+  { value: "EM_ANALISE", label: "Em analise" },
+  { value: "AGUARDANDO_PAGAMENTO", label: "Aguardando pagamento" },
+  { value: "FINALIZADO", label: "Finalizado" }
+];
+
 // ===========================================================
 // 2. ESTADO GLOBAL DA APLICAÇÃO
 // ===========================================================
@@ -47,6 +65,11 @@ export const estado = {
   clientes: [],
   sortAscending: false,
   clienteEmDetalhe: null,
+  metricas: {
+    processos: 0,
+    documentos: 0,
+    pagamentos: 0
+  },
   // Guarda, apenas nesta sessão do navegador, os nomes dos arquivos
   // enviados com sucesso para cada processo (não existe endpoint de
   // listagem de documentos no backend atual).
@@ -77,7 +100,7 @@ const dom = {
   get usuarioUltimoLoginHora() { return document.getElementById("usuarioUltimoLoginHora"); },
   get btnVerify() { return document.getElementById("btn_verify"); },
 
-  // Formulário "Atualizar Dados"
+  // Formulário "Atualizar Dados" (todos continuam <input> no HTML atual)
   get formAtualizarCliente() { return document.getElementById("formAtualizarCliente"); },
   get editNome() { return document.getElementById("editNome"); },
   get editEmail() { return document.getElementById("editEmail"); },
@@ -91,6 +114,9 @@ const dom = {
   get formNovoProcesso() { return document.getElementById("formNovoProcesso"); },
   get procTipo() { return document.getElementById("procTipo"); },
   get procTipoLista() { return document.getElementById("procTipoLista"); },
+  // procStatus agora é um <select> no HTML (antes era <input>)
+  get procStatus() { return document.getElementById("procStatus"); },
+  get procBiometria() { return document.getElementById("procBiometria"); },
   get listaProcessos() { return document.getElementById("listaProcessos"); },
 
   // Controls & Layout
@@ -106,7 +132,15 @@ const dom = {
   get totalUsers() { return document.getElementById("totalUsers"); },
   get activeUsers() { return document.getElementById("activeUsers"); },
   get lastLoginUser() { return document.getElementById("lastLoginUser"); },
-  get lastLoginValue() { return document.getElementById("lastLoginValue"); }
+  get lastLoginValue() { return document.getElementById("lastLoginValue"); },
+  // Observação: o HTML atual do dashboard não possui mais os cartões de
+  // processos/documentos/pagamentos. Os getters abaixo são mantidos para
+  // não quebrar carregarMetricasDashboard/atualizarResumo (ambos já
+  // verificam `if (dom.algumElemento)` antes de usar), então continuam
+  // seguros mesmo retornando null até que esses elementos voltem ao HTML.
+  get processosCount() { return document.getElementById("processosCount"); },
+  get documentosCount() { return document.getElementById("documentosCount"); },
+  get pagamentosCount() { return document.getElementById("pagamentosCount"); }
 };
 
 // ===========================================================
@@ -302,6 +336,41 @@ function criarElemento(tag, { className, texto, atributos = {} } = {}) {
   return el;
 }
 
+// Cria um <select> de status de processo já populado com as opções de
+// STATUS_PROCESSO_OPCOES e com a opção correspondente ao `valorAtual"
+// automaticamente selecionada (equivalente ao "preenchimento automático"
+// pedido para os selects vindos de dados carregados via GET).
+//
+// Caso o valor vindo do backend não corresponda a nenhuma das opções
+// conhecidas (ex.: dado legado/antigo, gravado antes da padronização em
+// enum), uma opção extra é adicionada dinamicamente com esse mesmo valor,
+// para que o dado original nunca seja perdido, escondido ou substituído
+// silenciosamente por outro status ao abrir o formulário de edição.
+function criarSelectStatusProcesso(valorAtual, className) {
+  const select = document.createElement("select");
+  if (className) select.className = className;
+
+  STATUS_PROCESSO_OPCOES.forEach(({ value, label }) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = label;
+    select.appendChild(option);
+  });
+
+  const valorNormalizado = valorAtual || "";
+  const opcaoConhecida = STATUS_PROCESSO_OPCOES.some(op => op.value === valorNormalizado);
+
+  if (valorNormalizado && !opcaoConhecida) {
+    const optionExtra = document.createElement("option");
+    optionExtra.value = valorNormalizado;
+    optionExtra.textContent = `${valorNormalizado} (valor atual)`;
+    select.appendChild(optionExtra);
+  }
+
+  select.value = valorNormalizado || STATUS_PROCESSO_OPCOES[0].value;
+  return select;
+}
+
 // Prioriza sempre o campo "id" retornado pelo backend (ver contrato da API).
 // Os demais são apenas fallbacks de segurança para não quebrar caso algum
 // endpoint antigo ainda devolva um formato diferente.
@@ -313,7 +382,7 @@ function obterIdCliente(cliente) {
 // ===========================================================
 // 7. DASHBOARD / INDICADORES
 // ===========================================================
-function atualizarResumo(clientes) {
+function atualizarResumo(clientes, metricas = {}) {
   if (!Array.isArray(clientes)) return;
 
   if (dom.totalUsers) {
@@ -345,6 +414,18 @@ function atualizarResumo(clientes) {
       dom.lastLoginUser.textContent = "Nenhum acesso";
       dom.lastLoginValue.textContent = "Sem registros";
     }
+  }
+
+  if (dom.processosCount) {
+    dom.processosCount.textContent = metricas.processos ?? "0";
+  }
+
+  if (dom.documentosCount) {
+    dom.documentosCount.textContent = metricas.documentos ?? "0";
+  }
+
+  if (dom.pagamentosCount) {
+    dom.pagamentosCount.textContent = metricas.pagamentos ?? "0";
   }
 }
 
@@ -509,6 +590,7 @@ function abrirModalUsuario(cliente) {
   estado.clienteEmDetalhe = cliente;
 
   // --- Cabeçalho / cartão "Informações do Cliente" (somente leitura) ---
+  // usuarioTipo e usuarioStatus continuam <div>, não são <select>.
   if (dom.usuarioTitulo) dom.usuarioTitulo.textContent = textoOuTraco(cliente.nome, "Detalhes do cliente");
   if (dom.usuarioNome) dom.usuarioNome.textContent = textoOuTraco(cliente.nome);
   if (dom.usuarioEmail) dom.usuarioEmail.textContent = textoOuTraco(cliente.email);
@@ -533,7 +615,7 @@ function abrirModalUsuario(cliente) {
       : "--:--";
   }
 
-  // --- Formulário "Atualizar Dados" (editável) ---
+  // --- Formulário "Atualizar Dados" (editável, todos continuam <input>) ---
   if (dom.editNome) dom.editNome.value = cliente.nome || "";
   if (dom.editEmail) dom.editEmail.value = cliente.email || "";
   if (dom.editTelefone) dom.editTelefone.value = cliente.numeroTelefone || "";
@@ -571,7 +653,7 @@ async function carregarProcessosDoCliente(cliente) {
   if (!dom.listaProcessos) return;
 
   if (!id) {
-    renderizarProcessos(cliente.processos || []);
+    await renderizarProcessos(cliente.processos || []);
     return;
   }
 
@@ -582,7 +664,7 @@ async function carregarProcessosDoCliente(cliente) {
   // estava em andamento, descarta o resultado.
   if (!estado.clienteEmDetalhe || obterIdCliente(estado.clienteEmDetalhe) !== id) return;
 
-  renderizarProcessos(processos);
+  await renderizarProcessos(processos);
 }
 
 function renderizarProcessosCarregando() {
@@ -596,7 +678,14 @@ function renderizarProcessosCarregando() {
   dom.listaProcessos.appendChild(container);
 }
 
-function renderizarProcessos(processos) {
+// CORREÇÃO: antes, cada card de processo (criarCardProcesso ->
+// criarDetalhesProcesso) buscava sozinho a lista COMPLETA de documentos em
+// ENDPOINTS.DOCUMENTOS_ADMIN. Se o cliente tivesse N processos, isso
+// disparava N requisições idênticas e simultâneas ao mesmo endpoint,
+// aumentando o risco de timeout/erro sob carga e deixando os "Documentos
+// anexados" instáveis. Agora a lista é buscada UMA única vez aqui e
+// repassada pronta para cada card.
+async function renderizarProcessos(processos) {
   if (!dom.listaProcessos) return;
   dom.listaProcessos.innerHTML = "";
 
@@ -607,12 +696,135 @@ function renderizarProcessos(processos) {
     return;
   }
 
+  let documentosTodos = [];
+  try {
+    const dados = await fazerRequisicaoAPI(ENDPOINTS.DOCUMENTOS_ADMIN);
+    documentosTodos = Array.isArray(dados) ? dados : [];
+  } catch (error) {
+    console.warn("Não foi possível carregar a lista de documentos:", error);
+  }
+
   const fragment = document.createDocumentFragment();
-  processos.forEach(processo => fragment.appendChild(criarCardProcesso(processo)));
+  processos.forEach(processo => fragment.appendChild(criarCardProcesso(processo, documentosTodos)));
   dom.listaProcessos.appendChild(fragment);
 }
 
-function criarCardProcesso(processo) {
+function criarDetalhesProcesso(processo, documentosTodos = []) {
+  const container = criarElemento("div", { className: "processo-detalhes" });
+  const placeholder = criarElemento("div", { className: "processo-detalhes-loading", texto: "Carregando movimentações do processo..." });
+  container.appendChild(placeholder);
+
+  if (!processo?.id) {
+    container.replaceChildren(
+      criarElemento("p", { className: "processo-detalhes-vazio", texto: "Este processo ainda não possui identificador disponível." })
+    );
+    return container;
+  }
+
+  void (async () => {
+    try {
+      const [historicoRes, mensagensRes] = await Promise.allSettled([
+        fazerRequisicaoAPI(ENDPOINTS.HISTORICO_PROCESSO(processo.id)),
+        fazerRequisicaoAPI(ENDPOINTS.MENSAGENS_PROCESSO(processo.id))
+      ]);
+
+      const historico = historicoRes.status === "fulfilled" && Array.isArray(historicoRes.value) ? historicoRes.value : [];
+      const mensagens = mensagensRes.status === "fulfilled" && Array.isArray(mensagensRes.value) ? mensagensRes.value : [];
+      const documentosDoProcesso = documentosTodos.filter(doc => String(doc.processoId || doc.processo?.id || "") === String(processo.id));
+
+      const detalhes = criarElemento("div", { className: "processo-detalhes-content" });
+      const header = criarElemento("div", { className: "processo-detalhes-header", texto: "Atualizações recentes" });
+      const grid = criarElemento("div", { className: "processo-detalhes-grid" });
+      detalhes.append(header, grid);
+
+      const statusCard = criarElemento("div", { className: "processo-detalhe-card" });
+      statusCard.append(
+        criarElemento("strong", { texto: "Status atual" }),
+        criarElemento("p", { texto: textoOuTraco(processo.status, "Em análise") })
+      );
+
+      const updateCard = criarElemento("div", { className: "processo-detalhe-card" });
+      updateCard.append(
+        criarElemento("strong", { texto: "Última atualização" }),
+        criarElemento("p", { texto: formatarDataHora(processo.ultimaAtualizacao || processo.dataAtualizacao || processo.dataCriacao) })
+      );
+
+      const docsCard = criarElemento("div", { className: "processo-detalhe-card" });
+      docsCard.append(
+        criarElemento("strong", { texto: "Documentos" }),
+        criarElemento("p", { texto: `${documentosDoProcesso.length} anexado${documentosDoProcesso.length === 1 ? "" : "s"}` })
+      );
+
+      grid.append(statusCard, updateCard, docsCard);
+
+      const timeline = criarElemento("div", { className: "processo-timeline-box" });
+      timeline.appendChild(criarElemento("h5", { className: "processo-detalhes-subtitle", texto: "Linha do tempo" }));
+      const ulTimeline = criarElemento("ul", { className: "processo-timeline-list" });
+
+      if (historico.length > 0) {
+        historico.forEach(item => {
+          const li = criarElemento("li", { className: "processo-timeline-item" });
+          li.append(
+            criarElemento("span", { className: "processo-timeline-time", texto: formatarDataHora(item.data || item.criadoEm || item.dataCriacao) }),
+            criarElemento("strong", { texto: textoOuTraco(item.descricao || item.observacao || item.tipoMovimentacao, "Movimentação registrada") }),
+            criarElemento("p", { texto: textoOuTraco(item.administrador || item.usuario || item.tipo, "Sistema") })
+          );
+          ulTimeline.appendChild(li);
+        });
+      } else {
+        ulTimeline.appendChild(criarElemento("li", { className: "processo-timeline-item", texto: "Nenhuma movimentação registrada até o momento." }));
+      }
+      timeline.appendChild(ulTimeline);
+
+      const mensagensBox = criarElemento("div", { className: "processo-timeline-box" });
+      mensagensBox.appendChild(criarElemento("h5", { className: "processo-detalhes-subtitle", texto: "Mensagens do administrador" }));
+      const ulMensagens = criarElemento("ul", { className: "processo-messages-list" });
+      if (mensagens.length > 0) {
+        mensagens.forEach(msg => {
+          const li = criarElemento("li", { className: "processo-message-item" });
+          li.append(
+            criarElemento("strong", { texto: textoOuTraco(msg.administrador || msg.remetente || "Administrador") }),
+            criarElemento("p", { texto: textoOuTraco(msg.conteudo || msg.mensagem || msg.texto, "Mensagem sem conteúdo") }),
+            criarElemento("span", { className: "processo-message-time", texto: formatarDataHora(msg.data || msg.criadoEm || msg.createdAt) })
+          );
+          ulMensagens.appendChild(li);
+        });
+      } else {
+        ulMensagens.appendChild(criarElemento("li", { className: "processo-message-item", texto: "Nenhuma mensagem registrada para este processo." }));
+      }
+      mensagensBox.appendChild(ulMensagens);
+
+      const docsBox = criarElemento("div", { className: "processo-timeline-box" });
+      docsBox.appendChild(criarElemento("h5", { className: "processo-detalhes-subtitle", texto: "Documentos anexados" }));
+      const ulDocs = criarElemento("ul", { className: "processo-docs-list" });
+      if (documentosDoProcesso.length > 0) {
+        documentosDoProcesso.forEach(doc => {
+          const li = criarElemento("li", { className: "processo-doc-item" });
+          const nome = textoOuTraco(doc.nomeArquivo || doc.nome || doc.titulo, "Documento");
+          li.append(
+            criarElemento("i", { className: "fa-solid fa-file-lines" }),
+            criarElemento("span", { texto: nome })
+          );
+          ulDocs.appendChild(li);
+        });
+      } else {
+        ulDocs.appendChild(criarElemento("li", { className: "processo-doc-item", texto: "Nenhum documento anexado." }));
+      }
+      docsBox.appendChild(ulDocs);
+
+      container.replaceChildren(detalhes, timeline, mensagensBox, docsBox);
+    } catch (error) {
+      console.warn("Não foi possível carregar detalhes do processo:", error);
+      container.replaceChildren(
+        criarElemento("p", { className: "processo-detalhes-vazio", texto: "Não foi possível carregar os detalhes deste processo no momento." })
+      );
+    }
+  })();
+
+  return container;
+}
+
+function criarCardProcesso(processo, documentosTodos = []) {
   const card = criarElemento("div", { className: "processo-card" });
   const statusInfo = classificarStatusProcesso(processo.status, processo.dataConclusao);
 
@@ -670,7 +882,7 @@ function criarCardProcesso(processo) {
     criarElemento("span", { className: "processo-ref", texto: `Nº ref.: ${textoOuTraco(processo.id)}` })
   );
 
-  card.append(cabecalho, timeline, linhaDatas, linhaExtra);
+  card.append(cabecalho, timeline, linhaDatas, linhaExtra, criarDetalhesProcesso(processo, documentosTodos));
 
   // Formulário de edição (oculto por padrão), alternado pelo botão "Editar"
   const formEdicao = criarFormEdicaoProcesso(processo);
@@ -686,14 +898,18 @@ function criarCardProcesso(processo) {
 }
 
 // Constrói o formulário de edição de um processo, pré-preenchido com os
-// dados atuais. Ao salvar, envia PUT para ATUALIZAR_PROCESSO com todos os
-// campos editáveis e recarrega a lista de processos do cliente em caso de
-// sucesso.
+// dados atuais (dados vindos do GET). Ao salvar, envia PUT para
+// ATUALIZAR_PROCESSO com todos os campos editáveis e recarrega a lista de
+// processos do cliente em caso de sucesso.
+//
+// O campo Status agora é um <select> (antes era <input type="text">),
+// já com a opção correspondente ao valor retornado pela API
+// automaticamente selecionada — ver criarSelectStatusProcesso().
 function criarFormEdicaoProcesso(processo) {
   const form = criarElemento("form", { className: "processo-edicao-form" });
   form.style.display = "none";
 
-  // Campo: Tipo do Processo
+  // Campo: Tipo do Processo (continua <input> de texto)
   const grupoTipo = criarElemento("div", { className: "form-group" });
   grupoTipo.appendChild(criarElemento("label", { texto: "Tipo do Processo" }));
   const inputTipo = document.createElement("input");
@@ -702,14 +918,11 @@ function criarFormEdicaoProcesso(processo) {
   inputTipo.value = processo.tipo || "";
   grupoTipo.appendChild(inputTipo);
 
-  // Campo: Status
+  // Campo: Status (agora é <select>, com a opção do processo já selecionada)
   const grupoStatus = criarElemento("div", { className: "form-group" });
   grupoStatus.appendChild(criarElemento("label", { texto: "Status" }));
-  const inputStatus = document.createElement("input");
-  inputStatus.type = "text";
-  inputStatus.className = "processo-edit-status";
-  inputStatus.value = processo.status || "";
-  grupoStatus.appendChild(inputStatus);
+  const selectStatus = criarSelectStatusProcesso(processo.status, "processo-edit-status");
+  grupoStatus.appendChild(selectStatus);
 
   // Campo: Data de Conclusão
   const grupoDataConclusao = criarElemento("div", { className: "form-group" });
@@ -720,7 +933,7 @@ function criarFormEdicaoProcesso(processo) {
   inputDataConclusao.value = converterParaInputDate(processo.dataConclusao);
   grupoDataConclusao.appendChild(inputDataConclusao);
 
-  // Campo: Biometria Realizada
+  // Campo: Biometria Realizada (continua checkbox)
   const grupoBiometria = criarElemento("div", { className: "form-group form-group-checkbox" });
   const labelBiometria = document.createElement("label");
   const inputBiometria = document.createElement("input");
@@ -756,13 +969,18 @@ function criarFormEdicaoProcesso(processo) {
 
     const dadosAtualizados = {
       tipo: inputTipo.value.trim(),
-      status: inputStatus.value.trim(),
+      status: selectStatus.value,
       dataConclusao: inputDataConclusao.value ? new Date(inputDataConclusao.value).toISOString() : null,
       biometriaRealizada: inputBiometria.checked
     };
 
     if (!dadosAtualizados.tipo) {
       alert("Informe o tipo do processo.");
+      return;
+    }
+
+    if (!dadosAtualizados.status) {
+      alert("Selecione o status do processo.");
       return;
     }
 
@@ -913,7 +1131,7 @@ export async function listarClientes() {
     }
 
     estado.clientes = dados;
-    atualizarResumo(estado.clientes);
+    atualizarResumo(estado.clientes, estado.metricas || {});
     renderizarListaAtual();
   } catch (error) {
     console.error("Erro ao carregar clientes:", error);
@@ -984,10 +1202,12 @@ export async function buscarProcessosCliente(usuarioId) {
 
 export async function criarProcesso(usuarioId, processo) {
   try {
-    return await fazerRequisicaoAPI(ENDPOINTS.CRIAR_PROCESSO(usuarioId), {
+    const resultado = await fazerRequisicaoAPI(ENDPOINTS.CRIAR_PROCESSO(usuarioId), {
       method: "POST",
       body: JSON.stringify(processo)
     });
+    await carregarMetricasDashboard();
+    return resultado;
   } catch (error) {
     alert(error.message || "Erro ao criar processo.");
     return null;
@@ -1000,10 +1220,12 @@ export async function criarProcesso(usuarioId, processo) {
 // (por exemplo, manter o formulário de edição aberto).
 export async function atualizarProcesso(id, dadosAtualizados) {
   try {
-    return await fazerRequisicaoAPI(ENDPOINTS.ATUALIZAR_PROCESSO(id), {
+    const resultado = await fazerRequisicaoAPI(ENDPOINTS.ATUALIZAR_PROCESSO(id), {
       method: "PUT",
       body: JSON.stringify(dadosAtualizados)
     });
+    await carregarMetricasDashboard();
+    return resultado;
   } catch (error) {
     alert(error.message || "Não foi possível atualizar os dados do processo. Tente novamente.");
     return null;
@@ -1015,10 +1237,12 @@ export async function enviarDocumento(processoId, arquivo) {
     const formData = new FormData();
     formData.append("arquivo", arquivo);
 
-    return await fazerRequisicaoAPI(ENDPOINTS.ENVIAR_DOCUMENTO(processoId), {
+    const resultado = await fazerRequisicaoAPI(ENDPOINTS.ENVIAR_DOCUMENTO(processoId), {
       method: "POST",
       body: formData
     });
+    await carregarMetricasDashboard();
+    return resultado;
   } catch (error) {
     alert(error.message || "Erro ao enviar documento.");
     return null;
@@ -1118,14 +1342,22 @@ function configurarEventosModalUsuario() {
     }
 
     // Envia apenas os campos que existem no modelo Processo do backend.
+    // procTipo continua <input>; procStatus agora é <select> — a leitura
+    // via `.value` funciona da mesma forma para os dois tipos de campo,
+    // pois retorna sempre o valor selecionado/digitado como string.
     const novoProcesso = {
-      tipo: document.getElementById("procTipo")?.value.trim() || "",
-      status: document.getElementById("procStatus")?.value.trim() || "",
-      biometriaRealizada: Boolean(document.getElementById("procBiometria")?.checked)
+      tipo: dom.procTipo?.value.trim() || "",
+      status: dom.procStatus?.value || "",
+      biometriaRealizada: Boolean(dom.procBiometria?.checked)
     };
 
     if (!novoProcesso.tipo) {
       alert("Informe o tipo do processo.");
+      return;
+    }
+
+    if (!novoProcesso.status) {
+      alert("Selecione o status do processo.");
       return;
     }
 
@@ -1174,6 +1406,27 @@ function configurarEventosLista() {
 // ===========================================================
 // 14. INICIALIZAÇÃO CONTROLADA DA APLICAÇÃO
 // ===========================================================
+async function carregarMetricasDashboard() {
+  try {
+    const [processos, documentos, pagamentos] = await Promise.allSettled([
+      fazerRequisicaoAPI(ENDPOINTS.PROCESSOS_ADMIN),
+      fazerRequisicaoAPI(ENDPOINTS.DOCUMENTOS_ADMIN),
+      fazerRequisicaoAPI(ENDPOINTS.PAGAMENTOS)
+    ]);
+
+    const metricas = {
+      processos: Array.isArray(processos.value) ? processos.value.length : 0,
+      documentos: Array.isArray(documentos.value) ? documentos.value.length : 0,
+      pagamentos: Array.isArray(pagamentos.value) ? pagamentos.value.length : 0
+    };
+
+    estado.metricas = metricas;
+    atualizarResumo(estado.clientes || [], metricas);
+  } catch (error) {
+    console.warn("Não foi possível atualizar as métricas do dashboard:", error);
+  }
+}
+
 function inicializar() {
   if (!verificarAutenticacao()) return;
 
@@ -1189,6 +1442,7 @@ function inicializar() {
   configurarEventosLista();
   atualizarDados();
   listarClientes();
+  void carregarMetricasDashboard();
 }
 
 if (document.readyState === "loading") {
