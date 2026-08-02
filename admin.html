@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 
 <head>
   <meta charset="UTF-8" />
@@ -12,6 +12,10 @@
 
 <body>
   <div class="app-shell">
+
+    <!-- ===================== -->
+    <!-- Menu Lateral (Sidebar) -->
+    <!-- ===================== -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="brand">
@@ -23,11 +27,32 @@
         </div>
       </div>
 
+      <!--
+        Navegação principal (SPA):
+        Cada link com [data-section-target] aponta para o id de uma
+        <section> dentro de .page-sections. O arquivo admin-navigation.js
+        é o único responsável por esconder/mostrar essas sections e por
+        controlar a classe "active" — nenhuma lógica de negócio deve ser
+        adicionada aqui.
+        Links sem [data-section-target] (ex.: "Cadastrar Cliente") continuam
+        sendo navegação normal para outra página do projeto.
+      -->
       <nav class="sidebar-nav" aria-label="Menu principal">
-        <a class="nav-link active" href="./admin.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-        <a class="nav-link" href="./admin.html"><i class="fa-solid fa-users"></i> Usuários</a>
-        <a class="nav-link" href="./admin-cadastro.html"><i class="fa-solid fa-user-plus"></i> Cadastrar Cliente</a>
-        <a class="nav-link" href="./paginainicial.html"><i class="fa-solid fa-gear"></i> Configurações</a>
+        <a class="nav-link active" href="#dashboard-section" data-section-target="dashboard-section"
+          data-page-eyebrow="Painel Administrativo" data-page-title="Dashboard">
+          <i class="fa-solid fa-chart-line"></i> Dashboard
+        </a>
+        <a class="nav-link" href="#clientes-section" data-section-target="clientes-section"
+          data-page-eyebrow="Clientes" data-page-title="Gestão de usuários">
+          <i class="fa-solid fa-users"></i> Clientes
+        </a>
+        <a class="nav-link" href="./admin-cadastro.html">
+          <i class="fa-solid fa-user-plus"></i> Cadastrar Cliente
+        </a>
+        <a class="nav-link" href="#configuracoes-section" data-section-target="configuracoes-section"
+          data-page-eyebrow="Preferências" data-page-title="Configurações">
+          <i class="fa-solid fa-gear"></i> Configurações
+        </a>
       </nav>
 
       <div class="sidebar-footer">
@@ -45,8 +70,8 @@
             <i class="fa-solid fa-bars"></i>
           </button>
           <div>
-            <p class="eyebrow">Painel Administrativo</p>
-            <h1>Gestão de usuários</h1>
+            <p class="eyebrow" id="topbarEyebrow">Painel Administrativo</p>
+            <h1 id="topbarTitle">Dashboard</h1>
           </div>
         </div>
         <div class="topbar-actions">
@@ -59,55 +84,148 @@
         </div>
       </header>
 
-      <section class="page-content">
-        <section class="panel-card">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Resumo</p>
-              <h2>Visão geral do painel</h2>
-            </div>
-          </div>
-          <div class="hero-grid">
-            <article class="stat-card">
-              <strong id="totalUsers">0</strong>
-              <span>Usuários cadastrados</span>
-            </article>
-            <article class="stat-card">
-              <strong id="activeUsers">0</strong>
-              <span>Usuários ativos</span>
-            </article>
-            <article class="stat-card stat-card-highlight">
-              <strong id="lastLoginUser">—</strong>
-              <span id="lastLoginValue">Último login registrado</span>
-            </article>
-          </div>
-        </section>
+      <!--
+        Contêiner das sections do painel. Cada <section> representa uma
+        funcionalidade independente do sistema e recebe a classe
+        "section-active" via admin-navigation.js quando selecionada no
+        menu lateral. Novas funcionalidades futuras (ex.: Relatórios,
+        Pagamentos) devem seguir o mesmo padrão: uma nova <section> aqui
+        + um novo link com [data-section-target] no menu lateral.
+      -->
+      <div class="page-content">
+        <div class="page-sections">
 
-        <section class="panel-card">
-          <div class="panel-header">
-            <div>
-              <p class="eyebrow">Usuários</p>
-              <h2>Lista completa</h2>
-            </div>
-          </div>
-          <div class="table-toolbar">
-            <div class="search-field">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <input id="searchInput" type="search" placeholder="Buscar usuários, email, CPF ou tipo"
-                aria-label="Buscar usuários" />
-            </div>
-            <button class="sort-btn" id="sortAccessBtn" type="button" title="Ordenar por último acesso">
-              <i class="fa-solid fa-clock"></i>
-              Último acesso
-              <span class="sort-indicator" id="sortDirectionLabel">↓</span>
-            </button>
-          </div>
-          <div id="clientes" class="users-list"></div>
-        </section>
-      </section>
+          <!-- ===================== -->
+          <!-- Dashboard -->
+          <!-- ===================== -->
+          <section id="dashboard-section" class="page-section section-active" aria-labelledby="dashboard-heading">
+            <section class="panel-card">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Resumo</p>
+                  <h2 id="dashboard-heading">Visão geral do painel</h2>
+                </div>
+              </div>
+              <div class="hero-grid">
+                <article class="stat-card">
+                  <strong id="totalUsers">0</strong>
+                  <span>Usuários cadastrados</span>
+                </article>
+                <article class="stat-card">
+                  <strong id="activeUsers">0</strong>
+                  <span>Usuários ativos</span>
+                </article>
+                <article class="stat-card stat-card-highlight">
+                  <strong id="lastLoginUser">—</strong>
+                  <span id="lastLoginValue">Último login registrado</span>
+                </article>
+              </div>
+            </section>
+          </section>
+
+          <!-- ===================== -->
+          <!-- Clientes -->
+          <!-- ===================== -->
+          <section id="clientes-section" class="page-section" aria-labelledby="clientes-heading">
+            <section class="panel-card">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Usuários</p>
+                  <h2 id="clientes-heading">Lista completa</h2>
+                </div>
+              </div>
+              <div class="table-toolbar">
+                <div class="search-field">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input id="searchInput" type="search" placeholder="Buscar usuários, email, CPF ou tipo"
+                    aria-label="Buscar usuários" />
+                </div>
+                <button class="sort-btn" id="sortAccessBtn" type="button" title="Ordenar por último acesso">
+                  <i class="fa-solid fa-clock"></i>
+                  Último acesso
+                  <span class="sort-indicator" id="sortDirectionLabel">↓</span>
+                </button>
+              </div>
+              <div id="clientes" class="users-list"></div>
+            </section>
+          </section>
+
+          <!-- ===================== -->
+          <!-- Configurações -->
+          <!-- ===================== -->
+          <!--
+            Section preparada para preferências visuais do painel (cor
+            principal, cor secundária e tema claro/escuro), controladas
+            via CSS Custom Properties pelo arquivo admin-theme.js. As
+            alterações valem apenas para a sessão atual do navegador.
+            Estrutura pronta para receber futuras opções de configuração
+            (ex.: notificações, integrações, permissões).
+          -->
+          <section id="configuracoes-section" class="page-section" aria-labelledby="config-heading">
+            <section class="panel-card">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Preferências</p>
+                  <h2 id="config-heading">Configurações do sistema</h2>
+                </div>
+              </div>
+              <p class="config-description">
+                Personalize a aparência do painel administrativo. As alterações abaixo são aplicadas
+                imediatamente e valem apenas para esta sessão do navegador.
+              </p>
+
+              <div class="config-grid">
+                <div class="config-card">
+                  <label for="corPrimaria">Cor principal</label>
+                  <div class="config-color-row">
+                    <input type="color" id="corPrimaria" value="#3b82f6" />
+                    <span class="config-color-value" id="corPrimariaValor">#3b82f6</span>
+                  </div>
+                </div>
+
+                <div class="config-card">
+                  <label for="corSecundaria">Cor secundária</label>
+                  <div class="config-color-row">
+                    <input type="color" id="corSecundaria" value="#6366f1" />
+                    <span class="config-color-value" id="corSecundariaValor">#6366f1</span>
+                  </div>
+                </div>
+
+                <div class="config-card">
+                  <label id="temaLabel">Tema</label>
+                  <div class="config-theme-toggle" role="group" aria-labelledby="temaLabel">
+                    <button type="button" class="config-theme-btn active" data-theme="dark">
+                      <i class="fa-solid fa-moon"></i> Escuro
+                    </button>
+                    <button type="button" class="config-theme-btn" data-theme="light">
+                      <i class="fa-solid fa-sun"></i> Claro
+                    </button>
+                  </div>
+                </div>
+
+                <div class="config-card">
+                  <label>Restaurar padrão</label>
+                  <button type="button" class="secondary-btn" id="btnRestaurarTema">
+                    <i class="fa-solid fa-rotate-left"></i> Restaurar tema padrão
+                  </button>
+                </div>
+              </div>
+            </section>
+          </section>
+
+        </div>
+      </div>
     </main>
   </div>
 
+  <!--
+    Prontuário do Cliente.
+    Reúne, em abas, as funcionalidades ligadas a um cliente específico:
+    Visualizar Usuário, Atualizar Dados e Processos (que inclui, por sua
+    vez, atualizar/editar processo e o upload de documentos). A troca de
+    aba também é controlada por admin-navigation.js, através dos
+    atributos [data-client-tab] / [data-client-tab-panel].
+  -->
   <div class="modal-overlay" id="modalUsuario" aria-hidden="true">
     <div class="modal-card modal-card-cliente" role="dialog" aria-modal="true" aria-labelledby="usuarioTitulo">
       <header class="crm-modal-header">
@@ -126,151 +244,201 @@
       </header>
 
       <div class="crm-container">
-        <section class="crm-section">
-          <div class="crm-section-header">
-            <h3><i class="fa-solid fa-id-card"></i> Informações do Cliente</h3>
-          </div>
-          <div class="detail-grid">
-            <div class="detail-item">
-              <strong>Nome</strong>
-              <div id="usuarioNome">-</div>
-            </div>
-            <div class="detail-item">
-              <strong>Email</strong>
-              <div id="usuarioEmail">-</div>
-            </div>
-            <div class="detail-item">
-              <strong>CPF</strong>
-              <div id="usuarioCpf">-</div>
-            </div>
-            <div class="detail-item">
-              <strong>Telefone</strong>
-              <div id="usuarioTelefone">-</div>
-            </div>
-            <div class="detail-item">
-              <strong>Tipo de Conta</strong>
-              <div id="usuarioTipo">-</div>
-            </div>
-            <div class="detail-item">
-              <strong>Status da Conta</strong>
-              <div id="usuarioStatus">-</div>
-            </div>
-            <div class="detail-item detail-item-full">
-              <strong>Endereço Cadastrado</strong>
-              <div id="usuarioEndereco">-</div>
-            </div>
-          </div>
-        </section>
 
-        <section class="crm-section">
-          <div class="crm-section-header">
-            <h3><i class="fa-solid fa-user-pen"></i> Atualizar Dados</h3>
-          </div>
-          <form id="formAtualizarCliente" class="crm-form">
-            <div class="crm-form-grid">
-              <div class="form-group">
-                <label for="editNome">Nome Completo</label>
-                <input type="text" id="editNome" placeholder="Digite o nome completo" required />
+        <!-- Abas do prontuário -->
+        <nav class="client-tabs" aria-label="Seções do cliente">
+          <button type="button" class="client-tab-btn active" data-client-tab="visualizar-usuario">
+            <i class="fa-solid fa-id-card"></i> Visualizar Usuário
+          </button>
+          <button type="button" class="client-tab-btn" data-client-tab="atualizar-dados">
+            <i class="fa-solid fa-user-pen"></i> Atualizar Dados
+          </button>
+          <button type="button" class="client-tab-btn" data-client-tab="processos">
+            <i class="fa-solid fa-folder-open"></i> Processos
+          </button>
+        </nav>
+
+        <!-- ===================== -->
+        <!-- Visualizar Usuário -->
+        <!-- ===================== -->
+        <div id="tab-visualizar-usuario" class="client-tab-panel section-active"
+          data-client-tab-panel="visualizar-usuario">
+
+          <section class="crm-section">
+            <div class="crm-section-header">
+              <h3><i class="fa-solid fa-id-card"></i> Informações do Cliente</h3>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <strong>Nome</strong>
+                <div id="usuarioNome">-</div>
               </div>
-              <div class="form-group">
-                <label for="editEmail">E-mail</label>
-                <input type="email" id="editEmail" placeholder="exemplo@email.com" required />
+              <div class="detail-item">
+                <strong>Email</strong>
+                <div id="usuarioEmail">-</div>
               </div>
-              <div class="form-group">
-                <label for="editTelefone">Telefone / WhatsApp</label>
-                <input type="text" id="editTelefone" placeholder="(00) 00000-0000" required />
+              <div class="detail-item">
+                <strong>CPF</strong>
+                <div id="usuarioCpf">-</div>
               </div>
-              <div class="form-group">
-                <label for="editCpf">CPF (Somente Leitura)</label>
-                <input type="text" id="editCpf" readonly class="input-readonly" />
+              <div class="detail-item">
+                <strong>Telefone</strong>
+                <div id="usuarioTelefone">-</div>
               </div>
-              <div class="form-group full-width">
-                <label for="editEndereco">Endereço Residencial</label>
-                <input type="text" id="editEndereco" placeholder="Rua, Número, Bairro, Cidade - UF" />
+              <div class="detail-item">
+                <strong>Tipo de Conta</strong>
+                <div id="usuarioTipo">-</div>
+              </div>
+              <div class="detail-item">
+                <strong>Status da Conta</strong>
+                <div id="usuarioStatus">-</div>
+              </div>
+              <div class="detail-item detail-item-full">
+                <strong>Endereço Cadastrado</strong>
+                <div id="usuarioEndereco">-</div>
               </div>
             </div>
-            <div class="form-actions">
-              <button type="submit" class="primary-btn" id="btnSalvarDados">
-                <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+          </section>
+
+          <!-- Logs de Acesso -->
+          <section class="crm-section">
+            <div class="crm-section-header">
+              <div>
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Logs de Acesso</h3>
+                <p class="section-subtitle">Histórico de entradas do cliente na plataforma</p>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="crm-table">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Endereço IP</th>
+                    <th>Dispositivo / Origem</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaLogsAcesso">
+                  <tr>
+                    <td id="usuarioUltimoLoginData">--/--/----</td>
+                    <td id="usuarioUltimoLoginHora">--:--</td>
+                    <td>—</td>
+                    <td><i class="fa-solid fa-desktop"></i> Navegador Web</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- ===================== -->
+        <!-- Atualizar Dados -->
+        <!-- ===================== -->
+        <div id="tab-atualizar-dados" class="client-tab-panel" data-client-tab-panel="atualizar-dados">
+          <section class="crm-section">
+            <div class="crm-section-header">
+              <h3><i class="fa-solid fa-user-pen"></i> Atualizar Dados</h3>
+            </div>
+            <form id="formAtualizarCliente" class="crm-form">
+              <div class="crm-form-grid">
+                <div class="form-group">
+                  <label for="editNome">Nome Completo</label>
+                  <input type="text" id="editNome" placeholder="Digite o nome completo" required />
+                </div>
+                <div class="form-group">
+                  <label for="editEmail">E-mail</label>
+                  <input type="email" id="editEmail" placeholder="exemplo@email.com" required />
+                </div>
+                <div class="form-group">
+                  <label for="editTelefone">Telefone / WhatsApp</label>
+                  <input type="text" id="editTelefone" placeholder="(00) 00000-0000" required />
+                </div>
+                <div class="form-group">
+                  <label for="editCpf">CPF (Somente Leitura)</label>
+                  <input type="text" id="editCpf" readonly class="input-readonly" />
+                </div>
+                <div class="form-group full-width">
+                  <label for="editEndereco">Endereço Residencial</label>
+                  <input type="text" id="editEndereco" placeholder="Rua, Número, Bairro, Cidade - UF" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="primary-btn" id="btnSalvarDados">
+                  <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <!-- ===================== -->
+        <!-- Processos (inclui Atualizar Processo e Documentos) -->
+        <!-- ===================== -->
+        <div id="tab-processos" class="client-tab-panel" data-client-tab-panel="processos">
+          <section id="secaoProcessos" class="crm-section">
+            <div class="crm-section-header sticky-header">
+              <div>
+                <h3><i class="fa-solid fa-folder-open"></i> Processos Jurídicos</h3>
+                <p class="section-subtitle">
+                  Gerencie o andamento, edite dados e anexe documentos dos processos deste cliente
+                </p>
+              </div>
+              <button id="btnToggleNovoProcesso" class="primary-btn" type="button">
+                <i class="fa-solid fa-plus"></i> Novo Processo
               </button>
             </div>
-          </form>
-        </section>
 
-        <section id="secaoProcessos" class="crm-section">
-          <div class="crm-section-header sticky-header">
-            <div>
-              <h3><i class="fa-solid fa-folder-open"></i> Processos Jurídicos</h3>
-              <p class="section-subtitle">Gerencie o andamento dos processos deste cliente</p>
-            </div>
-            <button id="btnToggleNovoProcesso" class="primary-btn" type="button">
-              <i class="fa-solid fa-plus"></i> Novo Processo
-            </button>
-          </div>
-
-          <form id="formNovoProcesso" class="crm-card-form" style="display: none;">
-            <div class="form-title">
-              <h4><i class="fa-solid fa-pen-to-square"></i> Cadastrar / Editar Processo</h4>
-            </div>
-            <div class="crm-form-grid">
-              <div class="form-group">
-                <label for="procTipo">Tipo de Benefício / Ação</label>
-                <input type="text" id="procTipo" list="procTipoLista" placeholder="Ex: Aposentadoria por Idade"
-                  required />
-                <datalist id="procTipoLista"></datalist>
+            <form id="formNovoProcesso" class="crm-card-form" style="display: none;">
+              <div class="form-title">
+                <h4><i class="fa-solid fa-pen-to-square"></i> Cadastrar Processo</h4>
               </div>
-              <div class="form-group">
-                <label for="procStatus">Status do Processo</label>
-                <input type="text" id="procStatus" placeholder="Ex: AGUARDANDO_DOCUMENTOS" />
+              <div class="crm-form-grid">
+                <div class="form-group">
+                  <label for="procTipo">Tipo de Benefício / Ação</label>
+                  <input type="text" id="procTipo" list="procTipoLista" placeholder="Ex: Aposentadoria por Idade"
+                    required />
+                  <datalist id="procTipoLista"></datalist>
+                </div>
+                <div class="form-group">
+                  <label for="procStatus">Status do Processo</label>
+                  <input type="text" id="procStatus" placeholder="Ex: AGUARDANDO_DOCUMENTOS" />
+                </div>
+                <div class="form-group checkbox-group">
+                  <label class="crm-checkbox-label">
+                    <input type="checkbox" id="procBiometria" />
+                    <span>Biometria Realizada</span>
+                  </label>
+                </div>
               </div>
-              <div class="form-group checkbox-group">
-                <label class="crm-checkbox-label">
-                  <input type="checkbox" id="procBiometria" />
-                  <span>Biometria Realizada</span>
-                </label>
+              <div class="form-actions">
+                <button type="submit" class="primary-btn"><i class="fa-solid fa-check"></i> Salvar Processo</button>
               </div>
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="primary-btn"><i class="fa-solid fa-check"></i> Salvar Processo</button>
-            </div>
-          </form>
+            </form>
 
-          <div id="listaProcessos" class="crm-processos-container">
-          </div>
-        </section>
+            <!--
+              Cada card de processo é renderizado dinamicamente por admin.js
+              e já inclui, internamente, a ação "Editar" (Atualizar
+              Processo → PUT /api/admin/update/processos/{id}) e a área de
+              upload de Documentos.
+            -->
+            <div id="listaProcessos" class="crm-processos-container"></div>
+          </section>
+        </div>
 
-        <section class="crm-section">
-          <div class="crm-section-header">
-            <div>
-              <h3><i class="fa-solid fa-clock-rotate-left"></i> Logs de Acesso</h3>
-              <p class="section-subtitle">Histórico de entradas do cliente na plataforma</p>
-            </div>
-          </div>
-          <div class="table-wrapper">
-            <table class="crm-table">
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Horário</th>
-                  <th>Endereço IP</th>
-                  <th>Dispositivo / Origem</th>
-                </tr>
-              </thead>
-              <tbody id="tabelaLogsAcesso">
-                <tr>
-                  <td id="usuarioUltimoLoginData">--/--/----</td>
-                  <td id="usuarioUltimoLoginHora">--:--</td>
-                  <td>—</td>
-                  <td><i class="fa-solid fa-desktop"></i> Navegador Web</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
       </div>
     </div>
   </div>
 
+  <!-- ===================== -->
+  <!-- Guias INSS (financeiro) -->
+  <!-- ===================== -->
+  <!--
+    Aberto via botão "Guias Financeiras" no cabeçalho do prontuário.
+    Permanece como modal próprio (e não como aba) porque é controlado por
+    um módulo externo dedicado (ModalGuiasAdmin.js), com sua própria
+    lógica de carregamento e tabela.
+  -->
   <div class="modal-overlay" id="modalGuiasAdmin" aria-hidden="true">
     <section class="modal-card guias-fullscreen">
       <header class="guias-header">
@@ -303,6 +471,9 @@
     </section>
   </div>
 
+  <!-- ===================== -->
+  <!-- Mensagem WhatsApp -->
+  <!-- ===================== -->
   <div id="modal_mensagem" style="display: none;" aria-hidden="true">
     <div class="enviar-menssagem" id="send_menssage">
       <button class="modal-close" id="btn_close_send" type="button" aria-label="Fechar">
@@ -317,6 +488,17 @@
     </div>
   </div>
 
+  <!--
+    Ordem de carregamento dos scripts:
+    1. admin-navigation.js  → apenas navegação (sections do menu + abas do
+       prontuário do cliente). Sem regra de negócio.
+    2. admin-theme.js       → apenas preferências visuais (Configurações).
+       Sem regra de negócio.
+    3. admin.js (module)    → regras de negócio (API, renderização de
+       clientes/processos, formulários, uploads etc.).
+  -->
+  <script src="./js-admin/admin-navigation.js"></script>
+  <script src="./js-admin/admin-theme.js"></script>
   <script type="module" src="./js-admin/admin.js"></script>
 </body>
 

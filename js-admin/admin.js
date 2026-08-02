@@ -5,7 +5,7 @@
 
 import { abrirModalMensagemCliente } from "./enviarMensagemCliente.js";
 import { ModalGuiasAdmin } from "./ModalGuiasAdmin.js";
-
+import { atualizarDados } from "./atualizarDados.js";
 // ===========================================================
 // 1. CONFIGURAÇÕES E CONSTANTES DA API
 // ===========================================================
@@ -16,8 +16,13 @@ const ENDPOINTS = {
   REGISTER: `${API_BASE_URL}/api/admin/register`,
   PAGAMENTOS: `${API_BASE_URL}/api/admin/pagamentos`,
   REMOVE_CLIENTE: (cpf) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(cpf)}`,
+  // ATENÇÃO: endpoint assumido por convenção REST (mesmo recurso do REMOVE_CLIENTE,
+  // trocando o método para PUT). Ainda não confirmado com o backend — ver aviso
+  // no fim da resposta.
+  ATUALIZAR_CLIENTE: (id) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(id)}`,
   PROCESSOS_CLIENTE: (usuarioId) => `${API_BASE_URL}/api/cliente/processos/${encodeURIComponent(usuarioId)}`,
   CRIAR_PROCESSO: (usuarioId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(usuarioId)}`,
+  ATUALIZAR_PROCESSO: (id) => `${API_BASE_URL}/api/admin/update/processos/${encodeURIComponent(id)}`,
   ENVIAR_DOCUMENTO: (processoId) => `${API_BASE_URL}/api/admin/processos/${encodeURIComponent(processoId)}/documentos`,
   GUIAS_CLIENTE: (usuarioId) => `${API_BASE_URL}/api/admin/clientes/${encodeURIComponent(usuarioId)}/guias`
 };
@@ -38,7 +43,7 @@ const TIPOS_PROCESSO = [
 // ===========================================================
 // 2. ESTADO GLOBAL DA APLICAÇÃO
 // ===========================================================
-const estado = {
+export const estado = {
   clientes: [],
   sortAscending: false,
   clienteEmDetalhe: null,
@@ -68,8 +73,18 @@ const dom = {
   get usuarioEndereco() { return document.getElementById("usuarioEndereco"); },
   get usuarioTipo() { return document.getElementById("usuarioTipo"); },
   get usuarioStatus() { return document.getElementById("usuarioStatus"); },
-  get usuarioUltimoLogin() { return document.getElementById("usuarioUltimoLogin"); },
+  get usuarioUltimoLoginData() { return document.getElementById("usuarioUltimoLoginData"); },
+  get usuarioUltimoLoginHora() { return document.getElementById("usuarioUltimoLoginHora"); },
   get btnVerify() { return document.getElementById("btn_verify"); },
+
+  // Formulário "Atualizar Dados"
+  get formAtualizarCliente() { return document.getElementById("formAtualizarCliente"); },
+  get editNome() { return document.getElementById("editNome"); },
+  get editEmail() { return document.getElementById("editEmail"); },
+  get editTelefone() { return document.getElementById("editTelefone"); },
+  get editCpf() { return document.getElementById("editCpf"); },
+  get editEndereco() { return document.getElementById("editEndereco"); },
+  get btnSalvarDados() { return document.getElementById("btnSalvarDados"); },
 
   // Processos DOM
   get btnToggleNovoProcesso() { return document.getElementById("btnToggleNovoProcesso"); },
@@ -79,9 +94,9 @@ const dom = {
   get listaProcessos() { return document.getElementById("listaProcessos"); },
 
   // Controls & Layout
-  get sidebar() { return document.getElementById("sidebar"); },
-  get sidebarOverlay() { return document.getElementById("sidebarOverlay"); },
-  get mobileToggle() { return document.getElementById("mobileToggle"); },
+  // Observação: os elementos de sidebar/menu mobile (sidebar, overlay,
+  // mobileToggle) são responsabilidade exclusiva de admin-navigation.js
+  // e por isso não têm getters aqui.
   get refreshButton() { return document.getElementById("refreshUsers"); },
   get searchInput() { return document.getElementById("searchInput"); },
   get sortAccessBtn() { return document.getElementById("sortAccessBtn"); },
@@ -209,7 +224,7 @@ function textoOuTraco(valor, textoPadrao = "—") {
 
 function formatarStatus(status) {
   const norm = String(status || "ACTIVE").toUpperCase();
-  const ehAtivo = ["ACTIVE", "ATIVO", "TRUE", "1", "ADMIN"].includes(norm);
+  const ehAtivo = ["ACTIVE", "ATIVO", "TRUE", "1", "ADMIN", "CLIENTE"].includes(norm);
   return {
     label: ehAtivo ? "Ativo" : "Inativo",
     className: ehAtivo ? "status-pill" : "status-pill inactive"
@@ -269,6 +284,16 @@ function formatarData(dataIso, textoPadrao = "—") {
   return date.toLocaleDateString("pt-BR");
 }
 
+// Converte uma data ISO (ou qualquer valor aceito por `Date`) para o
+// formato yyyy-MM-dd esperado por um <input type="date">. Retorna string
+// vazia quando não há data, para deixar o campo em branco no formulário.
+function converterParaInputDate(dataIso) {
+  if (!dataIso) return "";
+  const date = new Date(dataIso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
 function criarElemento(tag, { className, texto, atributos = {} } = {}) {
   const el = document.createElement(tag);
   if (className) el.className = className;
@@ -277,9 +302,12 @@ function criarElemento(tag, { className, texto, atributos = {} } = {}) {
   return el;
 }
 
+// Prioriza sempre o campo "id" retornado pelo backend (ver contrato da API).
+// Os demais são apenas fallbacks de segurança para não quebrar caso algum
+// endpoint antigo ainda devolva um formato diferente.
 function obterIdCliente(cliente) {
   if (!cliente) return null;
-  return cliente.id || cliente._id || cliente.usuarioId || cliente.cpf || null;
+  return cliente.id ?? cliente._id ?? cliente.usuarioId ?? cliente.cpf ?? null;
 }
 
 // ===========================================================
@@ -295,7 +323,7 @@ function atualizarResumo(clientes) {
   if (dom.activeUsers) {
     const ativos = clientes.filter(c => {
       const st = String(c.status || c.tipo || "ACTIVE").toUpperCase();
-      return ["ACTIVE", "ATIVO", "TRUE", "1", "ADMIN"].includes(st);
+      return ["ACTIVE", "ATIVO", "TRUE", "1", "ADMIN", "CLIENTE"].includes(st);
     }).length;
     dom.activeUsers.textContent = ativos;
   }
@@ -480,17 +508,37 @@ function renderizarClientes(clientes) {
 function abrirModalUsuario(cliente) {
   estado.clienteEmDetalhe = cliente;
 
+  // --- Cabeçalho / cartão "Informações do Cliente" (somente leitura) ---
   if (dom.usuarioTitulo) dom.usuarioTitulo.textContent = textoOuTraco(cliente.nome, "Detalhes do cliente");
   if (dom.usuarioNome) dom.usuarioNome.textContent = textoOuTraco(cliente.nome);
   if (dom.usuarioEmail) dom.usuarioEmail.textContent = textoOuTraco(cliente.email);
   if (dom.usuarioCpf) dom.usuarioCpf.textContent = textoOuTraco(cliente.cpf);
-  if (dom.usuarioTelefone) dom.usuarioTelefone.textContent = textoOuTraco(cliente.telefone);
+  if (dom.usuarioTelefone) dom.usuarioTelefone.textContent = textoOuTraco(cliente.numeroTelefone);
   if (dom.usuarioTipo) dom.usuarioTipo.textContent = textoOuTraco(cliente.tipo, "CLIENTE");
   if (dom.usuarioEndereco) dom.usuarioEndereco.textContent = textoOuTraco(cliente.endereco);
 
   const statusInfo = formatarStatus(cliente.status || cliente.tipo);
   if (dom.usuarioStatus) dom.usuarioStatus.textContent = statusInfo.label;
-  if (dom.usuarioUltimoLogin) dom.usuarioUltimoLogin.textContent = formatarDataHora(cliente.ultimoAcesso);
+
+  const dataUltimoAcesso = cliente.ultimoAcesso ? new Date(cliente.ultimoAcesso) : null;
+  const acessoValido = dataUltimoAcesso && !Number.isNaN(dataUltimoAcesso.getTime());
+  if (dom.usuarioUltimoLoginData) {
+    dom.usuarioUltimoLoginData.textContent = acessoValido
+      ? dataUltimoAcesso.toLocaleDateString("pt-BR")
+      : "--/--/----";
+  }
+  if (dom.usuarioUltimoLoginHora) {
+    dom.usuarioUltimoLoginHora.textContent = acessoValido
+      ? dataUltimoAcesso.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      : "--:--";
+  }
+
+  // --- Formulário "Atualizar Dados" (editável) ---
+  if (dom.editNome) dom.editNome.value = cliente.nome || "";
+  if (dom.editEmail) dom.editEmail.value = cliente.email || "";
+  if (dom.editTelefone) dom.editTelefone.value = cliente.numeroTelefone || "";
+  if (dom.editCpf) dom.editCpf.value = cliente.cpf || "";
+  if (dom.editEndereco) dom.editEndereco.value = cliente.endereco || "";
 
   if (dom.modalUsuario) {
     dom.modalUsuario.classList.add("active");
@@ -568,11 +616,18 @@ function criarCardProcesso(processo) {
   const card = criarElemento("div", { className: "processo-card" });
   const statusInfo = classificarStatusProcesso(processo.status, processo.dataConclusao);
 
-  // Cabeçalho: tipo + badge de status
+  // Cabeçalho: tipo + badge de status + ação de edição
   const cabecalho = criarElemento("div", { className: "processo-cabecalho" });
+  const btnEditar = criarElemento("button", {
+    className: "icon-btn processo-editar-btn",
+    atributos: { title: "Editar Processo", type: "button" }
+  });
+  btnEditar.appendChild(criarElemento("i", { className: "fa-solid fa-pen" }));
+
   cabecalho.append(
     criarElemento("h4", { className: "processo-tipo", texto: textoOuTraco(processo.tipo, "Processo") }),
-    criarElemento("span", { className: statusInfo.className, texto: statusInfo.label })
+    criarElemento("span", { className: statusInfo.className, texto: statusInfo.label }),
+    btnEditar
   );
 
   // Linha do tempo simplificada: Criado -> Em andamento -> Concluído
@@ -616,9 +671,131 @@ function criarCardProcesso(processo) {
   );
 
   card.append(cabecalho, timeline, linhaDatas, linhaExtra);
+
+  // Formulário de edição (oculto por padrão), alternado pelo botão "Editar"
+  const formEdicao = criarFormEdicaoProcesso(processo);
+  btnEditar.addEventListener("click", () => {
+    const oculto = formEdicao.style.display === "none" || !formEdicao.style.display;
+    formEdicao.style.display = oculto ? "block" : "none";
+  });
+  card.appendChild(formEdicao);
+
   card.appendChild(criarUploadDocumento(processo));
 
   return card;
+}
+
+// Constrói o formulário de edição de um processo, pré-preenchido com os
+// dados atuais. Ao salvar, envia PUT para ATUALIZAR_PROCESSO com todos os
+// campos editáveis e recarrega a lista de processos do cliente em caso de
+// sucesso.
+function criarFormEdicaoProcesso(processo) {
+  const form = criarElemento("form", { className: "processo-edicao-form" });
+  form.style.display = "none";
+
+  // Campo: Tipo do Processo
+  const grupoTipo = criarElemento("div", { className: "form-group" });
+  grupoTipo.appendChild(criarElemento("label", { texto: "Tipo do Processo" }));
+  const inputTipo = document.createElement("input");
+  inputTipo.type = "text";
+  inputTipo.className = "processo-edit-tipo";
+  inputTipo.value = processo.tipo || "";
+  grupoTipo.appendChild(inputTipo);
+
+  // Campo: Status
+  const grupoStatus = criarElemento("div", { className: "form-group" });
+  grupoStatus.appendChild(criarElemento("label", { texto: "Status" }));
+  const inputStatus = document.createElement("input");
+  inputStatus.type = "text";
+  inputStatus.className = "processo-edit-status";
+  inputStatus.value = processo.status || "";
+  grupoStatus.appendChild(inputStatus);
+
+  // Campo: Data de Conclusão
+  const grupoDataConclusao = criarElemento("div", { className: "form-group" });
+  grupoDataConclusao.appendChild(criarElemento("label", { texto: "Data de Conclusão" }));
+  const inputDataConclusao = document.createElement("input");
+  inputDataConclusao.type = "date";
+  inputDataConclusao.className = "processo-edit-data-conclusao";
+  inputDataConclusao.value = converterParaInputDate(processo.dataConclusao);
+  grupoDataConclusao.appendChild(inputDataConclusao);
+
+  // Campo: Biometria Realizada
+  const grupoBiometria = criarElemento("div", { className: "form-group form-group-checkbox" });
+  const labelBiometria = document.createElement("label");
+  const inputBiometria = document.createElement("input");
+  inputBiometria.type = "checkbox";
+  inputBiometria.className = "processo-edit-biometria";
+  inputBiometria.checked = Boolean(processo.biometriaRealizada);
+  labelBiometria.append(inputBiometria, document.createTextNode(" Biometria realizada"));
+  grupoBiometria.appendChild(labelBiometria);
+
+  // Ações: Salvar / Cancelar
+  const acoes = criarElemento("div", { className: "processo-edicao-acoes" });
+  const btnSalvar = criarElemento("button", { className: "primary-btn", atributos: { type: "submit" } });
+  btnSalvar.append(
+    criarElemento("i", { className: "fa-solid fa-floppy-disk" }),
+    document.createTextNode(" Salvar Alterações")
+  );
+  const btnCancelar = criarElemento("button", { className: "secondary-btn", atributos: { type: "button" } });
+  btnCancelar.textContent = "Cancelar";
+  btnCancelar.addEventListener("click", () => {
+    form.style.display = "none";
+  });
+  acoes.append(btnSalvar, btnCancelar);
+
+  form.append(grupoTipo, grupoStatus, grupoDataConclusao, grupoBiometria, acoes);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!processo.id) {
+      alert("Este processo não possui um identificador válido.");
+      return;
+    }
+
+    const dadosAtualizados = {
+      tipo: inputTipo.value.trim(),
+      status: inputStatus.value.trim(),
+      dataConclusao: inputDataConclusao.value ? new Date(inputDataConclusao.value).toISOString() : null,
+      biometriaRealizada: inputBiometria.checked
+    };
+
+    if (!dadosAtualizados.tipo) {
+      alert("Informe o tipo do processo.");
+      return;
+    }
+
+    btnSalvar.disabled = true;
+    btnCancelar.disabled = true;
+    const textoOriginal = btnSalvar.innerHTML;
+    btnSalvar.innerHTML = "";
+    btnSalvar.append(
+      criarElemento("i", { className: "fa-solid fa-spinner fa-spin" }),
+      document.createTextNode(" Salvando...")
+    );
+
+    const resultado = await atualizarProcesso(processo.id, dadosAtualizados);
+
+    btnSalvar.disabled = false;
+    btnCancelar.disabled = false;
+    btnSalvar.innerHTML = textoOriginal;
+
+    if (resultado !== null) {
+      alert("Dados do processo foram atualizados com sucesso.");
+      form.style.display = "none";
+
+      // Recarrega somente a lista de processos deste cliente para refletir
+      // as alterações salvas no backend, sem recarregar a página inteira.
+      if (estado.clienteEmDetalhe) {
+        await carregarProcessosDoCliente(estado.clienteEmDetalhe);
+      }
+    }
+    // Em caso de erro, atualizarProcesso já exibe uma mensagem amigável
+    // via alert() e o formulário permanece aberto para nova tentativa.
+  });
+
+  return form;
 }
 
 function criarUploadDocumento(processo) {
@@ -758,6 +935,20 @@ export async function cadastrarCliente(dadosCliente) {
   }
 }
 
+// Atualiza os dados cadastrais de um cliente (nome, email, numeroTelefone,
+// endereco). O CPF não é enviado por ser somente leitura na tela.
+export async function atualizarCliente(id, dadosAtualizados) {
+  try {
+    return await fazerRequisicaoAPI(ENDPOINTS.ATUALIZAR_CLIENTE(id), {
+      method: "PUT",
+      body: JSON.stringify(dadosAtualizados)
+    });
+  } catch (error) {
+    alert(error.message || "Erro ao atualizar dados do cliente.");
+    return null;
+  }
+}
+
 export async function removerCliente(cpf) {
   if (!cpf) return;
 
@@ -803,6 +994,22 @@ export async function criarProcesso(usuarioId, processo) {
   }
 }
 
+// Atualiza os campos editáveis de um processo já existente (tipo, status,
+// dataConclusao e biometriaRealizada). Em caso de erro, exibe uma
+// mensagem amigável e retorna null, para o chamador decidir o que fazer
+// (por exemplo, manter o formulário de edição aberto).
+export async function atualizarProcesso(id, dadosAtualizados) {
+  try {
+    return await fazerRequisicaoAPI(ENDPOINTS.ATUALIZAR_PROCESSO(id), {
+      method: "PUT",
+      body: JSON.stringify(dadosAtualizados)
+    });
+  } catch (error) {
+    alert(error.message || "Não foi possível atualizar os dados do processo. Tente novamente.");
+    return null;
+  }
+}
+
 export async function enviarDocumento(processoId, arquivo) {
   try {
     const formData = new FormData();
@@ -838,8 +1045,8 @@ export async function listarPagamentos() {
   }
 }
 
-// Exporta o classificador de situação de guia para uso por ModalGuiasAdmin.js
-export { classificarSituacaoGuia };
+// Exportados para uso pelos módulos externos (atualizarDados.js, ModalGuiasAdmin.js)
+export { classificarSituacaoGuia, obterIdCliente };
 
 // ===========================================================
 // 13. BINDING DE EVENTOS
@@ -980,7 +1187,7 @@ function inicializar() {
   configurarEventosSidebar();
   configurarEventosModalUsuario();
   configurarEventosLista();
-
+  atualizarDados();
   listarClientes();
 }
 
