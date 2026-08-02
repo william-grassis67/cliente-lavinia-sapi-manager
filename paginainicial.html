@@ -87,6 +87,10 @@
 
     <div class="content-area">
       <header class="topbar">
+        <button class="menu-toggle" id="mobileMenuToggle" type="button" aria-label="Abrir menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
         <div class="topbar-title">
           <i class="fa-solid fa-layer-group"></i>
           <div>
@@ -253,19 +257,8 @@
                     <p id="person_email_perfil">carregando@email.com</p>
                   </div>
                 </div>
-                <div class="profile-actions">
-                  <button class="primary-btn" type="button">
-                    <i class="fa-solid fa-user-pen"></i>
-                    Editar perfil
-                  </button>
-                  <button class="secondary-btn" type="button">
-                    <i class="fa-solid fa-lock"></i>
-                    Alterar senha
-                  </button>
-                  <button class="ghost-btn" type="button">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                    Atualizar informações
-                  </button>
+                <div class="profile-note">
+                  <p>Estas informações são somente leitura. Nenhuma alteração é permitida nesta tela.</p>
                 </div>
               </div>
 
@@ -276,7 +269,7 @@
                 </div>
                 <div class="profile-list-item">
                   <strong>Status da conta</strong>
-                  <span class="status active"><i class="fa-solid fa-circle"></i> Ativa</span>
+                  <span id="person_status_perfil" class="status active"><i class="fa-solid fa-circle"></i> Ativa</span>
                 </div>
                 <div class="profile-list-item">
                   <strong>Último acesso</strong>
@@ -284,19 +277,11 @@
                 </div>
                 <div class="profile-list-item">
                   <strong>CPF</strong>
-                  <span>Em breve</span>
+                  <span id="person_cpf_perfil">Não disponível</span>
                 </div>
                 <div class="profile-list-item">
-                  <strong>Telefone</strong>
-                  <span>Em breve</span>
-                </div>
-                <div class="profile-list-item">
-                  <strong>Endereço</strong>
-                  <span>Em breve</span>
-                </div>
-                <div class="profile-list-item">
-                  <strong>Empresa</strong>
-                  <span>Em breve</span>
+                  <strong>Data de cadastro</strong>
+                  <span id="person_data_cadastro_perfil">--/--/----</span>
                 </div>
               </div>
             </div>
@@ -494,55 +479,73 @@
             <div class="section-heading">
               <div>
                 <h2>Configurações</h2>
-                <p>Organize a experiência do portal com opções futuras e prontas para evolução.</p>
+                <p>Personalize a aparência e comportamento visual do portal.</p>
               </div>
             </div>
             <div class="settings-grid">
               <div class="panel-card">
                 <div class="card-title">
                   <i class="fa-solid fa-palette"></i>
-                  <h3>Aparência</h3>
+                  <h3>Tema</h3>
                 </div>
-                <div class="profile-actions">
-                  <button class="settings-btn" data-theme-option="light" type="button">
+                <div class="settings-flow">
+                  <button class="settings-btn" data-setting="theme" data-value="light" type="button">
                     <i class="fa-solid fa-sun"></i>
-                    Tema claro
+                    Claro
                   </button>
-                  <button class="settings-btn" data-theme-option="dark" type="button">
+                  <button class="settings-btn" data-setting="theme" data-value="dark" type="button">
                     <i class="fa-solid fa-moon"></i>
-                    Tema escuro
+                    Escuro
+                  </button>
+                  <button class="settings-btn" data-setting="theme" data-value="auto" type="button">
+                    <i class="fa-solid fa-circle-half-stroke"></i>
+                    Automático
                   </button>
                 </div>
               </div>
               <div class="panel-card">
                 <div class="card-title">
-                  <i class="fa-solid fa-user-shield"></i>
-                  <h3>Conta</h3>
+                  <i class="fa-solid fa-droplet"></i>
+                  <h3>Cor principal</h3>
                 </div>
-                <div class="info-list">
-                  <div><strong>Alterar senha</strong><span>Pronto para integração futura.</span></div>
-                  <div><strong>Atualizar dados</strong><span>Estrutura preparada para revisão.</span></div>
-                </div>
-              </div>
-              <div class="panel-card">
-                <div class="card-title">
-                  <i class="fa-solid fa-bell"></i>
-                  <h3>Notificações</h3>
-                </div>
-                <div class="info-list">
-                  <div><strong>Receber notificações</strong><span>Ativado por padrão.</span></div>
-                  <div><strong>Avisos por e-mail</strong><span>Disponível em breve.</span></div>
+                <div class="settings-flow color-palette">
+                  <button class="color-swatch" data-setting="color" data-value="blue" type="button" aria-label="Azul"></button>
+                  <button class="color-swatch" data-setting="color" data-value="green" type="button" aria-label="Verde"></button>
+                  <button class="color-swatch" data-setting="color" data-value="purple" type="button" aria-label="Roxo"></button>
+                  <button class="color-swatch" data-setting="color" data-value="red" type="button" aria-label="Vermelho"></button>
+                  <button class="color-swatch" data-setting="color" data-value="orange" type="button" aria-label="Laranja"></button>
                 </div>
               </div>
               <div class="panel-card">
                 <div class="card-title">
-                  <i class="fa-solid fa-lock"></i>
-                  <h3>Segurança</h3>
+                  <i class="fa-solid fa-arrows-up-down-left-right"></i>
+                  <h3>Densidade</h3>
                 </div>
-                <div class="info-list">
-                  <div><strong>Sessões ativas</strong><span>Visão de segurança em implementação.</span></div>
-                  <div><strong>Privacidade</strong><span>Parâmetros planejados.</span></div>
-                  <div><strong>Logout de outros dispositivos</strong><span>Pronto para uso futuro.</span></div>
+                <div class="settings-flow">
+                  <button class="settings-btn" data-setting="density" data-value="compact" type="button">Compacta</button>
+                  <button class="settings-btn" data-setting="density" data-value="standard" type="button">Padrão</button>
+                  <button class="settings-btn" data-setting="density" data-value="comfortable" type="button">Confortável</button>
+                </div>
+              </div>
+              <div class="panel-card">
+                <div class="card-title">
+                  <i class="fa-solid fa-text-height"></i>
+                  <h3>Tamanho da fonte</h3>
+                </div>
+                <div class="settings-flow">
+                  <button class="settings-btn" data-setting="fontSize" data-value="small" type="button">Pequena</button>
+                  <button class="settings-btn" data-setting="fontSize" data-value="medium" type="button">Média</button>
+                  <button class="settings-btn" data-setting="fontSize" data-value="large" type="button">Grande</button>
+                </div>
+              </div>
+              <div class="panel-card">
+                <div class="card-title">
+                  <i class="fa-solid fa-border-all"></i>
+                  <h3>Bordas</h3>
+                </div>
+                <div class="settings-flow">
+                  <button class="settings-btn" data-setting="borderStyle" data-value="soft" type="button">Suaves</button>
+                  <button class="settings-btn" data-setting="borderStyle" data-value="rounded" type="button">Mais arredondadas</button>
                 </div>
               </div>
             </div>
@@ -572,13 +575,69 @@
           </div>
         </div>
       </main>
+
+      <div class="mobile-nav-overlay" id="mobileMenuOverlay" aria-hidden="true">
+        <div class="mobile-nav-panel">
+          <div class="mobile-nav-header">
+            <div>
+              <strong>Menu</strong>
+              <span>Toque para navegar</span>
+            </div>
+            <button id="mobileMenuClose" type="button" aria-label="Fechar menu">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <nav class="mobile-nav-links" aria-label="Navegação principal">
+            <button class="sidebar-link mobile-nav-link is-active" data-target="dashboard" type="button">
+              <i class="fa-solid fa-gauge-high"></i>
+              <span>Dashboard</span>
+            </button>
+            <button class="sidebar-link mobile-nav-link" data-target="perfil" type="button">
+              <i class="fa-solid fa-user"></i>
+              <span>Meu Perfil</span>
+            </button>
+            <button class="sidebar-link mobile-nav-link" data-target="processos" type="button">
+              <i class="fa-solid fa-folder-open"></i>
+              <span>Processos</span>
+            </button>
+            <button class="sidebar-link mobile-nav-link" data-target="guias" type="button">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <span>Guias INSS</span>
+            </button>
+            <button class="sidebar-link mobile-nav-link" data-target="configuracoes" type="button">
+              <i class="fa-solid fa-sliders"></i>
+              <span>Configurações</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <nav class="mobile-bottom-nav" aria-label="Navegação inferior">
+        <button class="mobile-nav-link is-active" data-target="dashboard" type="button">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Início</span>
+        </button>
+        <button class="mobile-nav-link" data-target="processos" type="button">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>Processos</span>
+        </button>
+        <button class="mobile-nav-link" data-target="perfil" type="button">
+          <i class="fa-solid fa-user"></i>
+          <span>Perfil</span>
+        </button>
+        <button class="mobile-nav-link" data-target="guias" type="button">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <span>Guias</span>
+        </button>
+        <button class="mobile-nav-link" data-target="configuracoes" type="button">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Configurações</span>
+        </button>
+      </nav>
     </div>
   </div>
 
   <script type="module" src="js/paginainicial.js"></script>
-  <script>
-    alert(1)
-  </script>
 </body>
 
 </html>

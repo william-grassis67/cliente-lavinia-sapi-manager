@@ -277,6 +277,27 @@ function updateUserProfileUI(user) {
 function renderUserData(user) {
     updateUserNameUI(user.nome);
     updateUserProfileUI(user);
+
+    const cpfElement = document.getElementById('person_cpf_perfil');
+    const cadastroElement = document.getElementById('person_data_cadastro_perfil');
+    const statusElement = document.getElementById('person_status_perfil');
+
+    if (cpfElement) {
+        cpfElement.textContent = user.cpf || 'Não disponível';
+    }
+
+    if (cadastroElement) {
+        cadastroElement.textContent = user.dataCadastro
+            ? new Date(user.dataCadastro).toLocaleDateString('pt-BR')
+            : 'Não disponível';
+    }
+
+    if (statusElement) {
+        const isActive = user.status ? user.status.toLowerCase() === 'ativo' : true;
+        statusElement.textContent = isActive ? 'Ativa' : 'Inativa';
+        statusElement.classList.toggle('active', isActive);
+        statusElement.classList.toggle('pending', !isActive);
+    }
 }
 
 function setDefaultCompetenciaAtual() {
@@ -302,7 +323,7 @@ function activateSection(sectionId) {
         item.classList.toggle('is-active', item.id === section.id);
     });
 
-    document.querySelectorAll('.sidebar-link[data-target]').forEach((link) => {
+    document.querySelectorAll('.sidebar-link[data-target], .mobile-nav-link[data-target]').forEach((link) => {
         link.classList.toggle('is-active', link.dataset.target === sectionId);
     });
 
@@ -317,32 +338,132 @@ function activateSection(sectionId) {
         };
         DOM.topbarTitle.textContent = labels[sectionId] || 'Dashboard';
     }
+
+    closeMobileMenu();
+}
+
+function openMobileMenu() {
+    const overlay = document.getElementById('mobileMenuOverlay');
+    document.documentElement.classList.add('no-scroll');
+    if (overlay) {
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+    }
+}
+
+function closeMobileMenu() {
+    const overlay = document.getElementById('mobileMenuOverlay');
+    document.documentElement.classList.remove('no-scroll');
+    if (overlay) {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+    }
 }
 
 function setupSectionNavigation() {
-    document.querySelectorAll('.sidebar-link[data-target]').forEach((button) => {
+    document.querySelectorAll('.sidebar-link[data-target], .mobile-nav-link[data-target]').forEach((button) => {
         button.addEventListener('click', () => activateSection(button.dataset.target));
     });
 
     document.querySelectorAll('[data-nav-action]').forEach((button) => {
         button.addEventListener('click', () => activateSection(button.dataset.navAction));
     });
+
+    const menuToggle = document.getElementById('mobileMenuToggle');
+    const menuClose = document.getElementById('mobileMenuClose');
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', openMobileMenu);
+    }
+
+    if (menuClose) {
+        menuClose.addEventListener('click', closeMobileMenu);
+    }
+}
+
+function getStoredPreferences() {
+    try {
+        const data = localStorage.getItem('sapi-preferences');
+        return data ? JSON.parse(data) : {};
+    } catch (error) {
+        console.error('[paginainicial] Erro ao ler preferências:', error);
+        return {};
+    }
+}
+
+function savePreferences(preferences) {
+    try {
+        localStorage.setItem('sapi-preferences', JSON.stringify(preferences));
+    } catch (error) {
+        console.error('[paginainicial] Erro ao salvar preferências:', error);
+    }
+}
+
+function applyPreference(setting, value) {
+    const root = document.documentElement;
+    const preferences = getStoredPreferences();
+
+    switch (setting) {
+        case 'theme':
+            if (value === 'auto') {
+                root.removeAttribute('data-theme');
+            } else {
+                root.setAttribute('data-theme', value);
+            }
+            break;
+        case 'color':
+            root.setAttribute('data-color', value);
+            break;
+        case 'density':
+            root.classList.remove('density-compact', 'density-standard', 'density-comfortable');
+            root.classList.add(`density-${value}`);
+            break;
+        case 'fontSize':
+            root.classList.remove('font-small', 'font-medium', 'font-large');
+            root.classList.add(`font-${value}`);
+            break;
+        case 'borderStyle':
+            root.classList.remove('border-soft', 'border-rounded');
+            root.classList.add(value === 'rounded' ? 'border-rounded' : 'border-soft');
+            break;
+        default:
+            break;
+    }
+
+    preferences[setting] = value;
+    savePreferences(preferences);
+}
+
+function applyStoredPreferences() {
+    const preferences = getStoredPreferences();
+    const defaultPreferences = {
+        theme: 'auto',
+        color: 'blue',
+        density: 'standard',
+        fontSize: 'medium',
+        borderStyle: 'soft'
+    };
+
+    const finalPrefs = { ...defaultPreferences, ...preferences };
+
+    Object.entries(finalPrefs).forEach(([setting, value]) => applyPreference(setting, value));
+
+    document.querySelectorAll('[data-setting]').forEach((button) => {
+        const setting = button.dataset.setting;
+        const value = button.dataset.value;
+        button.classList.toggle('is-active', finalPrefs[setting] === value);
+    });
 }
 
 function setupThemeControls() {
-    const savedTheme = localStorage.getItem('sapi-theme');
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    }
-
-    document.querySelectorAll('[data-theme-option]').forEach((button) => {
+    document.querySelectorAll('[data-setting]').forEach((button) => {
         button.addEventListener('click', () => {
-            const theme = button.dataset.themeOption || 'light';
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('sapi-theme', theme);
+            const setting = button.dataset.setting;
+            const value = button.dataset.value;
+            applyPreference(setting, value);
 
-            document.querySelectorAll('[data-theme-option]').forEach((item) => {
-                item.classList.toggle('is-active', item === button);
+            document.querySelectorAll(`[data-setting="${setting}"]`).forEach((item) => {
+                item.classList.toggle('is-active', item.dataset.value === value);
             });
         });
     });
@@ -376,6 +497,7 @@ function initModules(user) {
     });
 
     setupSectionNavigation();
+    applyStoredPreferences();
     setupThemeControls();
 }
 

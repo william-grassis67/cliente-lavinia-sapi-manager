@@ -134,10 +134,10 @@ function buttonverGuiasPagas() {
             guias.forEach((guia) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td>${guia.competencia}</td>
-                        <td>${formatarData(guia.vencimento)}</td>
-                        <td>R$ ${guia.valor}</td>
-                        <td>${guia.pago ? "Pago" : "Pendente"}</td>
+                        <td data-label="Competência">${guia.competencia}</td>
+                        <td data-label="Vencimento">${formatarData(guia.vencimento)}</td>
+                        <td data-label="Valor">R$ ${guia.valor}</td>
+                        <td data-label="Status">${guia.pago ? "Pago" : "Pendente"}</td>
                     </tr>
                 `;
             });
